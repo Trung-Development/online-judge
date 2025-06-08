@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  env: {
+    NEXT_PUBLIC_HCAPTCHA_SITE_KEY: process.env.HCAPTCHA_SITE_KEY,
+  },
 };
 
 export default nextConfig;

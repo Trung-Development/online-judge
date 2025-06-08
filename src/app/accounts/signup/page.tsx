@@ -33,11 +33,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import dynamic from "next/dynamic";
+
+const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), { ssr: false });
 
 export default function SignupPage() {
   const { theme } = useTheme();
   const router = useRouter();
   const [formData, setFormData] = useState({
+    fullName: "", // Added fullName
     username: "",
     email: "",
     password1: "",
@@ -49,6 +53,10 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [dobOpen, setDobOpen] = useState(false);
+  const [hcaptchaToken, setHcaptchaToken] = useState<string | null>(null);
+  const hcaptchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || "";
+
+  console.log("hCaptcha key:", hcaptchaSiteKey);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -84,13 +92,18 @@ export default function SignupPage() {
         !formData.username ||
         !formData.email ||
         !formData.password1 ||
-        !formData.password2
+        !formData.password2 ||
+        !formData.fullName // Require fullName
       ) {
         throw new Error("All fields are required");
       }
 
       if (formData.password1 !== formData.password2) {
         throw new Error("Passwords do not match");
+      }
+
+      if (!hcaptchaToken) {
+        throw new Error("Please complete the hCaptcha challenge.");
       }
 
       // Prepare data for API (convert dateOfBirth to mm/dd/yyyy if present)
@@ -106,6 +119,7 @@ export default function SignupPage() {
         dateOfBirth: formData.dateOfBirth
           ? formatDateMMDDYYYY(formData.dateOfBirth)
           : undefined,
+        hcaptchaToken,
       };
 
       const response = await fetch(apiUrl, {
@@ -174,6 +188,19 @@ export default function SignupPage() {
                     {error}
                   </div>
                 )}
+                {/* Full Name field */}
+                <div className="grid gap-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="John Doe"
+                    required
+                    value={formData.fullName}
+                    onChange={handleChange}
+                  />
+                </div>
+                { /* Username field */}
                 <div className="grid gap-2">
                   <Label htmlFor="username">Username</Label>
                   <Input
@@ -265,7 +292,7 @@ export default function SignupPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {timezones.map((tz, i) => (
-                        <SelectItem key={i} value={`${tz.value}__${i}`}>
+                        <SelectItem key={i} value={tz.value}>
                           {tz.label}
                         </SelectItem>
                       ))}
@@ -296,6 +323,17 @@ export default function SignupPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                {/* hCaptcha widget */}
+                <div className="flex justify-center mt-2">
+                  {hcaptchaSiteKey && (
+                    <HCaptcha
+                      sitekey={hcaptchaSiteKey}
+                      onVerify={setHcaptchaToken}
+                      onExpire={() => setHcaptchaToken(null)}
+                      theme={theme === "dark" ? "dark" : "light"}
+                    />
+                  )}
                 </div>
               </div>
             </form>
