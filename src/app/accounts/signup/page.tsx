@@ -17,16 +17,9 @@ import { MagicCard } from "@/components/magicui/magic-card";
 import { useTheme } from "next-themes";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { languages } from "@/constants";
 import * as React from "react";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronsUpDown, Check } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -34,6 +27,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import dynamic from "next/dynamic";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), {
   ssr: false,
@@ -43,18 +45,19 @@ export default function SignupPage() {
   const { theme } = useTheme();
   const router = useRouter();
   const [formData, setFormData] = useState({
-    fullName: "", // Added fullName
+    fullName: "",
     username: "",
     email: "",
     password1: "",
     password2: "",
-    defaultLanguage: "CPP17", // Default to C++17
+    defaultLanguage: "CPP17",
     dateOfBirth: undefined as Date | undefined,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [dobOpen, setDobOpen] = useState(false);
   const [hcaptchaToken, setHcaptchaToken] = useState<string | null>(null);
+  const [comboboxOpen, setComboboxOpen] = useState(false);
   const hcaptchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || "";
 
   console.log("hCaptcha key:", hcaptchaSiteKey);
@@ -63,13 +66,6 @@ export default function SignupPage() {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value,
-    });
-  };
-
-  const handleSelectChange = (field: string, value: string) => {
-    setFormData({
-      ...formData,
-      [field]: value,
     });
   };
 
@@ -281,30 +277,66 @@ export default function SignupPage() {
                     </PopoverContent>
                   </Popover>
                 </div>
+                {/* Default Language Combobox */}
                 <div className="grid gap-2">
-                  <Label htmlFor="defaultLanguage-select">
+                  <Label htmlFor="defaultLanguage-combobox">
                     Default Language
                   </Label>
-                  <Select
-                    value={formData.defaultLanguage}
-                    onValueChange={(value) =>
-                      handleSelectChange("defaultLanguage", value)
-                    }
-                  >
-                    <SelectTrigger
-                      id="defaultLanguage-select"
-                      className="w-full"
-                    >
-                      <SelectValue placeholder="Select your default language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {languages.map((language) => (
-                        <SelectItem key={language.value} value={language.value}>
-                          {language.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={comboboxOpen}
+                        className="w-full justify-between"
+                        type="button"
+                        id="defaultLanguage-combobox"
+                      >
+                        {formData.defaultLanguage
+                          ? languages.find(
+                              (lang) => lang.value === formData.defaultLanguage
+                            )?.label
+                          : "Select your default language"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput
+                          placeholder="Search language..."
+                          className="h-9"
+                        />
+                        <CommandList>
+                          <CommandEmpty>No language found.</CommandEmpty>
+                          <CommandGroup>
+                            {languages.map((language) => (
+                              <CommandItem
+                                key={language.value}
+                                value={language.value}
+                                onSelect={(currentValue) => {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    defaultLanguage: currentValue,
+                                  }));
+                                  setComboboxOpen(false);
+                                }}
+                              >
+                                {language.label}
+                                <Check
+                                  className={cn(
+                                    "ml-auto",
+                                    formData.defaultLanguage === language.value
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 {/* hCaptcha widget */}
                 <div className="flex justify-center mt-2">

@@ -11,6 +11,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.826.0",
     "@hcaptcha/react-hcaptcha": "^1.12.0",
+    "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-navigation-menu": "^1.2.13",
     "@radix-ui/react-popover": "^1.1.14",
@@ -19,6 +20,7 @@
     "chalk": "^5.4.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.513.0",
     "motion": "^12.16.0",
