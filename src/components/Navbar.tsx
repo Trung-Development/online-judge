@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { ActivityIcon } from "lucide-react"
+import Image from "next/image"
 
 import {
   NavigationMenu,
@@ -90,7 +91,7 @@ export function Navbar() {
                           rel="noopener noreferrer"
                           className="flex items-center gap-2 p-2 rounded hover:bg-gray-100 transition-colors"
                         >
-                          <img
+                          <Image
                             src="/assets/icons/github.svg"
                             alt="GitHub"
                             width={16}

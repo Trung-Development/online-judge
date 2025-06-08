@@ -35,7 +35,9 @@ import {
 } from "@/components/ui/popover";
 import dynamic from "next/dynamic";
 
-const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), { ssr: false });
+const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), {
+  ssr: false,
+});
 
 export default function SignupPage() {
   const { theme } = useTheme();
@@ -200,7 +202,7 @@ export default function SignupPage() {
                     onChange={handleChange}
                   />
                 </div>
-                { /* Username field */}
+                {/* Username field */}
                 <div className="grid gap-2">
                   <Label htmlFor="username">Username</Label>
                   <Input
