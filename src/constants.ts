@@ -1,1702 +1,941 @@
-// Common timelabels from tz database
 export const timezones = [
   {
-    value: "AD",
-    label: "Europe/Andorra",
+    "label": "Africa/Abidjan"
   },
   {
-    value: "AE",
-    label: "Asia/Dubai",
+    "label": "Africa/Algiers"
   },
   {
-    value: "OM",
-    label: "Asia/Dubai",
+    "label": "Africa/Bissau"
   },
   {
-    value: "RE",
-    label: "Asia/Dubai",
+    "label": "Africa/Cairo"
   },
   {
-    value: "SC",
-    label: "Asia/Dubai",
+    "label": "Africa/Casablanca"
   },
   {
-    value: "TF",
-    label: "Asia/Dubai",
+    "label": "Africa/Ceuta"
   },
   {
-    value: "AF",
-    label: "Asia/Kabul",
+    "label": "Africa/El_Aaiun"
   },
   {
-    value: "AL",
-    label: "Europe/Tirane",
+    "label": "Africa/Johannesburg"
   },
   {
-    value: "AM",
-    label: "Asia/Yerevan",
+    "label": "Africa/Juba"
   },
   {
-    value: "AQ",
-    label: "Antarctica/Casey",
+    "label": "Africa/Khartoum"
   },
   {
-    value: "AQ",
-    label: "Antarctica/Davis",
+    "label": "Africa/Lagos"
   },
   {
-    value: "AQ",
-    label: "Antarctica/Mawson",
+    "label": "Africa/Maputo"
   },
   {
-    value: "AQ",
-    label: "Antarctica/Palmer",
+    "label": "Africa/Monrovia"
   },
   {
-    value: "AQ",
-    label: "Antarctica/Rothera",
+    "label": "Africa/Nairobi"
   },
   {
-    value: "AQ",
-    label: "Antarctica/Troll",
+    "label": "Africa/Ndjamena"
   },
   {
-    value: "AQ",
-    label: "Antarctica/Vostok",
+    "label": "Africa/Sao_Tome"
   },
   {
-    value: "AR",
-    label: "America/Argentina/Buenos_Aires",
+    "label": "Africa/Tripoli"
   },
   {
-    value: "AR",
-    label: "America/Argentina/Cordoba",
+    "label": "Africa/Tunis"
   },
   {
-    value: "AR",
-    label: "America/Argentina/Salta",
+    "label": "Africa/Windhoek"
   },
   {
-    value: "AR",
-    label: "America/Argentina/Jujuy",
+    "label": "America/Adak"
   },
   {
-    value: "AR",
-    label: "America/Argentina/Tucuman",
+    "label": "America/Anchorage"
   },
   {
-    value: "AR",
-    label: "America/Argentina/Catamarca",
+    "label": "America/Araguaina"
   },
   {
-    value: "AR",
-    label: "America/Argentina/La_Rioja",
+    "label": "America/Argentina/Buenos_Aires"
   },
   {
-    value: "AR",
-    label: "America/Argentina/San_Juan",
+    "label": "America/Argentina/Catamarca"
   },
   {
-    value: "AR",
-    label: "America/Argentina/Mendoza",
+    "label": "America/Argentina/Cordoba"
   },
   {
-    value: "AR",
-    label: "America/Argentina/San_Luis",
+    "label": "America/Argentina/Jujuy"
   },
   {
-    value: "AR",
-    label: "America/Argentina/Rio_Gallegos",
+    "label": "America/Argentina/La_Rioja"
   },
   {
-    value: "AR",
-    label: "America/Argentina/Ushuaia",
+    "label": "America/Argentina/Mendoza"
   },
   {
-    value: "AS",
-    label: "Pacific/Pago_Pago",
+    "label": "America/Argentina/Rio_Gallegos"
   },
   {
-    value: "UM",
-    label: "Pacific/Pago_Pago",
+    "label": "America/Argentina/Salta"
   },
   {
-    value: "AT",
-    label: "Europe/Vienna",
+    "label": "America/Argentina/San_Juan"
   },
   {
-    value: "AU",
-    label: "Australia/Lord_Howe",
+    "label": "America/Argentina/San_Luis"
   },
   {
-    value: "AU",
-    label: "Antarctica/Macquarie",
+    "label": "America/Argentina/Tucuman"
   },
   {
-    value: "AU",
-    label: "Australia/Hobart",
+    "label": "America/Argentina/Ushuaia"
   },
   {
-    value: "AU",
-    label: "Australia/Melbourne",
+    "label": "America/Asuncion"
   },
   {
-    value: "AU",
-    label: "Australia/Sydney",
+    "label": "America/Bahia"
   },
   {
-    value: "AU",
-    label: "Australia/Broken_Hill",
+    "label": "America/Bahia_Banderas"
   },
   {
-    value: "AU",
-    label: "Australia/Brisbane",
+    "label": "America/Barbados"
   },
   {
-    value: "AU",
-    label: "Australia/Lindeman",
+    "label": "America/Belem"
   },
   {
-    value: "AU",
-    label: "Australia/Adelaide",
+    "label": "America/Belize"
   },
   {
-    value: "AU",
-    label: "Australia/Darwin",
+    "label": "America/Boa_Vista"
   },
   {
-    value: "AU",
-    label: "Australia/Perth",
+    "label": "America/Bogota"
   },
   {
-    value: "AU",
-    label: "Australia/Eucla",
+    "label": "America/Boise"
   },
   {
-    value: "AZ",
-    label: "Asia/Baku",
+    "label": "America/Cambridge_Bay"
   },
   {
-    value: "BB",
-    label: "America/Barbados",
+    "label": "America/Campo_Grande"
   },
   {
-    value: "BD",
-    label: "Asia/Dhaka",
+    "label": "America/Cancun"
   },
   {
-    value: "BE",
-    label: "Europe/Brussels",
+    "label": "America/Caracas"
   },
   {
-    value: "LU",
-    label: "Europe/Brussels",
+    "label": "America/Cayenne"
   },
   {
-    value: "NL",
-    label: "Europe/Brussels",
+    "label": "America/Chicago"
   },
   {
-    value: "BG",
-    label: "Europe/Sofia",
+    "label": "America/Chihuahua"
   },
   {
-    value: "BM",
-    label: "Atlantic/Bermuda",
+    "label": "America/Ciudad_Juarez"
   },
   {
-    value: "BO",
-    label: "America/La_Paz",
+    "label": "America/Costa_Rica"
   },
   {
-    value: "BR",
-    label: "America/Noronha",
+    "label": "America/Coyhaique"
   },
   {
-    value: "BR",
-    label: "America/Belem",
+    "label": "America/Cuiaba"
   },
   {
-    value: "BR",
-    label: "America/Fortaleza",
+    "label": "America/Danmarkshavn"
   },
   {
-    value: "BR",
-    label: "America/Recife",
+    "label": "America/Dawson"
   },
   {
-    value: "BR",
-    label: "America/Araguaina",
+    "label": "America/Dawson_Creek"
   },
   {
-    value: "BR",
-    label: "America/Maceio",
+    "label": "America/Denver"
   },
   {
-    value: "BR",
-    label: "America/Bahia",
+    "label": "America/Detroit"
   },
   {
-    value: "BR",
-    label: "America/Sao_Paulo",
+    "label": "America/Edmonton"
   },
   {
-    value: "BR",
-    label: "America/Campo_Grande",
+    "label": "America/Eirunepe"
   },
   {
-    value: "BR",
-    label: "America/Cuiaba",
+    "label": "America/El_Salvador"
   },
   {
-    value: "BR",
-    label: "America/Santarem",
+    "label": "America/Fort_Nelson"
   },
   {
-    value: "BR",
-    label: "America/Porto_Velho",
+    "label": "America/Fortaleza"
   },
   {
-    value: "BR",
-    label: "America/Boa_Vista",
+    "label": "America/Glace_Bay"
   },
   {
-    value: "BR",
-    label: "America/Manaus",
+    "label": "America/Goose_Bay"
   },
   {
-    value: "BR",
-    label: "America/Eirunepe",
+    "label": "America/Grand_Turk"
   },
   {
-    value: "BR",
-    label: "America/Rio_Branco",
+    "label": "America/Guatemala"
   },
   {
-    value: "BT",
-    label: "Asia/Thimphu",
+    "label": "America/Guayaquil"
   },
   {
-    value: "BY",
-    label: "Europe/Minsk",
+    "label": "America/Guyana"
   },
   {
-    value: "BZ",
-    label: "America/Belize",
+    "label": "America/Halifax"
   },
   {
-    value: "CA",
-    label: "America/St_Johns",
+    "label": "America/Havana"
   },
   {
-    value: "CA",
-    label: "America/Halifax",
+    "label": "America/Hermosillo"
   },
   {
-    value: "CA",
-    label: "America/Glace_Bay",
+    "label": "America/Indiana/Indianapolis"
   },
   {
-    value: "CA",
-    label: "America/Moncton",
+    "label": "America/Indiana/Knox"
   },
   {
-    value: "CA",
-    label: "America/Goose_Bay",
+    "label": "America/Indiana/Marengo"
   },
   {
-    value: "CA",
-    label: "America/Toronto",
+    "label": "America/Indiana/Petersburg"
   },
   {
-    value: "BS",
-    label: "America/Toronto",
+    "label": "America/Indiana/Tell_City"
   },
   {
-    value: "CA",
-    label: "America/Iqaluit",
+    "label": "America/Indiana/Vevay"
   },
   {
-    value: "CA",
-    label: "America/Winnipeg",
+    "label": "America/Indiana/Vincennes"
   },
   {
-    value: "CA",
-    label: "America/Resolute",
+    "label": "America/Indiana/Winamac"
   },
   {
-    value: "CA",
-    label: "America/Rankin_Inlet",
+    "label": "America/Inuvik"
   },
   {
-    value: "CA",
-    label: "America/Regina",
+    "label": "America/Iqaluit"
   },
   {
-    value: "CA",
-    label: "America/Swift_Current",
+    "label": "America/Jamaica"
   },
   {
-    value: "CA",
-    label: "America/Edmonton",
+    "label": "America/Juneau"
   },
   {
-    value: "CA",
-    label: "America/Cambridge_Bay",
+    "label": "America/Kentucky/Louisville"
   },
   {
-    value: "CA",
-    label: "America/Inuvik",
+    "label": "America/Kentucky/Monticello"
   },
   {
-    value: "CA",
-    label: "America/Dawson_Creek",
+    "label": "America/La_Paz"
   },
   {
-    value: "CA",
-    label: "America/Fort_Nelson",
+    "label": "America/Lima"
   },
   {
-    value: "CA",
-    label: "America/Whitehorse",
+    "label": "America/Los_Angeles"
   },
   {
-    value: "CA",
-    label: "America/Dawson",
+    "label": "America/Maceio"
   },
   {
-    value: "CA",
-    label: "America/Vancouver",
+    "label": "America/Managua"
   },
   {
-    value: "CH",
-    label: "Europe/Zurich",
+    "label": "America/Manaus"
   },
   {
-    value: "DE",
-    label: "Europe/Zurich",
+    "label": "America/Martinique"
   },
   {
-    value: "LI",
-    label: "Europe/Zurich",
+    "label": "America/Matamoros"
   },
   {
-    value: "CI",
-    label: "Africa/Abidjan",
+    "label": "America/Mazatlan"
   },
   {
-    value: "BF",
-    label: "Africa/Abidjan",
+    "label": "America/Menominee"
   },
   {
-    value: "GH",
-    label: "Africa/Abidjan",
+    "label": "America/Merida"
   },
   {
-    value: "GM",
-    label: "Africa/Abidjan",
+    "label": "America/Metlakatla"
   },
   {
-    value: "GN",
-    label: "Africa/Abidjan",
+    "label": "America/Mexico_City"
   },
   {
-    value: "IS",
-    label: "Africa/Abidjan",
+    "label": "America/Miquelon"
   },
   {
-    value: "ML",
-    label: "Africa/Abidjan",
+    "label": "America/Moncton"
   },
   {
-    value: "MR",
-    label: "Africa/Abidjan",
+    "label": "America/Monterrey"
   },
   {
-    value: "SH",
-    label: "Africa/Abidjan",
+    "label": "America/Montevideo"
   },
   {
-    value: "SL",
-    label: "Africa/Abidjan",
+    "label": "America/New_York"
   },
   {
-    value: "SN",
-    label: "Africa/Abidjan",
+    "label": "America/Nome"
   },
   {
-    value: "TG",
-    label: "Africa/Abidjan",
+    "label": "America/Noronha"
   },
   {
-    value: "CK",
-    label: "Pacific/Rarotonga",
+    "label": "America/North_Dakota/Beulah"
   },
   {
-    value: "CL",
-    label: "America/Santiago",
+    "label": "America/North_Dakota/Center"
   },
   {
-    value: "CL",
-    label: "America/Coyhaique",
+    "label": "America/North_Dakota/New_Salem"
   },
   {
-    value: "CL",
-    label: "America/Punta_Arenas",
+    "label": "America/Nuuk"
   },
   {
-    value: "CL",
-    label: "Pacific/Easter",
+    "label": "America/Ojinaga"
   },
   {
-    value: "CN",
-    label: "Asia/Shanghai",
+    "label": "America/Panama"
   },
   {
-    value: "CN",
-    label: "Asia/Urumqi",
+    "label": "America/Paramaribo"
   },
   {
-    value: "CO",
-    label: "America/Bogota",
+    "label": "America/Phoenix"
   },
   {
-    value: "CR",
-    label: "America/Costa_Rica",
+    "label": "America/Port-au-Prince"
   },
   {
-    value: "CU",
-    label: "America/Havana",
+    "label": "America/Porto_Velho"
   },
   {
-    value: "CV",
-    label: "Atlantic/Cape_Verde",
+    "label": "America/Puerto_Rico"
   },
   {
-    value: "CY",
-    label: "Asia/Nicosia",
+    "label": "America/Punta_Arenas"
   },
   {
-    value: "CY",
-    label: "Asia/Famagusta",
+    "label": "America/Rankin_Inlet"
   },
   {
-    value: "CZ",
-    label: "Europe/Prague",
+    "label": "America/Recife"
   },
   {
-    value: "SK",
-    label: "Europe/Prague",
+    "label": "America/Regina"
   },
   {
-    value: "DE",
-    label: "Europe/Berlin",
+    "label": "America/Resolute"
   },
   {
-    value: "DK",
-    label: "Europe/Berlin",
+    "label": "America/Rio_Branco"
   },
   {
-    value: "NO",
-    label: "Europe/Berlin",
+    "label": "America/Santarem"
   },
   {
-    value: "SE",
-    label: "Europe/Berlin",
+    "label": "America/Santiago"
   },
   {
-    value: "SJ",
-    label: "Europe/Berlin",
+    "label": "America/Santo_Domingo"
   },
   {
-    value: "DO",
-    label: "America/Santo_Domingo",
+    "label": "America/Sao_Paulo"
   },
   {
-    value: "DZ",
-    label: "Africa/Algiers",
+    "label": "America/Scoresbysund"
   },
   {
-    value: "EC",
-    label: "America/Guayaquil",
+    "label": "America/Sitka"
   },
   {
-    value: "EC",
-    label: "Pacific/Galapagos",
+    "label": "America/St_Johns"
   },
   {
-    value: "EE",
-    label: "Europe/Tallinn",
+    "label": "America/Swift_Current"
   },
   {
-    value: "EG",
-    label: "Africa/Cairo",
+    "label": "America/Tegucigalpa"
   },
   {
-    value: "EH",
-    label: "Africa/El_Aaiun",
+    "label": "America/Thule"
   },
   {
-    value: "ES",
-    label: "Europe/Madrid",
+    "label": "America/Tijuana"
   },
   {
-    value: "ES",
-    label: "Africa/Ceuta",
+    "label": "America/Toronto"
   },
   {
-    value: "ES",
-    label: "Atlantic/Canary",
+    "label": "America/Vancouver"
   },
   {
-    value: "FI",
-    label: "Europe/Helsinki",
+    "label": "America/Whitehorse"
   },
   {
-    value: "AX",
-    label: "Europe/Helsinki",
+    "label": "America/Winnipeg"
   },
   {
-    value: "FJ",
-    label: "Pacific/Fiji",
+    "label": "America/Yakutat"
   },
   {
-    value: "FK",
-    label: "Atlantic/Stanley",
+    "label": "Antarctica/Casey"
   },
   {
-    value: "FM",
-    label: "Pacific/Kosrae",
+    "label": "Antarctica/Davis"
   },
   {
-    value: "FO",
-    label: "Atlantic/Faroe",
+    "label": "Antarctica/Macquarie"
   },
   {
-    value: "FR",
-    label: "Europe/Paris",
+    "label": "Antarctica/Mawson"
   },
   {
-    value: "MC",
-    label: "Europe/Paris",
+    "label": "Antarctica/Palmer"
   },
   {
-    value: "GB",
-    label: "Europe/London",
+    "label": "Antarctica/Rothera"
   },
   {
-    value: "GG",
-    label: "Europe/London",
+    "label": "Antarctica/Troll"
   },
   {
-    value: "IM",
-    label: "Europe/London",
+    "label": "Antarctica/Vostok"
   },
   {
-    value: "JE",
-    label: "Europe/London",
+    "label": "Asia/Almaty"
   },
   {
-    value: "GE",
-    label: "Asia/Tbilisi",
+    "label": "Asia/Amman"
   },
   {
-    value: "GF",
-    label: "America/Cayenne",
+    "label": "Asia/Anadyr"
   },
   {
-    value: "GI",
-    label: "Europe/Gibraltar",
+    "label": "Asia/Aqtau"
   },
   {
-    value: "GL",
-    label: "America/Nuuk",
+    "label": "Asia/Aqtobe"
   },
   {
-    value: "GL",
-    label: "America/Danmarkshavn",
+    "label": "Asia/Ashgabat"
   },
   {
-    value: "GL",
-    label: "America/Scoresbysund",
+    "label": "Asia/Atyrau"
   },
   {
-    value: "GL",
-    label: "America/Thule",
+    "label": "Asia/Baghdad"
   },
   {
-    value: "GR",
-    label: "Europe/Athens",
+    "label": "Asia/Baku"
   },
   {
-    value: "GS",
-    label: "Atlantic/South_Georgia",
+    "label": "Asia/Bangkok"
   },
   {
-    value: "GT",
-    label: "America/Guatemala",
+    "label": "Asia/Barnaul"
   },
   {
-    value: "GU",
-    label: "Pacific/Guam",
+    "label": "Asia/Beirut"
   },
   {
-    value: "MP",
-    label: "Pacific/Guam",
+    "label": "Asia/Bishkek"
   },
   {
-    value: "GW",
-    label: "Africa/Bissau",
+    "label": "Asia/Chita"
   },
   {
-    value: "GY",
-    label: "America/Guyana",
+    "label": "Asia/Colombo"
   },
   {
-    value: "HK",
-    label: "Asia/Hong_Kong",
+    "label": "Asia/Damascus"
   },
   {
-    value: "HN",
-    label: "America/Tegucigalpa",
+    "label": "Asia/Dhaka"
   },
   {
-    value: "HT",
-    label: "America/Port-au-Prince",
+    "label": "Asia/Dili"
   },
   {
-    value: "HU",
-    label: "Europe/Budapest",
+    "label": "Asia/Dubai"
   },
   {
-    value: "ID",
-    label: "Asia/Jakarta",
+    "label": "Asia/Dushanbe"
   },
   {
-    value: "ID",
-    label: "Asia/Pontianak",
+    "label": "Asia/Famagusta"
   },
   {
-    value: "ID",
-    label: "Asia/Makassar",
+    "label": "Asia/Gaza"
   },
   {
-    value: "ID",
-    label: "Asia/Jayapura",
+    "label": "Asia/Hebron"
   },
   {
-    value: "IE",
-    label: "Europe/Dublin",
+    "label": "Asia/Ho_Chi_Minh"
   },
   {
-    value: "IL",
-    label: "Asia/Jerusalem",
+    "label": "Asia/Hong_Kong"
   },
   {
-    value: "IN",
-    label: "Asia/Kolkata",
+    "label": "Asia/Hovd"
   },
   {
-    value: "IO",
-    label: "Indian/Chagos",
+    "label": "Asia/Irkutsk"
   },
   {
-    value: "IQ",
-    label: "Asia/Baghdad",
+    "label": "Asia/Jakarta"
   },
   {
-    value: "IR",
-    label: "Asia/Tehran",
+    "label": "Asia/Jayapura"
   },
   {
-    value: "IT",
-    label: "Europe/Rome",
+    "label": "Asia/Jerusalem"
   },
   {
-    value: "SM",
-    label: "Europe/Rome",
+    "label": "Asia/Kabul"
   },
   {
-    value: "VA",
-    label: "Europe/Rome",
+    "label": "Asia/Kamchatka"
   },
   {
-    value: "JM",
-    label: "America/Jamaica",
+    "label": "Asia/Karachi"
   },
   {
-    value: "JO",
-    label: "Asia/Amman",
+    "label": "Asia/Kathmandu"
   },
   {
-    value: "JP",
-    label: "Asia/Tokyo",
+    "label": "Asia/Khandyga"
   },
   {
-    value: "AU",
-    label: "Asia/Tokyo",
+    "label": "Asia/Kolkata"
   },
   {
-    value: "KE",
-    label: "Africa/Nairobi",
+    "label": "Asia/Krasnoyarsk"
   },
   {
-    value: "DJ",
-    label: "Africa/Nairobi",
+    "label": "Asia/Kuching"
   },
   {
-    value: "ER",
-    label: "Africa/Nairobi",
+    "label": "Asia/Macau"
   },
   {
-    value: "ET",
-    label: "Africa/Nairobi",
+    "label": "Asia/Magadan"
   },
   {
-    value: "KM",
-    label: "Africa/Nairobi",
+    "label": "Asia/Makassar"
   },
   {
-    value: "MG",
-    label: "Africa/Nairobi",
+    "label": "Asia/Manila"
   },
   {
-    value: "SO",
-    label: "Africa/Nairobi",
+    "label": "Asia/Nicosia"
   },
   {
-    value: "TZ",
-    label: "Africa/Nairobi",
+    "label": "Asia/Novokuznetsk"
   },
   {
-    value: "UG",
-    label: "Africa/Nairobi",
+    "label": "Asia/Novosibirsk"
   },
   {
-    value: "YT",
-    label: "Africa/Nairobi",
+    "label": "Asia/Omsk"
   },
   {
-    value: "KG",
-    label: "Asia/Bishkek",
+    "label": "Asia/Oral"
   },
   {
-    value: "KI",
-    label: "Pacific/Tarawa",
+    "label": "Asia/Pontianak"
   },
   {
-    value: "MH",
-    label: "Pacific/Tarawa",
+    "label": "Asia/Pyongyang"
   },
   {
-    value: "TV",
-    label: "Pacific/Tarawa",
+    "label": "Asia/Qatar"
   },
   {
-    value: "UM",
-    label: "Pacific/Tarawa",
+    "label": "Asia/Qostanay"
   },
   {
-    value: "WF",
-    label: "Pacific/Tarawa",
+    "label": "Asia/Qyzylorda"
   },
   {
-    value: "KI",
-    label: "Pacific/Kanton",
+    "label": "Asia/Riyadh"
   },
   {
-    value: "KI",
-    label: "Pacific/Kiritimati",
+    "label": "Asia/Sakhalin"
   },
   {
-    value: "KP",
-    label: "Asia/Pyongyang",
+    "label": "Asia/Samarkand"
   },
   {
-    value: "KR",
-    label: "Asia/Seoul",
+    "label": "Asia/Seoul"
   },
   {
-    value: "KZ",
-    label: "Asia/Almaty",
+    "label": "Asia/Shanghai"
   },
   {
-    value: "KZ",
-    label: "Asia/Qyzylorda",
+    "label": "Asia/Singapore"
   },
   {
-    value: "KZ",
-    label: "Asia/Qostanay",
+    "label": "Asia/Srednekolymsk"
   },
   {
-    value: "KZ",
-    label: "Asia/Aqtobe",
+    "label": "Asia/Taipei"
   },
   {
-    value: "KZ",
-    label: "Asia/Aqtau",
+    "label": "Asia/Tashkent"
   },
   {
-    value: "KZ",
-    label: "Asia/Atyrau",
+    "label": "Asia/Tbilisi"
   },
   {
-    value: "KZ",
-    label: "Asia/Oral",
+    "label": "Asia/Tehran"
   },
   {
-    value: "LB",
-    label: "Asia/Beirut",
+    "label": "Asia/Thimphu"
   },
   {
-    value: "LK",
-    label: "Asia/Colombo",
+    "label": "Asia/Tokyo"
   },
   {
-    value: "LR",
-    label: "Africa/Monrovia",
+    "label": "Asia/Tomsk"
   },
   {
-    value: "LT",
-    label: "Europe/Vilnius",
+    "label": "Asia/Ulaanbaatar"
   },
   {
-    value: "LV",
-    label: "Europe/Riga",
+    "label": "Asia/Urumqi"
   },
   {
-    value: "LY",
-    label: "Africa/Tripoli",
+    "label": "Asia/Ust-Nera"
   },
   {
-    value: "MA",
-    label: "Africa/Casablanca",
+    "label": "Asia/Vladivostok"
   },
   {
-    value: "MD",
-    label: "Europe/Chisinau",
+    "label": "Asia/Yakutsk"
   },
   {
-    value: "MH",
-    label: "Pacific/Kwajalein",
+    "label": "Asia/Yangon"
   },
   {
-    value: "MM",
-    label: "Asia/Yangon",
+    "label": "Asia/Yekaterinburg"
   },
   {
-    value: "CC",
-    label: "Asia/Yangon",
+    "label": "Asia/Yerevan"
   },
   {
-    value: "MN",
-    label: "Asia/Ulaanbaatar",
+    "label": "Atlantic/Azores"
   },
   {
-    value: "MN",
-    label: "Asia/Hovd",
+    "label": "Atlantic/Bermuda"
   },
   {
-    value: "MO",
-    label: "Asia/Macau",
+    "label": "Atlantic/Canary"
   },
   {
-    value: "MQ",
-    label: "America/Martinique",
+    "label": "Atlantic/Cape_Verde"
   },
   {
-    value: "MT",
-    label: "Europe/Malta",
+    "label": "Atlantic/Faroe"
   },
   {
-    value: "MU",
-    label: "Indian/Mauritius",
+    "label": "Atlantic/Madeira"
   },
   {
-    value: "MV",
-    label: "Indian/Maldives",
+    "label": "Atlantic/South_Georgia"
   },
   {
-    value: "TF",
-    label: "Indian/Maldives",
+    "label": "Atlantic/Stanley"
   },
   {
-    value: "MX",
-    label: "America/Mexico_City",
+    "label": "Australia/Adelaide"
   },
   {
-    value: "MX",
-    label: "America/Cancun",
+    "label": "Australia/Brisbane"
   },
   {
-    value: "MX",
-    label: "America/Merida",
+    "label": "Australia/Broken_Hill"
   },
   {
-    value: "MX",
-    label: "America/Monterrey",
+    "label": "Australia/Darwin"
   },
   {
-    value: "MX",
-    label: "America/Matamoros",
+    "label": "Australia/Eucla"
   },
   {
-    value: "MX",
-    label: "America/Chihuahua",
+    "label": "Australia/Hobart"
   },
   {
-    value: "MX",
-    label: "America/Ciudad_Juarez",
+    "label": "Australia/Lindeman"
   },
   {
-    value: "MX",
-    label: "America/Ojinaga",
+    "label": "Australia/Lord_Howe"
   },
   {
-    value: "MX",
-    label: "America/Mazatlan",
+    "label": "Australia/Melbourne"
   },
   {
-    value: "MX",
-    label: "America/Bahia_Banderas",
+    "label": "Australia/Perth"
   },
   {
-    value: "MX",
-    label: "America/Hermosillo",
+    "label": "Australia/Sydney"
   },
   {
-    value: "MX",
-    label: "America/Tijuana",
+    "label": "Europe/Andorra"
   },
   {
-    value: "MY",
-    label: "Asia/Kuching",
+    "label": "Europe/Astrakhan"
   },
   {
-    value: "BN",
-    label: "Asia/Kuching",
+    "label": "Europe/Athens"
   },
   {
-    value: "MZ",
-    label: "Africa/Maputo",
+    "label": "Europe/Belgrade"
   },
   {
-    value: "BI",
-    label: "Africa/Maputo",
+    "label": "Europe/Berlin"
   },
   {
-    value: "BW",
-    label: "Africa/Maputo",
+    "label": "Europe/Brussels"
   },
   {
-    value: "CD",
-    label: "Africa/Maputo",
+    "label": "Europe/Bucharest"
   },
   {
-    value: "MW",
-    label: "Africa/Maputo",
+    "label": "Europe/Budapest"
   },
   {
-    value: "RW",
-    label: "Africa/Maputo",
+    "label": "Europe/Chisinau"
   },
   {
-    value: "ZM",
-    label: "Africa/Maputo",
+    "label": "Europe/Dublin"
   },
   {
-    value: "ZW",
-    label: "Africa/Maputo",
+    "label": "Europe/Gibraltar"
   },
   {
-    value: "NA",
-    label: "Africa/Windhoek",
+    "label": "Europe/Helsinki"
   },
   {
-    value: "NC",
-    label: "Pacific/Noumea",
+    "label": "Europe/Istanbul"
   },
   {
-    value: "NF",
-    label: "Pacific/Norfolk",
+    "label": "Europe/Kaliningrad"
   },
   {
-    value: "NG",
-    label: "Africa/Lagos",
+    "label": "Europe/Kirov"
   },
   {
-    value: "AO",
-    label: "Africa/Lagos",
+    "label": "Europe/Kyiv"
   },
   {
-    value: "BJ",
-    label: "Africa/Lagos",
+    "label": "Europe/Lisbon"
   },
   {
-    value: "CD",
-    label: "Africa/Lagos",
+    "label": "Europe/London"
   },
   {
-    value: "CF",
-    label: "Africa/Lagos",
+    "label": "Europe/Madrid"
   },
   {
-    value: "CG",
-    label: "Africa/Lagos",
+    "label": "Europe/Malta"
   },
   {
-    value: "CM",
-    label: "Africa/Lagos",
+    "label": "Europe/Minsk"
   },
   {
-    value: "GA",
-    label: "Africa/Lagos",
+    "label": "Europe/Moscow"
   },
   {
-    value: "GQ",
-    label: "Africa/Lagos",
+    "label": "Europe/Paris"
   },
   {
-    value: "NE",
-    label: "Africa/Lagos",
+    "label": "Europe/Prague"
   },
   {
-    value: "NI",
-    label: "America/Managua",
+    "label": "Europe/Riga"
   },
   {
-    value: "NP",
-    label: "Asia/Kathmandu",
+    "label": "Europe/Rome"
   },
   {
-    value: "NR",
-    label: "Pacific/Nauru",
+    "label": "Europe/Samara"
   },
   {
-    value: "NU",
-    label: "Pacific/Niue",
+    "label": "Europe/Saratov"
   },
   {
-    value: "NZ",
-    label: "Pacific/Auckland",
+    "label": "Europe/Simferopol"
   },
   {
-    value: "AQ",
-    label: "Pacific/Auckland",
+    "label": "Europe/Sofia"
   },
   {
-    value: "NZ",
-    label: "Pacific/Chatham",
+    "label": "Europe/Tallinn"
   },
   {
-    value: "PA",
-    label: "America/Panama",
+    "label": "Europe/Tirane"
   },
   {
-    value: "CA",
-    label: "America/Panama",
+    "label": "Europe/Ulyanovsk"
   },
   {
-    value: "KY",
-    label: "America/Panama",
+    "label": "Europe/Vienna"
   },
   {
-    value: "PE",
-    label: "America/Lima",
+    "label": "Europe/Vilnius"
   },
   {
-    value: "PF",
-    label: "Pacific/Tahiti",
+    "label": "Europe/Volgograd"
   },
   {
-    value: "PF",
-    label: "Pacific/Marquesas",
+    "label": "Europe/Warsaw"
   },
   {
-    value: "PF",
-    label: "Pacific/Gambier",
+    "label": "Europe/Zurich"
   },
   {
-    value: "PG",
-    label: "Pacific/Port_Moresby",
+    "label": "Indian/Chagos"
   },
   {
-    value: "AQ",
-    label: "Pacific/Port_Moresby",
+    "label": "Indian/Maldives"
   },
   {
-    value: "FM",
-    label: "Pacific/Port_Moresby",
+    "label": "Indian/Mauritius"
   },
   {
-    value: "PG",
-    label: "Pacific/Bougainville",
+    "label": "Pacific/Apia"
   },
   {
-    value: "PH",
-    label: "Asia/Manila",
+    "label": "Pacific/Auckland"
   },
   {
-    value: "PK",
-    label: "Asia/Karachi",
+    "label": "Pacific/Bougainville"
   },
   {
-    value: "PL",
-    label: "Europe/Warsaw",
+    "label": "Pacific/Chatham"
   },
   {
-    value: "PM",
-    label: "America/Miquelon",
+    "label": "Pacific/Easter"
   },
   {
-    value: "PN",
-    label: "Pacific/Pitcairn",
+    "label": "Pacific/Efate"
   },
   {
-    value: "PR",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Fakaofo"
   },
   {
-    value: "AG",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Fiji"
   },
   {
-    value: "CA",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Galapagos"
   },
   {
-    value: "AI",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Gambier"
   },
   {
-    value: "AW",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Guadalcanal"
   },
   {
-    value: "BL",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Guam"
   },
   {
-    value: "BQ",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Honolulu"
   },
   {
-    value: "CW",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Kanton"
   },
   {
-    value: "DM",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Kiritimati"
   },
   {
-    value: "GD",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Kosrae"
   },
   {
-    value: "GP",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Kwajalein"
   },
   {
-    value: "KN",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Marquesas"
   },
   {
-    value: "LC",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Nauru"
   },
   {
-    value: "MF",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Niue"
   },
   {
-    value: "MS",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Norfolk"
   },
   {
-    value: "SX",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Noumea"
   },
   {
-    value: "TT",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Pago_Pago"
   },
   {
-    value: "VC",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Palau"
   },
   {
-    value: "VG",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Pitcairn"
   },
   {
-    value: "VI",
-    label: "America/Puerto_Rico",
+    "label": "Pacific/Port_Moresby"
   },
   {
-    value: "PS",
-    label: "Asia/Gaza",
+    "label": "Pacific/Rarotonga"
   },
   {
-    value: "PS",
-    label: "Asia/Hebron",
+    "label": "Pacific/Tahiti"
   },
   {
-    value: "PT",
-    label: "Europe/Lisbon",
+    "label": "Pacific/Tarawa"
   },
   {
-    value: "PT",
-    label: "Atlantic/Madeira",
-  },
-  {
-    value: "PT",
-    label: "Atlantic/Azores",
-  },
-  {
-    value: "PW",
-    label: "Pacific/Palau",
-  },
-  {
-    value: "PY",
-    label: "America/Asuncion",
-  },
-  {
-    value: "QA",
-    label: "Asia/Qatar",
-  },
-  {
-    value: "BH",
-    label: "Asia/Qatar",
-  },
-  {
-    value: "RO",
-    label: "Europe/Bucharest",
-  },
-  {
-    value: "RS",
-    label: "Europe/Belgrade",
-  },
-  {
-    value: "BA",
-    label: "Europe/Belgrade",
-  },
-  {
-    value: "HR",
-    label: "Europe/Belgrade",
-  },
-  {
-    value: "ME",
-    label: "Europe/Belgrade",
-  },
-  {
-    value: "MK",
-    label: "Europe/Belgrade",
-  },
-  {
-    value: "SI",
-    label: "Europe/Belgrade",
-  },
-  {
-    value: "RU",
-    label: "Europe/Kaliningrad",
-  },
-  {
-    value: "RU",
-    label: "Europe/Moscow",
-  },
-  {
-    value: "RU",
-    label: "Europe/Simferopol",
-  },
-  {
-    value: "UA",
-    label: "Europe/Simferopol",
-  },
-  {
-    value: "RU",
-    label: "Europe/Kirov",
-  },
-  {
-    value: "RU",
-    label: "Europe/Volgograd",
-  },
-  {
-    value: "RU",
-    label: "Europe/Astrakhan",
-  },
-  {
-    value: "RU",
-    label: "Europe/Saratov",
-  },
-  {
-    value: "RU",
-    label: "Europe/Ulyanovsk",
-  },
-  {
-    value: "RU",
-    label: "Europe/Samara",
-  },
-  {
-    value: "RU",
-    label: "Asia/Yekaterinburg",
-  },
-  {
-    value: "RU",
-    label: "Asia/Omsk",
-  },
-  {
-    value: "RU",
-    label: "Asia/Novosibirsk",
-  },
-  {
-    value: "RU",
-    label: "Asia/Barnaul",
-  },
-  {
-    value: "RU",
-    label: "Asia/Tomsk",
-  },
-  {
-    value: "RU",
-    label: "Asia/Novokuznetsk",
-  },
-  {
-    value: "RU",
-    label: "Asia/Krasnoyarsk",
-  },
-  {
-    value: "RU",
-    label: "Asia/Irkutsk",
-  },
-  {
-    value: "RU",
-    label: "Asia/Chita",
-  },
-  {
-    value: "RU",
-    label: "Asia/Yakutsk",
-  },
-  {
-    value: "RU",
-    label: "Asia/Khandyga",
-  },
-  {
-    value: "RU",
-    label: "Asia/Vladivostok",
-  },
-  {
-    value: "RU",
-    label: "Asia/Ust-Nera",
-  },
-  {
-    value: "RU",
-    label: "Asia/Magadan",
-  },
-  {
-    value: "RU",
-    label: "Asia/Sakhalin",
-  },
-  {
-    value: "RU",
-    label: "Asia/Srednekolymsk",
-  },
-  {
-    value: "RU",
-    label: "Asia/Kamchatka",
-  },
-  {
-    value: "RU",
-    label: "Asia/Anadyr",
-  },
-  {
-    value: "SA",
-    label: "Asia/Riyadh",
-  },
-  {
-    value: "AQ",
-    label: "Asia/Riyadh",
-  },
-  {
-    value: "KW",
-    label: "Asia/Riyadh",
-  },
-  {
-    value: "YE",
-    label: "Asia/Riyadh",
-  },
-  {
-    value: "SB",
-    label: "Pacific/Guadalcanal",
-  },
-  {
-    value: "FM",
-    label: "Pacific/Guadalcanal",
-  },
-  {
-    value: "SD",
-    label: "Africa/Khartoum",
-  },
-  {
-    value: "SG",
-    label: "Asia/Singapore",
-  },
-  {
-    value: "AQ",
-    label: "Asia/Singapore",
-  },
-  {
-    value: "MY",
-    label: "Asia/Singapore",
-  },
-  {
-    value: "SR",
-    label: "America/Paramaribo",
-  },
-  {
-    value: "SS",
-    label: "Africa/Juba",
-  },
-  {
-    value: "ST",
-    label: "Africa/Sao_Tome",
-  },
-  {
-    value: "SV",
-    label: "America/El_Salvador",
-  },
-  {
-    value: "SY",
-    label: "Asia/Damascus",
-  },
-  {
-    value: "TC",
-    label: "America/Grand_Turk",
-  },
-  {
-    value: "TD",
-    label: "Africa/Ndjamena",
-  },
-  {
-    value: "TH",
-    label: "Asia/Bangkok",
-  },
-  {
-    value: "CX",
-    label: "Asia/Bangkok",
-  },
-  {
-    value: "KH",
-    label: "Asia/Bangkok",
-  },
-  {
-    value: "LA",
-    label: "Asia/Bangkok",
-  },
-  {
-    value: "VN",
-    label: "Asia/Bangkok",
-  },
-  {
-    value: "TJ",
-    label: "Asia/Dushanbe",
-  },
-  {
-    value: "TK",
-    label: "Pacific/Fakaofo",
-  },
-  {
-    value: "TL",
-    label: "Asia/Dili",
-  },
-  {
-    value: "TM",
-    label: "Asia/Ashgabat",
-  },
-  {
-    value: "TN",
-    label: "Africa/Tunis",
-  },
-  {
-    value: "TO",
-    label: "Pacific/Tongatapu",
-  },
-  {
-    value: "TR",
-    label: "Europe/Istanbul",
-  },
-  {
-    value: "TW",
-    label: "Asia/Taipei",
-  },
-  {
-    value: "UA",
-    label: "Europe/Kyiv",
-  },
-  {
-    value: "US",
-    label: "America/New_York",
-  },
-  {
-    value: "US",
-    label: "America/Detroit",
-  },
-  {
-    value: "US",
-    label: "America/Kentucky/Louisville",
-  },
-  {
-    value: "US",
-    label: "America/Kentucky/Monticello",
-  },
-  {
-    value: "US",
-    label: "America/Indiana/Indianapolis",
-  },
-  {
-    value: "US",
-    label: "America/Indiana/Vincennes",
-  },
-  {
-    value: "US",
-    label: "America/Indiana/Winamac",
-  },
-  {
-    value: "US",
-    label: "America/Indiana/Marengo",
-  },
-  {
-    value: "US",
-    label: "America/Indiana/Petersburg",
-  },
-  {
-    value: "US",
-    label: "America/Indiana/Vevay",
-  },
-  {
-    value: "US",
-    label: "America/Chicago",
-  },
-  {
-    value: "US",
-    label: "America/Indiana/Tell_City",
-  },
-  {
-    value: "US",
-    label: "America/Indiana/Knox",
-  },
-  {
-    value: "US",
-    label: "America/Menominee",
-  },
-  {
-    value: "US",
-    label: "America/North_Dakota/Center",
-  },
-  {
-    value: "US",
-    label: "America/North_Dakota/New_Salem",
-  },
-  {
-    value: "US",
-    label: "America/North_Dakota/Beulah",
-  },
-  {
-    value: "US",
-    label: "America/Denver",
-  },
-  {
-    value: "US",
-    label: "America/Boise",
-  },
-  {
-    value: "US",
-    label: "America/Phoenix",
-  },
-  {
-    value: "CA",
-    label: "America/Phoenix",
-  },
-  {
-    value: "US",
-    label: "America/Los_Angeles",
-  },
-  {
-    value: "US",
-    label: "America/Anchorage",
-  },
-  {
-    value: "US",
-    label: "America/Juneau",
-  },
-  {
-    value: "US",
-    label: "America/Sitka",
-  },
-  {
-    value: "US",
-    label: "America/Metlakatla",
-  },
-  {
-    value: "US",
-    label: "America/Yakutat",
-  },
-  {
-    value: "US",
-    label: "America/Nome",
-  },
-  {
-    value: "US",
-    label: "America/Adak",
-  },
-  {
-    value: "US",
-    label: "Pacific/Honolulu",
-  },
-  {
-    value: "UY",
-    label: "America/Montevideo",
-  },
-  {
-    value: "UZ",
-    label: "Asia/Samarkand",
-  },
-  {
-    value: "UZ",
-    label: "Asia/Tashkent",
-  },
-  {
-    value: "VE",
-    label: "America/Caracas",
-  },
-  {
-    value: "VN",
-    label: "Asia/Ho_Chi_Minh",
-  },
-  {
-    value: "VU",
-    label: "Pacific/Efate",
-  },
-  {
-    value: "WS",
-    label: "Pacific/Apia",
-  },
-  {
-    value: "ZA",
-    label: "Africa/Johannesburg",
-  },
-  {
-    value: "LS",
-    label: "Africa/Johannesburg",
-  },
-  {
-    value: "SZ",
-    label: "Africa/Johannesburg",
-  },
-].sort((a, b) => {
-  if (a.label < b.label) return -1;
-  if (a.label > b.label) return 1;
-  return 0;
-});
+    "label": "Pacific/Tongatapu"
+  }
+].sort((a, b) => a.label.localeCompare(b.label));
 
 // Programming languages
 export const languages = [

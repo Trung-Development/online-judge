@@ -294,7 +294,7 @@ export default function SignupPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {timezones.map((tz, i) => (
-                        <SelectItem key={i} value={tz.value}>
+                        <SelectItem key={i} value={tz.label}>
                           {tz.label}
                         </SelectItem>
                       ))}
