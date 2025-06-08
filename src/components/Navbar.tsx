@@ -116,14 +116,14 @@ export function Navbar() {
         {/* Auth Buttons - Now on the right */}
         <div className="flex items-center gap-2 px-6">
           <Link 
-            href="/login" 
+            href="/auth/login" 
             className="px-4 py-2 text-zinc-100 hover:text-zinc-300 transition-colors text-sm font-medium"
           >
             Login
           </Link>
           <span className="text-zinc-500 text-xs font-light">or</span>
           <Link 
-            href="/signup" 
+            href="/auth/signup" 
             className="px-4 py-2 bg-zinc-100 text-zinc-900 rounded-md hover:bg-zinc-200 transition-colors text-sm font-medium"
           >
             Sign Up
