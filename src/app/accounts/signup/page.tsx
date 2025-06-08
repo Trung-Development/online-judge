@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { timezones, languages } from "@/constants";
+import { languages } from "@/constants";
 import * as React from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
@@ -48,7 +48,6 @@ export default function SignupPage() {
     email: "",
     password1: "",
     password2: "",
-    timezone: "UTC",
     defaultLanguage: "c++17",
     dateOfBirth: undefined as Date | undefined,
   });
@@ -118,6 +117,7 @@ export default function SignupPage() {
 
       const submitData = {
         ...formData,
+        // dateOfBirth and hcaptchaToken remain
         dateOfBirth: formData.dateOfBirth
           ? formatDateMMDDYYYY(formData.dateOfBirth)
           : undefined,
@@ -280,26 +280,6 @@ export default function SignupPage() {
                       />
                     </PopoverContent>
                   </Popover>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="timezone-select">Timezone</Label>
-                  <Select
-                    value={formData.timezone}
-                    onValueChange={(value) =>
-                      handleSelectChange("timezone", value)
-                    }
-                  >
-                    <SelectTrigger id="timezone-select" className="w-full">
-                      <SelectValue placeholder="Select your timezone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timezones.map((tz, i) => (
-                        <SelectItem key={i} value={tz.label}>
-                          {tz.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="defaultLanguage-select">
