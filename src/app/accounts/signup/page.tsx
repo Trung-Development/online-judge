@@ -48,7 +48,7 @@ export default function SignupPage() {
     email: "",
     password1: "",
     password2: "",
-    defaultLanguage: "c++17",
+    defaultLanguage: "CPP17", // Default to C++17
     dateOfBirth: undefined as Date | undefined,
   });
   const [isLoading, setIsLoading] = useState(false);
