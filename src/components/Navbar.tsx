@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { GithubIcon, ActivityIcon } from "lucide-react"
+import { ActivityIcon } from "lucide-react"
 
 import {
   NavigationMenu,
@@ -85,12 +85,18 @@ export function Navbar() {
                     <li>
                       <NavigationMenuLink asChild>
                         <a 
-                          href="https://github.com" 
+                          href="https://github.com/Trung-Development/online-judge" 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="flex items-center gap-2 p-2 rounded hover:bg-gray-100 transition-colors"
                         >
-                          <GithubIcon size={16} className="text-black" />
+                          <img
+                            src="/assets/icons/github.svg"
+                            alt="GitHub"
+                            width={16}
+                            height={16}
+                            className="text-black"
+                          />
                           <span className="text-black">GitHub</span>
                         </a>
                       </NavigationMenuLink>
@@ -116,14 +122,14 @@ export function Navbar() {
         {/* Auth Buttons - Now on the right */}
         <div className="flex items-center gap-2 px-6">
           <Link 
-            href="/auth/login" 
+            href="/accounts/login" 
             className="px-4 py-2 text-zinc-100 hover:text-zinc-300 transition-colors text-sm font-medium"
           >
             Login
           </Link>
           <span className="text-zinc-500 text-xs font-light">or</span>
           <Link 
-            href="/auth/signup" 
+            href="/accounts/signup" 
             className="px-4 py-2 bg-zinc-100 text-zinc-900 rounded-md hover:bg-zinc-200 transition-colors text-sm font-medium"
           >
             Sign Up
