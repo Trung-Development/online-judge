@@ -22,7 +22,7 @@ export function Navbar() {
           {/* Logo */}
           <div className="px-6 py-4">
             <Link href="/" className="text-zinc-100 text-xl font-bold hover:text-zinc-300 transition-colors">
-              LOGO
+              YACPS
             </Link>
           </div>
 
@@ -119,7 +119,7 @@ export function Navbar() {
           </NavigationMenu>
         </div>
 
-        {/* Auth Buttons - Now on the right */}
+        {/* Auth Buttons */}
         <div className="flex items-center gap-2 px-6">
           <Link 
             href="/accounts/login" 
