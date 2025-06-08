@@ -107,7 +107,7 @@ export function Navbar() {
                 <NavigationMenuTrigger className="bg-zinc-900 text-zinc-100 hover:bg-zinc-800 hover:text-zinc-100 data-[state=open]:bg-white data-[state=open]:text-black">
                   About
                 </NavigationMenuTrigger>
-                <NavigationMenuContent className="bg-white text-black border border-zinc-200">
+                <NavigationMenuContent className="bg-white text-black border border-zinc-200 shadow-xl z-50">
                   <ul className="grid gap-2 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr] p-2">
                     <li className="row-span-3">
                       <NavigationMenuLink asChild>
