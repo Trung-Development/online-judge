@@ -25,6 +25,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { timezones, languages } from "@/constants";
+import * as React from "react";
+import { ChevronDownIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function SignupPage() {
   const { theme } = useTheme();
@@ -36,9 +44,11 @@ export default function SignupPage() {
     password2: "",
     timezone: "UTC",
     defaultLanguage: "c++17",
+    dateOfBirth: undefined as Date | undefined,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [dobOpen, setDobOpen] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -51,6 +61,13 @@ export default function SignupPage() {
     setFormData({
       ...formData,
       [field]: value,
+    });
+  };
+
+  const handleDateChange = (date: Date | undefined) => {
+    setFormData({
+      ...formData,
+      dateOfBirth: date,
     });
   };
 
@@ -76,12 +93,27 @@ export default function SignupPage() {
         throw new Error("Passwords do not match");
       }
 
+      // Prepare data for API (convert dateOfBirth to mm/dd/yyyy if present)
+      const formatDateMMDDYYYY = (date: Date) => {
+        const mm = String(date.getMonth() + 1).padStart(2, "0");
+        const dd = String(date.getDate()).padStart(2, "0");
+        const yyyy = String(date.getFullYear());
+        return `${mm}/${dd}/${yyyy}`;
+      };
+
+      const submitData = {
+        ...formData,
+        dateOfBirth: formData.dateOfBirth
+          ? formatDateMMDDYYYY(formData.dateOfBirth)
+          : undefined,
+      };
+
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
 
       if (!response.ok) {
@@ -185,6 +217,41 @@ export default function SignupPage() {
                     onChange={handleChange}
                   />
                 </div>
+                {/* Date of birth field */}
+                <div className="flex flex-col gap-3">
+                  <Label htmlFor="dateOfBirth" className="px-1">
+                    Date of birth
+                  </Label>
+                  <Popover open={dobOpen} onOpenChange={setDobOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-48 justify-between font-normal"
+                        type="button"
+                        onClick={() => setDobOpen(true)}
+                      >
+                        {formData.dateOfBirth
+                          ? formData.dateOfBirth.toLocaleDateString()
+                          : "Select date"}
+                        <ChevronDownIcon />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-auto overflow-hidden p-0"
+                      align="start"
+                    >
+                      <Calendar
+                        mode="single"
+                        selected={formData.dateOfBirth}
+                        captionLayout="dropdown"
+                        onSelect={(date) => {
+                          handleDateChange(date); // store the picked date
+                          setDobOpen(false); // then close the popover
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
                 <div className="grid gap-2">
                   <Label htmlFor="timezone-select">Timezone</Label>
                   <Select
@@ -198,10 +265,7 @@ export default function SignupPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {timezones.map((tz, i) => (
-                        <SelectItem
-                          key={i}
-                          value={`${tz.value}__${i}`}
-                        >
+                        <SelectItem key={i} value={`${tz.value}__${i}`}>
                           {tz.label}
                         </SelectItem>
                       ))}
