@@ -9,7 +9,6 @@ import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 import Link from "next/link";
-import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faClone, faFilePdf } from "@fortawesome/free-solid-svg-icons";
