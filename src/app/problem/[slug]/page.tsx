@@ -58,7 +58,6 @@ export default function ProblemPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
       <main className="max-w-3xl mx-auto py-8 px-4">
         {/* Title and PDF link */}
         <div className="flex items-center justify-between mb-4">
