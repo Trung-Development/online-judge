@@ -60,8 +60,6 @@ export default function SignupPage() {
   const [comboboxOpen, setComboboxOpen] = useState(false);
   const hcaptchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || "";
 
-  console.log("hCaptcha key:", hcaptchaSiteKey);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -82,15 +80,16 @@ export default function SignupPage() {
     setError("");
 
     try {
-      const apiBase = process.env.API_ENDPOINT || "http://unreachable.local";
-      const apiUrl = new URL("/auth/signup", apiBase).toString();
+      const apiBase =
+        process.env.NEXT_PUBLIC_API_ENDPOINT || "http://unreachable.local";
+      const apiUrl = new URL("/client/users", apiBase).toString();
 
       if (
         !formData.username ||
         !formData.email ||
         !formData.password1 ||
         !formData.password2 ||
-        !formData.fullName // Require fullName
+        !formData.fullName
       ) {
         throw new Error("All fields are required");
       }
@@ -112,30 +111,37 @@ export default function SignupPage() {
       };
 
       const submitData = {
-        ...formData,
-        // dateOfBirth and hcaptchaToken remain
+        fullname: formData.fullName,
+        username: formData.username,
+        email: formData.email,
+        password: formData.password1,
+        defaultLanguage: formData.defaultLanguage,
         dateOfBirth: formData.dateOfBirth
           ? formatDateMMDDYYYY(formData.dateOfBirth)
           : undefined,
         hcaptchaToken,
       };
 
+      // Convert to URLSearchParams for form-urlencoded
+      const urlEncodedData = new URLSearchParams();
+      Object.entries(submitData).forEach(([key, value]) => {
+        if (value !== undefined) {
+          urlEncodedData.append(key, value.toString());
+        }
+      });
+
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: JSON.stringify(submitData),
+        body: urlEncodedData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Signup failed");
-      }
+      if (response.status !== 201)
+        throw new Error("An error occurred during signup");
 
-      const data = await response.json();
-      console.log("Signup successful:", data);
-
+      // Signup successful (201), redirect to login page
       router.push("/accounts/login");
     } catch (err) {
       // Check for network/server unreachable error
