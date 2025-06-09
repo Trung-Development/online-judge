@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import "@dotenvx/dotenvx/config";
 
 const nextConfig: NextConfig = {
   async rewrites() {
@@ -11,6 +12,7 @@ const nextConfig: NextConfig = {
   },
   env: {
     NEXT_PUBLIC_HCAPTCHA_SITE_KEY: process.env.HCAPTCHA_SITE_KEY,
+    NEXT_PUBLIC_API_ENDPOINT: process.env.API_ENDPOINT,
   },
 };
 
