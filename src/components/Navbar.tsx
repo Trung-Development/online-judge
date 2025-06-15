@@ -83,6 +83,16 @@ export function Navbar() {
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
+              {/* Problems */}
+              <NavigationMenuItem>
+                <NavigationMenuLink
+                  asChild
+                  className={`${navigationMenuTriggerStyle()} bg-zinc-900 text-zinc-100 hover:bg-zinc-800 hover:text-zinc-100`}
+                >
+                  <Link href="/problems">Problems</Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
+
               {/* Submissions */}
               <NavigationMenuItem>
                 <NavigationMenuLink
