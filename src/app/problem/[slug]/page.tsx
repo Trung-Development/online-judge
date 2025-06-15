@@ -90,10 +90,10 @@ export default function ProblemPage() {
           remarkPlugins={[remarkGfm, remarkMath, remarkHeadingSeparator]}
           rehypePlugins={[rehypeKatex, rehypeRaw]}
           components={{
-            h1: (props: any) => <h1 className="text-2xl font-bold mt-6 mb-4" {...props} />,
-            h2: (props: any) => <h2 className="text-xl font-semibold mt-5 mb-3" {...props} />,
-            h3: (props: any) => <h3 className="text-lg font-semibold mt-4 mb-2" {...props} />,
-            code: (props: any) => {
+            h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h1 className="text-2xl font-bold mt-6 mb-4" {...props} />,
+            h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h2 className="text-xl font-semibold mt-5 mb-3" {...props} />,
+            h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h3 className="text-lg font-semibold mt-4 mb-2" {...props} />,
+            code: (props: React.HTMLAttributes<HTMLElement> & { inline?: boolean }) => {
               const { inline, children, ...rest } = props;
               // inline is now recognized as any, so no TS error
               if (!inline) {

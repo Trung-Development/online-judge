@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import { ActivityIcon } from "lucide-react"
-import Image from "next/image"
+import * as React from "react";
+import Link from "next/link";
+import { ActivityIcon } from "lucide-react";
+import Image from "next/image";
 
 import {
   NavigationMenu,
@@ -13,7 +13,9 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu"
+} from "@/components/ui/navigation-menu";
+
+import { ModeToggle } from "./ThemeToggle";
 
 function ListItem({
   title,
@@ -21,11 +23,17 @@ function ListItem({
   href,
   icon,
   ...props
-}: React.ComponentPropsWithoutRef<"li"> & { href: string; icon?: React.ReactNode }) {
+}: React.ComponentPropsWithoutRef<"li"> & {
+  href: string;
+  icon?: React.ReactNode;
+}) {
   return (
     <li {...props}>
       <NavigationMenuLink asChild>
-        <Link href={href} className="flex items-start gap-2 rounded-md p-3 hover:bg-gray-100 transition-colors">
+        <Link
+          href={href}
+          className="flex items-start gap-2 rounded-md p-3 hover:bg-gray-100 transition-colors"
+        >
           {icon && <span className="mt-1">{icon}</span>}
           <div>
             <div className="text-sm font-medium leading-none">{title}</div>
@@ -38,7 +46,7 @@ function ListItem({
         </Link>
       </NavigationMenuLink>
     </li>
-  )
+  );
 }
 
 export function Navbar() {
@@ -48,7 +56,10 @@ export function Navbar() {
         <div className="flex items-center">
           {/* Logo */}
           <div className="px-6 py-4">
-            <Link href="/" className="text-zinc-100 text-xl font-bold hover:text-zinc-300 transition-colors">
+            <Link
+              href="/"
+              className="text-zinc-100 text-xl font-bold hover:text-zinc-300 transition-colors"
+            >
               YACPS
             </Link>
           </div>
@@ -119,7 +130,8 @@ export function Navbar() {
                             About YACPS
                           </div>
                           <p className="text-muted-foreground text-sm leading-tight">
-                            Yet Another Competitive Programming System. Open-source, modern, and built for learning.
+                            Yet Another Competitive Programming System.
+                            Open-source, modern, and built for learning.
                           </p>
                         </a>
                       </NavigationMenuLink>
@@ -155,21 +167,22 @@ export function Navbar() {
 
         {/* Auth Buttons */}
         <div className="flex items-center gap-2 px-6">
-          <Link 
-            href="/accounts/login" 
+          <Link
+            href="/accounts/login"
             className="px-4 py-2 text-zinc-100 hover:text-zinc-300 transition-colors text-sm font-medium"
           >
             Login
           </Link>
           <span className="text-zinc-500 text-xs font-light">or</span>
-          <Link 
-            href="/accounts/signup" 
+          <Link
+            href="/accounts/signup"
             className="px-4 py-2 bg-zinc-100 text-zinc-900 rounded-md hover:bg-zinc-200 transition-colors text-sm font-medium"
           >
             Sign Up
           </Link>
+          <ModeToggle />
         </div>
       </div>
     </div>
-  )
+  );
 }
