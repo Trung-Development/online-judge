@@ -17,6 +17,7 @@ import { MagicCard } from "@/components/magicui/magic-card";
 import { useTheme } from "next-themes";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function LoginPage() {
   const { theme } = useTheme();
@@ -40,52 +41,18 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
-    try {
-      const apiBase = process.env.API_ENDPOINT || "http://unreachable.local";
-      const apiUrl = new URL("/auth/login", apiBase).toString();
+    const result = await signIn("credentials", {
+      redirect: false,
+      email: formData.email,
+      password: formData.password,
+    });
 
-      if (!formData.email || !formData.password) {
-        throw new Error("Email and password are required");
-      }
-
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
-      }
-
-      const data = await response.json();
-      console.log("Login successful:", data);
-
+    if (result?.error) {
+      setError(result.error);
+    } else if (result?.ok) {
       router.push("/");
-    } catch (err) {
-      // Check for network/server unreachable error
-      if (
-        err instanceof TypeError &&
-        err.message &&
-        (err.message.includes("Failed to fetch") ||
-          err.message.includes("NetworkError") ||
-          err.message.includes("Network request failed"))
-      ) {
-        setError("The server is unreachable. Please contact the administrator.");
-      } else {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "An error occurred during login"
-        );
-      }
-      console.error("Login error:", err);
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   return (
@@ -144,21 +111,17 @@ export default function LoginPage() {
                   />
                 </div>
               </div>
+              <CardFooter className="flex-col gap-2 p-0 mt-6">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Logging in..." : "Login"}
+                </Button>
+              </CardFooter>
             </form>
           </CardContent>
-          <CardFooter className="flex-col gap-2 p-4 border-t border-border [.border-t]:pt-4">
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading}
-              onClick={() => document.querySelector("form")?.requestSubmit()}
-            >
-              {isLoading ? "Logging in..." : "Login"}
-            </Button>
-            {/* <Button variant="outline" className="w-full">
-              Login with Google
-            </Button> */}
-          </CardFooter>
         </MagicCard>
       </Card>
     </div>
