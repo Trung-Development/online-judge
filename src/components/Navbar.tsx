@@ -58,7 +58,7 @@ export function Navbar() {
   const avatarUrl = user?.email ? getGravatarURL(user.email) : undefined;
 
   return (
-    <div className="w-full bg-zinc-900 border-b border-zinc-800">
+    <div className="w-full bg-zinc-900 border-b border-zinc-800 relative z-50">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           {/* Logo */}
