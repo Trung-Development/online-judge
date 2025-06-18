@@ -4,6 +4,8 @@ import * as React from "react";
 import Link from "next/link";
 import { ActivityIcon } from "lucide-react";
 import Image from "next/image";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
 
 import { useSession, signOut } from "next-auth/react";
 
@@ -18,6 +20,7 @@ import {
 } from "@/components/ui/navigation-menu";
 
 import { ModeToggle } from "./ThemeToggle";
+import { MobileSidebar } from "./MobileSidebar";
 import { getGravatarURL } from "@/lib/utils";
 
 function ListItem({
@@ -53,16 +56,26 @@ function ListItem({
 }
 
 export function Navbar() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const user = session?.user;
   const avatarUrl = user?.email ? getGravatarURL(user.email) : undefined;
+
+  // Prevent hydration mismatch by not rendering until session is loaded
+  if (status === "loading") {
+    return null;
+  }
 
   return (
     <div className="w-full bg-zinc-900 border-b border-zinc-800 relative z-50">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          {/* Logo */}
-          <div className="px-6 py-4">
+          {/* Mobile Sidebar Trigger */}
+          <div className="px-3 py-4 lg:hidden">
+            <MobileSidebar />
+          </div>
+
+          {/* Logo - hidden on mobile */}
+          <div className="hidden lg:block px-6 py-4">
             <Link
               href="/"
               className="text-zinc-100 text-xl font-bold hover:text-zinc-300 transition-colors"
@@ -71,13 +84,13 @@ export function Navbar() {
             </Link>
           </div>
 
-          {/* Separator */}
-          <div className="h-8 w-px bg-zinc-500 mx-6"></div>
+          {/* Separator - hidden on mobile */}
+          <div className="hidden lg:block h-8 w-px bg-zinc-500 mx-6"></div>
 
-          {/* Navigation Menu */}
+          {/* Navigation Menu - hidden on mobile */}
           <NavigationMenu
             viewport={false}
-            className="bg-zinc-900 text-zinc-100"
+            className="hidden lg:flex bg-zinc-900 text-zinc-100"
           >
             <NavigationMenuList className="bg-zinc-900 text-zinc-100 justify-start">
               {/* Home */}
@@ -156,14 +169,7 @@ export function Navbar() {
                     <ListItem
                       href="https://github.com/Trung-Development/online-judge"
                       title="GitHub"
-                      icon={
-                        <Image
-                          src="/assets/icons/github.svg"
-                          alt="GitHub"
-                          width={16}
-                          height={16}
-                        />
-                      }
+                      icon={<FontAwesomeIcon icon={faGithub} className="h-4 w-4" />}
                     >
                       Source code and contributions.
                     </ListItem>
@@ -182,19 +188,19 @@ export function Navbar() {
         </div>
 
         {/* Auth Buttons or User Dropdown */}
-        <div className="flex items-center gap-4 px-6">
+        <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 px-2 sm:px-3 lg:px-6">
           {!user ? (
             <>
               <Link
                 href="/accounts/login"
-                className="px-4 py-2 text-zinc-100 hover:text-zinc-300 transition-colors text-sm font-medium"
+                className="px-2 py-2 sm:px-3 lg:px-4 text-zinc-100 hover:text-zinc-300 transition-colors text-xs sm:text-sm font-medium"
               >
                 Login
               </Link>
               <span className="text-zinc-500 text-xs font-light">or</span>
               <Link
                 href="/accounts/signup"
-                className="px-4 py-2 bg-zinc-100 text-zinc-900 rounded-md hover:bg-zinc-200 transition-colors text-sm font-medium"
+                className="px-2 py-2 sm:px-3 lg:px-4 bg-zinc-100 text-zinc-900 rounded-md hover:bg-zinc-200 transition-colors text-xs sm:text-sm font-medium whitespace-nowrap"
               >
                 Sign Up
               </Link>
@@ -213,7 +219,7 @@ export function Navbar() {
                         className="rounded-full border border-zinc-400"
                       />
                     )}
-                    <span>
+                    <span className="hidden sm:inline lg:inline">
                       <b>{user.fullname || user.username}</b>
                     </span>
                   </NavigationMenuTrigger>
@@ -246,7 +252,9 @@ export function Navbar() {
               </NavigationMenuList>
             </NavigationMenu>
           )}
-          <ModeToggle />
+          <div className="ml-1 lg:ml-0">
+            <ModeToggle />
+          </div>
         </div>
       </div>
     </div>
