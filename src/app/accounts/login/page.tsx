@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { MagicCard } from "@/components/magicui/magic-card";
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
@@ -28,12 +28,18 @@ export default function LoginPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value,
     });
+    setIsLoading(false);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -59,7 +65,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center">
       <Card className="p-0 max-w-sm w-full shadow-none border-none">
         <MagicCard
-          gradientColor={theme === "dark" ? "#262626" : "#D9D9D955"}
+          gradientColor={
+            mounted && theme === "dark" ? "#262626" : "#D9D9D955"
+          }
           className="p-0"
         >
           <CardHeader className="border-b border-border p-4 [.border-b]:pb-4">

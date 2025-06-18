@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ActivityIcon } from "lucide-react";
 import Image from "next/image";
 
+import { useSession, signOut } from "next-auth/react";
+
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -16,6 +18,7 @@ import {
 } from "@/components/ui/navigation-menu";
 
 import { ModeToggle } from "./ThemeToggle";
+import { getGravatarURL } from "@/lib/utils";
 
 function ListItem({
   title,
@@ -32,7 +35,7 @@ function ListItem({
       <NavigationMenuLink asChild>
         <Link
           href={href}
-          className="flex items-start gap-2 rounded-md p-3 hover:bg-gray-100 transition-colors"
+          className="flex items-start gap-2 rounded-md p-3 hover:bg-accent hover:text-accent-foreground transition-colors"
         >
           {icon && <span className="mt-1">{icon}</span>}
           <div>
@@ -50,6 +53,10 @@ function ListItem({
 }
 
 export function Navbar() {
+  const { data: session } = useSession();
+  const user = session?.user;
+  const avatarUrl = user?.email ? getGravatarURL(user.email) : undefined;
+
   return (
     <div className="w-full bg-zinc-900 border-b border-zinc-800">
       <div className="flex items-center justify-between">
@@ -125,18 +132,18 @@ export function Navbar() {
 
               {/* About - with dropdown */}
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="bg-zinc-900 text-zinc-100 hover:bg-zinc-800 hover:text-zinc-100 data-[state=open]:bg-white data-[state=open]:text-black">
+                <NavigationMenuTrigger className="bg-zinc-900 text-zinc-100 hover:bg-zinc-800 hover:text-zinc-100 data-[state=open]:bg-zinc-800">
                   About
                 </NavigationMenuTrigger>
-                <NavigationMenuContent className="bg-white text-black border border-zinc-200 shadow-xl z-50">
+                <NavigationMenuContent>
                   <ul className="grid gap-2 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr] p-2">
                     <li className="row-span-3">
                       <NavigationMenuLink asChild>
                         <a
-                          className="from-muted/50 to-muted flex h-full w-full flex-col justify-end rounded-md bg-gradient-to-b from-gray-50 to-gray-100 p-6 no-underline outline-none select-none focus:shadow-md"
+                          className="flex h-full w-full flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none select-none focus:shadow-md"
                           href="/about"
                         >
-                          <div className="mt-4 mb-2 text-lg font-bold text-black">
+                          <div className="mt-4 mb-2 text-lg font-bold">
                             About YACPS
                           </div>
                           <p className="text-muted-foreground text-sm leading-tight">
@@ -155,7 +162,6 @@ export function Navbar() {
                           alt="GitHub"
                           width={16}
                           height={16}
-                          className="text-black"
                         />
                       }
                     >
@@ -164,7 +170,7 @@ export function Navbar() {
                     <ListItem
                       href="/status"
                       title="Status"
-                      icon={<ActivityIcon size={16} className="text-black" />}
+                      icon={<ActivityIcon size={16} />}
                     >
                       System status and uptime.
                     </ListItem>
@@ -175,21 +181,71 @@ export function Navbar() {
           </NavigationMenu>
         </div>
 
-        {/* Auth Buttons */}
-        <div className="flex items-center gap-2 px-6">
-          <Link
-            href="/accounts/login"
-            className="px-4 py-2 text-zinc-100 hover:text-zinc-300 transition-colors text-sm font-medium"
-          >
-            Login
-          </Link>
-          <span className="text-zinc-500 text-xs font-light">or</span>
-          <Link
-            href="/accounts/signup"
-            className="px-4 py-2 bg-zinc-100 text-zinc-900 rounded-md hover:bg-zinc-200 transition-colors text-sm font-medium"
-          >
-            Sign Up
-          </Link>
+        {/* Auth Buttons or User Dropdown */}
+        <div className="flex items-center gap-4 px-6">
+          {!user ? (
+            <>
+              <Link
+                href="/accounts/login"
+                className="px-4 py-2 text-zinc-100 hover:text-zinc-300 transition-colors text-sm font-medium"
+              >
+                Login
+              </Link>
+              <span className="text-zinc-500 text-xs font-light">or</span>
+              <Link
+                href="/accounts/signup"
+                className="px-4 py-2 bg-zinc-100 text-zinc-900 rounded-md hover:bg-zinc-200 transition-colors text-sm font-medium"
+              >
+                Sign Up
+              </Link>
+            </>
+          ) : (
+            <NavigationMenu viewport={false}>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <NavigationMenuTrigger className="flex items-center gap-2 bg-transparent hover:bg-zinc-800 text-zinc-100 p-2 rounded-md data-[state=open]:bg-zinc-800 focus:ring-0 focus:ring-offset-0">
+                    {avatarUrl && (
+                      <Image
+                        src={avatarUrl}
+                        alt="avatar"
+                        width={24}
+                        height={24}
+                        className="rounded-full border border-zinc-400"
+                      />
+                    )}
+                    <span>
+                      <b>{user.fullname || user.username}</b>
+                    </span>
+                  </NavigationMenuTrigger>
+                  <NavigationMenuContent>
+                    {/* Use theme-aware classes from your UI library */}
+                    <ul className="grid w-[150px] gap-1 p-2">
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <Link
+                            href="/profile/edit" // Placeholder path
+                            className="block w-full text-left px-3 py-2 text-sm rounded-md"
+                          >
+                            Edit Profile
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                      <li>
+                        <NavigationMenuLink asChild>
+                          <button
+                            className="block w-full text-left px-3 py-2 text-sm rounded-md"
+                            onClick={() => signOut()}
+                          >
+                            Logout
+                          </button>
+                        </NavigationMenuLink>
+                      </li>
+                    </ul>
+                  </NavigationMenuContent>
+                </NavigationMenuItem>
+              </NavigationMenuList>
+            </NavigationMenu>
+          )}
           <ModeToggle />
         </div>
       </div>

@@ -58,7 +58,7 @@ export default function SignupPage() {
   const [dobOpen, setDobOpen] = useState(false);
   const [hcaptchaToken, setHcaptchaToken] = useState<string | null>(null);
   const [comboboxOpen, setComboboxOpen] = useState(false);
-  const hcaptchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || "";
+  const hcaptchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || process.env.HCAPTCHA_SITE_KEY || "";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

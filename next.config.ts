@@ -14,6 +14,16 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_HCAPTCHA_SITE_KEY: process.env.HCAPTCHA_SITE_KEY,
     NEXT_PUBLIC_API_ENDPOINT: process.env.API_ENDPOINT,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "www.gravatar.com",
+        port: "",
+        pathname: "/avatar/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;
