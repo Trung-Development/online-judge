@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ActivityIcon } from "lucide-react";
+import { ActivityIcon, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
@@ -18,6 +18,13 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { ModeToggle } from "./ThemeToggle";
 import { MobileSidebar } from "./MobileSidebar";
@@ -59,6 +66,7 @@ export function Navbar() {
   const { data: session, status } = useSession();
   const user = session?.user;
   const avatarUrl = user?.email ? getGravatarURL(user.email) : undefined;
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 
   // Prevent hydration mismatch by not rendering until session is loaded
   if (status === "loading") {
@@ -208,51 +216,42 @@ export function Navbar() {
               </Link>
             </>
           ) : (
-            <NavigationMenu viewport={false}>
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className="flex items-center gap-2 bg-transparent hover:bg-zinc-800 text-zinc-100 p-2 rounded-md data-[state=open]:bg-zinc-800 focus:ring-0 focus:ring-offset-0">
-                    {avatarUrl && (
-                      <Image
-                        src={avatarUrl}
-                        alt="avatar"
-                        width={24}
-                        height={24}
-                        className="rounded-full border border-zinc-400"
-                      />
-                    )}
-                    <span className="hidden sm:inline lg:inline">
-                      <b>{user.fullname || user.username}</b>
-                    </span>
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    {/* Use theme-aware classes from your UI library */}
-                    <ul className="grid w-[150px] gap-1 p-2">
-                      <li>
-                        <NavigationMenuLink asChild>
-                          <Link
-                            href="/profile/edit" // Placeholder path
-                            className="block w-full text-left px-3 py-2 text-sm rounded-md"
-                          >
-                            Edit Profile
-                          </Link>
-                        </NavigationMenuLink>
-                      </li>
-                      <li>
-                        <NavigationMenuLink asChild>
-                          <button
-                            className="block w-full text-left px-3 py-2 text-sm rounded-md"
-                            onClick={() => signOut()}
-                          >
-                            Logout
-                          </button>
-                        </NavigationMenuLink>
-                      </li>
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
+            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+              <DropdownMenuTrigger className="flex items-center gap-2 bg-transparent hover:bg-zinc-800 text-zinc-100 p-2 rounded-md focus:ring-0 focus:ring-offset-0 outline-none transition-colors">
+                {avatarUrl && (
+                  <Image
+                    src={avatarUrl}
+                    alt="avatar"
+                    width={24}
+                    height={24}
+                    className="rounded-full border border-zinc-400"
+                  />
+                )}
+                <span className="inline">
+                  <b>{user.fullname || user.username}</b>
+                </span>
+                <ChevronDown 
+                  className={`h-4 w-4 transition-transform duration-200 ease-in-out ${
+                    isDropdownOpen ? 'rotate-180' : 'rotate-0'
+                  }`} 
+                />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[150px]">
+                <DropdownMenuItem asChild>
+                  <Link href="/profile/edit" className="w-full cursor-pointer">
+                    Edit Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <button
+                    className="w-full text-left cursor-pointer"
+                    onClick={() => signOut()}
+                  >
+                    Logout
+                  </button>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
           <div className="ml-1 lg:ml-0">
             <ModeToggle />
