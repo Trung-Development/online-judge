@@ -58,7 +58,10 @@ export default function SignupPage() {
   const [dobOpen, setDobOpen] = useState(false);
   const [hcaptchaToken, setHcaptchaToken] = useState<string | null>(null);
   const [comboboxOpen, setComboboxOpen] = useState(false);
-  const hcaptchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY || process.env.HCAPTCHA_SITE_KEY || "";
+  const hcaptchaSiteKey =
+    process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY ||
+    process.env.HCAPTCHA_SITE_KEY ||
+    "";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -153,11 +156,13 @@ export default function SignupPage() {
           err.message.includes("Network request failed"))
       ) {
         setError(
-          "The server is unreachable. Please contact the administrator."
+          "The server is unreachable. Please contact the administrator.",
         );
       } else {
         setError(
-          err instanceof Error ? err.message : "An error occurred during signup"
+          err instanceof Error
+            ? err.message
+            : "An error occurred during signup",
         );
       }
       console.error("Signup error:", err);
@@ -300,7 +305,7 @@ export default function SignupPage() {
                       >
                         {formData.defaultLanguage
                           ? languages.find(
-                              (lang) => lang.value === formData.defaultLanguage
+                              (lang) => lang.value === formData.defaultLanguage,
                             )?.label
                           : "Select your default language"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -333,7 +338,7 @@ export default function SignupPage() {
                                     "ml-auto",
                                     formData.defaultLanguage === language.value
                                       ? "opacity-100"
-                                      : "opacity-0"
+                                      : "opacity-0",
                                   )}
                                 />
                               </CommandItem>

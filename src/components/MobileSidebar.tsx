@@ -2,7 +2,16 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ActivityIcon, Menu, Home, Code, FileText, Users, Trophy, ChevronDown } from "lucide-react";
+import {
+  ActivityIcon,
+  Menu,
+  Home,
+  Code,
+  FileText,
+  Users,
+  Trophy,
+  ChevronDown,
+} from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 
@@ -12,7 +21,13 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 const navigationItems = [
   {
@@ -130,11 +145,19 @@ export function MobileSidebar() {
                         href={item.url}
                         onClick={() => setOpen(false)}
                         className="flex items-start gap-3 rounded-lg px-6 py-2 text-sm transition-all hover:bg-accent hover:text-accent-foreground"
-                        target={item.url.startsWith("http") ? "_blank" : undefined}
-                        rel={item.url.startsWith("http") ? "noopener noreferrer" : undefined}
+                        target={
+                          item.url.startsWith("http") ? "_blank" : undefined
+                        }
+                        rel={
+                          item.url.startsWith("http")
+                            ? "noopener noreferrer"
+                            : undefined
+                        }
                       >
                         <span className="mt-0.5">
-                          {React.createElement(item.icon, { className: "h-4 w-4" })}
+                          {React.createElement(item.icon, {
+                            className: "h-4 w-4",
+                          })}
                         </span>
                         <div>
                           <div className="font-medium">{item.title}</div>

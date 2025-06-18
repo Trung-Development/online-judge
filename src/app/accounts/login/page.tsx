@@ -65,9 +65,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center">
       <Card className="p-0 max-w-sm w-full shadow-none border-none">
         <MagicCard
-          gradientColor={
-            mounted && theme === "dark" ? "#262626" : "#D9D9D955"
-          }
+          gradientColor={mounted && theme === "dark" ? "#262626" : "#D9D9D955"}
           className="p-0"
         >
           <CardHeader className="border-b border-border p-4 [.border-b]:pb-4">
@@ -120,11 +118,7 @@ export default function LoginPage() {
                 </div>
               </div>
               <CardFooter className="flex-col gap-2 p-0 mt-6">
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isLoading}
-                >
+                <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Logging in..." : "Login"}
                 </Button>
               </CardFooter>

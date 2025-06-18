@@ -169,7 +169,9 @@ export function Navbar() {
                     <ListItem
                       href="https://github.com/Trung-Development/online-judge"
                       title="GitHub"
-                      icon={<FontAwesomeIcon icon={faGithub} className="h-4 w-4" />}
+                      icon={
+                        <FontAwesomeIcon icon={faGithub} className="h-4 w-4" />
+                      }
                     >
                       Source code and contributions.
                     </ListItem>

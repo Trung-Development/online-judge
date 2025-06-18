@@ -52,7 +52,7 @@ const handler = NextAuth({
                 email: credentials.email,
                 password: credentials.password,
               }),
-            }
+            },
           );
 
           if (!sessionRes.ok) {
@@ -62,7 +62,7 @@ const handler = NextAuth({
             }
             // Handle other potential backend errors
             throw new Error(
-              errorBody.message || "An authentication error occurred."
+              errorBody.message || "An authentication error occurred.",
             );
           }
 
@@ -78,7 +78,7 @@ const handler = NextAuth({
             `${process.env.API_ENDPOINT}/client/users/me`,
             {
               headers: { Authorization: `Bearer ${token}` },
-            }
+            },
           );
 
           if (!userRes.ok) {
@@ -98,7 +98,7 @@ const handler = NextAuth({
             throw e;
           }
           throw new Error(
-            "An unexpected error occurred during authentication."
+            "An unexpected error occurred during authentication.",
           );
         }
       },

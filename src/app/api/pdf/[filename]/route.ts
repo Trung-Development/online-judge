@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { NextRequest } from "next/server";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 
 const s3 = new S3Client({
-  region: process.env.STORAGE_REGION || 'auto',
+  region: process.env.STORAGE_REGION || "auto",
   endpoint: process.env.STORAGE_ENDPOINT || undefined,
   forcePathStyle: Boolean(process.env.STORAGE_ENDPOINT),
   credentials: {
@@ -11,7 +11,10 @@ const s3 = new S3Client({
   },
 });
 
-export async function GET(req: NextRequest, context: { params: Promise<{ filename: string }> }) {
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<{ filename: string }> },
+) {
   const { filename } = await context.params;
 
   try {
@@ -24,12 +27,12 @@ export async function GET(req: NextRequest, context: { params: Promise<{ filenam
 
     return new Response(Body as ReadableStream, {
       headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="${filename}.pdf"`,
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `inline; filename="${filename}.pdf"`,
       },
     });
   } catch (error) {
-    console.error('Error fetching PDF:', error);
-    return new Response('File not found', { status: 404 });
+    console.error("Error fetching PDF:", error);
+    return new Response("File not found", { status: 404 });
   }
 }

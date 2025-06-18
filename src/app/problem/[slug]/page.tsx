@@ -35,7 +35,8 @@ export default function ProblemPage() {
     fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/problem/${slug}`)
       .then((res) => {
         const ct = res.headers.get("content-type") || "";
-        if (!ct.includes("application/json")) throw new Error(`Expected JSON, got ${ct}`);
+        if (!ct.includes("application/json"))
+          throw new Error(`Expected JSON, got ${ct}`);
         return res.json();
       })
       .then((data) => {
@@ -55,7 +56,10 @@ export default function ProblemPage() {
       {/* Title & PDF */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-3xl font-bold">{problem.name}</h1>
-        <Link href={`/api/problem/${slug}/pdf`} className="text-sm text-blue-600 hover:underline flex items-center gap-1">
+        <Link
+          href={`/api/problem/${slug}/pdf`}
+          className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+        >
           <FontAwesomeIcon icon={faFilePdf} />
           View as PDF
         </Link>
@@ -64,23 +68,39 @@ export default function ProblemPage() {
 
       {/* Buttons */}
       <div className="flex gap-2 mb-6">
-        <Button asChild><Link href={`/problem/${slug}/submit`}>Submit</Link></Button>
-        <Button variant="outline" asChild><Link href={`/problem/${slug}/discuss`}>Discussion</Link></Button>
+        <Button asChild>
+          <Link href={`/problem/${slug}/submit`}>Submit</Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link href={`/problem/${slug}/discuss`}>Discussion</Link>
+        </Button>
       </div>
 
       {/* Metadata */}
       <div className="bg-white border p-4 mb-6 rounded-md text-sm">
         <div className="flex justify-between">
-          <div><strong>Time:</strong> {problem.timeLimit}s</div>
-          <div><strong>Memory:</strong> {problem.memoryLimit} MB</div>
+          <div>
+            <strong>Time:</strong> {problem.timeLimit}s
+          </div>
+          <div>
+            <strong>Memory:</strong> {problem.memoryLimit} MB
+          </div>
         </div>
         <div className="mt-2">
-          <div><strong>Input:</strong> {problem.input}</div>
-          <div><strong>Output:</strong> {problem.output}</div>
+          <div>
+            <strong>Input:</strong> {problem.input}
+          </div>
+          <div>
+            <strong>Output:</strong> {problem.output}
+          </div>
         </div>
         <div className="mt-2">
-          <div><strong>Author:</strong> {problem.author}</div>
-          <div><strong>Type:</strong> {problem.problemType}</div>
+          <div>
+            <strong>Author:</strong> {problem.author}
+          </div>
+          <div>
+            <strong>Type:</strong> {problem.problemType}
+          </div>
         </div>
       </div>
 
@@ -90,22 +110,28 @@ export default function ProblemPage() {
           remarkPlugins={[remarkGfm, remarkMath, remarkHeadingSeparator]}
           rehypePlugins={[rehypeKatex, rehypeRaw]}
           components={{
-            h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h1 className="text-2xl font-bold mt-6 mb-4" {...props} />,
-            h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h2 className="text-xl font-semibold mt-5 mb-3" {...props} />,
-            h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => <h3 className="text-lg font-semibold mt-4 mb-2" {...props} />,
-            code: (props: React.HTMLAttributes<HTMLElement> & { inline?: boolean }) => {
+            h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
+              <h1 className="text-2xl font-bold mt-6 mb-4" {...props} />
+            ),
+            h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
+              <h2 className="text-xl font-semibold mt-5 mb-3" {...props} />
+            ),
+            h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
+              <h3 className="text-lg font-semibold mt-4 mb-2" {...props} />
+            ),
+            code: (
+              props: React.HTMLAttributes<HTMLElement> & { inline?: boolean },
+            ) => {
               const { inline, children, ...rest } = props;
               // inline is now recognized as any, so no TS error
               if (!inline) {
                 const text = React.Children.toArray(children)
-                  .map(c => typeof c === "string" ? c : "")
+                  .map((c) => (typeof c === "string" ? c : ""))
                   .join("");
-                return (
-                  <SampleIO text={text} />
-                );
+                return <SampleIO text={text} />;
               }
               return <code {...rest}>{children}</code>;
-            }
+            },
           }}
         >
           {problem.statement}
@@ -120,21 +146,25 @@ function SampleIO({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   const copy = () => {
     if (ref.current) {
-      navigator.clipboard.writeText(ref.current.innerText)
-        .then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1000);
-        });
+      navigator.clipboard.writeText(ref.current.innerText).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1000);
+      });
     }
   };
   return (
     <div className="mb-6">
       <div className="relative bg-gray-50 border p-4 rounded-md">
-        <button onClick={copy} className="absolute top-2 right-2 bg-white border px-2 py-1 rounded text-sm flex items-center gap-1 hover:bg-gray-100">
+        <button
+          onClick={copy}
+          className="absolute top-2 right-2 bg-white border px-2 py-1 rounded text-sm flex items-center gap-1 hover:bg-gray-100"
+        >
           <FontAwesomeIcon icon={copied ? faCheck : faClone} />
           <span>{copied ? "Copied" : "Copy"}</span>
         </button>
-        <pre ref={ref} className="whitespace-pre-wrap"><code>{text}</code></pre>
+        <pre ref={ref} className="whitespace-pre-wrap">
+          <code>{text}</code>
+        </pre>
       </div>
     </div>
   );
