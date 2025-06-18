@@ -1,10 +1,15 @@
-import NextAuth, { User } from "next-auth";
+import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 declare module "next-auth" {
   interface Session {
     accessToken?: string;
-    user: User;
+    user: {
+      id: string;
+      email: string;
+      username: string;
+      fullname: string;
+    };
   }
 
   interface User {
@@ -81,7 +86,13 @@ const handler = NextAuth({
     // The `user` object is from `authorize` on sign-in
     async jwt({ token, user }) {
       if (user) {
-        token.accessToken = (user as any).accessToken;
+        token.accessToken = (user as {
+          accessToken?: string;
+          id: string;
+          email: string;
+          username: string;
+          fullname: string;
+        }).accessToken;
         token.id = user.id;
         token.email = user.email;
         token.username = user.username;
