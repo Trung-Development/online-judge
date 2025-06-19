@@ -1,4 +1,4 @@
-export type AllowedLang =
+export type TAllowedLang =
     | "PY2" | "CPP03" | "RUBY18" | "PHP" | "PERL" | "PY3" | "C" | "PAS"
     | "CPP11" | "MONOCS" | "HASK" | "GO" | "PYPY" | "PYPY3" | "F95" | "NASM"
     | "RUBY" | "LUA" | "OCAML" | "TUR" | "JAVA8" | "V8JS" | "D" | "BF"
@@ -8,7 +8,7 @@ export type AllowedLang =
     | "GAS64" | "SED" | "JAVA" | "NASM64" | "RKT" | "GROOVY" | "KOTLIN"
     | "PIKE" | "CPP17" | "SBCL" | "C11" | "ZIG" | "CPP20";
 
-export interface ProblemData {
+export interface IProblemData {
     // Basic information
     code: string; // Unique identifier for the problem
     name: string;
@@ -18,7 +18,7 @@ export interface ProblemData {
     // Limits
     timeLimit: number; // in seconds
     memoryLimit: number; // in MB
-    allowedLanguages: AllowedLang[];
+    allowedLanguages: TAllowedLang[];
 
     // I/O
     input: string;

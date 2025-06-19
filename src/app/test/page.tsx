@@ -11,11 +11,11 @@ import { faClone, faCheck } from "@fortawesome/free-solid-svg-icons";
 import "katex/dist/katex.min.css";
 import type { JSX } from "react";
 
-interface SampleIOProps {
+interface ISampleIOProps {
   text: string;
 }
 
-function SampleIO({ text }: SampleIOProps): JSX.Element {
+function SampleIO({ text }: ISampleIOProps): JSX.Element {
   const codeRef = useRef<HTMLPreElement>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const copy = (): void => {
@@ -86,7 +86,7 @@ Sth here
   // 2) wrap only tab-indented lines into fenced code
   const finalMd: string = wrapTabbedBlocks(mathMd);
 
-  interface CodeProps
+  interface ICodeProps
     extends React.DetailedHTMLProps<
       React.HTMLAttributes<HTMLElement>,
       HTMLElement
@@ -114,7 +114,7 @@ Sth here
               h3: (props: React.ComponentProps<"h3">) => (
                 <h3 className="text-xl font-semibold mt-3 mb-1" {...props} />
               ),
-              code: ((props: CodeProps) => {
+              code: ((props: ICodeProps) => {
                 const { inline, children, className, ...rest } = props;
                 if (!inline) {
                   const text = React.Children.toArray(children)

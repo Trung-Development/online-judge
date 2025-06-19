@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 
-interface MagicCardProps {
+interface IMagicCardProps {
   children?: React.ReactNode;
   className?: string;
   gradientSize?: number;
@@ -23,7 +23,7 @@ export function MagicCard({
   gradientOpacity = 0.8,
   gradientFrom = "#9E7AFF",
   gradientTo = "#FE8BBB",
-}: MagicCardProps) {
+}: IMagicCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(-gradientSize);
   const mouseY = useMotionValue(-gradientSize);

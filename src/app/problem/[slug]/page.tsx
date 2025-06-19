@@ -13,11 +13,11 @@ import "katex/dist/katex.min.css";
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faClone, faFilePdf } from "@fortawesome/free-solid-svg-icons";
-import { ProblemData } from "@/types";
+import { IProblemData } from "@/types";
 
 export default function ProblemPage() {
   const slug = useParams().slug;
-  const [problem, setProblem] = useState<ProblemData | null>(null);
+  const [problem, setProblem] = useState<IProblemData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
