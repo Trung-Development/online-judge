@@ -13,17 +13,7 @@ import "katex/dist/katex.min.css";
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faClone, faFilePdf } from "@fortawesome/free-solid-svg-icons";
-
-interface ProblemData {
-  name: string;
-  statement: string;
-  timeLimit: number;
-  memoryLimit: number;
-  input: string;
-  output: string;
-  author: string;
-  problemType: string;
-}
+import { ProblemData } from "@/types";
 
 export default function ProblemPage() {
   const slug = useParams().slug;
@@ -32,11 +22,13 @@ export default function ProblemPage() {
 
   useEffect(() => {
     if (!slug) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/api/problem/${slug}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/client/problems/${slug}`)
       .then((res) => {
         const ct = res.headers.get("content-type") || "";
-        if (!ct.includes("application/json"))
-          throw new Error(`Expected JSON, got ${ct}`);
+        if (res.status === 404 || !ct.includes("application/json")) {
+          // If 404 or not JSON, treat as not found
+          throw new Error("NOT_FOUND");
+        }
         return res.json();
       })
       .then((data) => {
@@ -44,12 +36,25 @@ export default function ProblemPage() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error(err);
+        if (err.message === "NOT_FOUND") {
+          setProblem(null);
+        }
         setLoading(false);
       });
   }, [slug]);
 
-  if (loading || !problem) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>;
+  if (!problem)
+    return (
+      <main className="max-w-3xl mx-auto py-8 px-4">
+        <h1 className="text-3xl font-bold mb-4">No such problem</h1>
+        <hr className="border-gray-300 mb-4" />
+        <p className="text-gray-600">
+          Could not find a problem with the code{" "}
+          <span className="font-mono">{slug}</span>
+        </p>
+      </main>
+    );
 
   return (
     <main className="max-w-3xl mx-auto py-8 px-4">
@@ -96,10 +101,10 @@ export default function ProblemPage() {
         </div>
         <div className="mt-2">
           <div>
-            <strong>Author:</strong> {problem.author}
+            <strong>Author:</strong> {problem.author.join(", ")}
           </div>
           <div>
-            <strong>Type:</strong> {problem.problemType}
+            <strong>Type:</strong> {problem.type.join(", ")}
           </div>
         </div>
       </div>
