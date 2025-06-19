@@ -82,7 +82,7 @@ export default function ProblemPage() {
       </div>
 
       {/* Metadata */}
-      <div className="bg-white border p-4 mb-6 rounded-md text-sm">
+      <div className="bg-card border p-4 mb-6 rounded-md text-sm text-card-foreground">
         <div className="flex justify-between">
           <div>
             <strong>Time:</strong> {problem.timeLimit}s
@@ -124,6 +124,9 @@ export default function ProblemPage() {
             h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
               <h3 className="text-lg font-semibold mt-4 mb-2" {...props} />
             ),
+            u: (props: React.HTMLAttributes<HTMLElement>) => (
+              <u className="underline" {...props} />
+            ),
             code: (
               props: React.HTMLAttributes<HTMLElement> & { inline?: boolean },
             ) => {
@@ -139,7 +142,7 @@ export default function ProblemPage() {
             },
           }}
         >
-          {problem.statement}
+          {problem.statement.replace(/__([^_\n]+)__/g, '<u>$1</u>')}
         </ReactMarkdown>
       </div>
     </main>
@@ -159,15 +162,15 @@ function SampleIO({ text }: { text: string }) {
   };
   return (
     <div className="mb-6">
-      <div className="relative bg-gray-50 border p-4 rounded-md">
+      <div className="relative bg-muted border p-4 rounded-md">
         <button
           onClick={copy}
-          className="absolute top-2 right-2 bg-white border px-2 py-1 rounded text-sm flex items-center gap-1 hover:bg-gray-100"
+          className="absolute top-2 right-2 bg-background border px-2 py-1 rounded text-sm flex items-center gap-1 hover:bg-muted transition-colors"
         >
           <FontAwesomeIcon icon={copied ? faCheck : faClone} />
           <span>{copied ? "Copied" : "Copy"}</span>
         </button>
-        <pre ref={ref} className="whitespace-pre-wrap">
+        <pre ref={ref} className="whitespace-pre-wrap text-foreground">
           <code>{text}</code>
         </pre>
       </div>
