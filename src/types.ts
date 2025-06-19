@@ -31,4 +31,5 @@ export interface ProblemData {
     author: string[];
     curator: string[];
     tester: string[];
+    solution?: string;
 }

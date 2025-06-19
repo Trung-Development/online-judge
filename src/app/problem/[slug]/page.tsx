@@ -76,9 +76,11 @@ export default function ProblemPage() {
         <Button asChild>
           <Link href={`/problem/${slug}/submit`}>Submit</Link>
         </Button>
-        <Button variant="outline" asChild>
-          <Link href={`/problem/${slug}/discuss`}>Discussion</Link>
-        </Button>
+        {problem.solution && (
+          <Button variant="outline" asChild>
+            <Link href={`/problem/${slug}/solution`}>Solution</Link>
+          </Button>
+        )}
       </div>
 
       {/* Metadata */}
