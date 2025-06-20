@@ -181,7 +181,7 @@ export function SessionManager() {
                   className="flex items-center justify-between p-3 border rounded-lg"
                 >
                   <div className="flex items-center gap-3">
-                    {getDeviceIcon("")}
+                    {getDeviceIcon(session.userAgent)}
                     <div>
                       <div className="font-medium">
                         Session {session.id.slice(0, 8)}...
