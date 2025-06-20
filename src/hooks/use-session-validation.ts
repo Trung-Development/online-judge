@@ -67,6 +67,29 @@ export function useSessionValidation() {
     await signOut({ callbackUrl: "/accounts/login" });
   }, [session]);
 
+  const getCurrentSession = useCallback(async () => {
+    if (!session?.sessionToken) {
+      return null;
+    }
+
+    try {
+      const response = await fetch(
+        new URL("/client/sessions/me", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(),
+        {
+          headers: { Authorization: `Bearer ${session.sessionToken}` },
+        },
+      );
+
+      if (response.ok) {
+        return await response.json();
+      }
+      return null;
+    } catch (error) {
+      console.error("Error fetching current session:", error);
+      return null;
+    }
+  }, [session]);
+
   const getActiveSessions = useCallback(async () => {
     if (!session?.sessionToken) {
       return [];
@@ -94,6 +117,7 @@ export function useSessionValidation() {
     validateSession, 
     logout, 
     logoutAllSessions, 
+    getCurrentSession,
     getActiveSessions,
     isAuthenticated: status === "authenticated" && !!session?.sessionToken
   };
