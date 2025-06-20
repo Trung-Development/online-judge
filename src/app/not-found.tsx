@@ -56,11 +56,13 @@ export default function NotFound() {
                     Go to Homepage
                   </Link>
                 </Button>
-                <Button asChild variant="outline" className="flex-1">
-                  <Link href="javascript:history.back()">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Go Back
-                  </Link>
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => window.history.back()}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Go Back
                 </Button>
               </div>
             </div>
