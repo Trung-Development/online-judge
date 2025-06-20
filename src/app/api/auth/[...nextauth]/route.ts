@@ -37,10 +37,14 @@ declare module "next-auth/jwt" {
   }
 }
 
+function buildApiUrl(path: string): string {
+  return new URL(path, process.env.API_ENDPOINT).toString();
+}
+
 async function refreshAccessToken(token: JWT) {
   try {
     const response = await fetch(
-      new URL("/client/sessions/refresh", process.env.API_ENDPOINT).toString(),
+      buildApiUrl("/client/sessions/refresh"),
       {
         method: "POST",
         headers: {
