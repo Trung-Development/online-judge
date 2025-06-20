@@ -105,6 +105,22 @@ export default function SignupPage() {
         throw new Error("Please complete the hCaptcha challenge.");
       }
 
+      // Get client IP
+      const getClientIp = async () => {
+        try {
+          const response = await fetch('/api/get-client-ip');
+          if (response.ok) {
+            const data = await response.json();
+            return data.ip;
+          }
+        } catch (error) {
+          console.error('Failed to get client IP:', error);
+        }
+        return 'unknown';
+      };
+
+      const clientIp = await getClientIp();
+
       // Prepare data for API (convert dateOfBirth to mm/dd/yyyy if present)
       const formatDateMMDDYYYY = (date: Date) => {
         const mm = String(date.getMonth() + 1).padStart(2, "0");
@@ -122,27 +138,22 @@ export default function SignupPage() {
         dateOfBirth: formData.dateOfBirth
           ? formatDateMMDDYYYY(formData.dateOfBirth)
           : undefined,
-        hcaptchaToken,
+        captchaToken: hcaptchaToken,
+        clientIp: clientIp,
       };
-
-      // Convert to URLSearchParams for form-urlencoded
-      const urlEncodedData = new URLSearchParams();
-      Object.entries(submitData).forEach(([key, value]) => {
-        if (value !== undefined) {
-          urlEncodedData.append(key, value.toString());
-        }
-      });
 
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/json",
         },
-        body: urlEncodedData,
+        body: JSON.stringify(submitData),
       });
 
-      if (response.status !== 201)
-        throw new Error("An error occurred during signup");
+      if (response.status !== 201) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "An error occurred during signup");
+      }
 
       // Signup successful (201), redirect to login page
       router.push("/accounts/login");
@@ -166,6 +177,8 @@ export default function SignupPage() {
         );
       }
       console.error("Signup error:", err);
+      // Reset captcha on error
+      setHcaptchaToken(null);
     } finally {
       setIsLoading(false);
     }
