@@ -1,10 +1,22 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useSessionValidation } from '@/hooks/use-session-validation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, Monitor, Smartphone, Globe, LogOut } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from "react";
+import { useSessionValidation } from "@/hooks/use-session-validation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  AlertTriangle,
+  Monitor,
+  Smartphone,
+  Globe,
+  LogOut,
+} from "lucide-react";
 
 interface SessionData {
   id: string;
@@ -14,18 +26,23 @@ interface SessionData {
 }
 
 // Simple Badge component since it's not available
-function Badge({ children, variant = "default", className = "" }: { 
-  children: React.ReactNode; 
-  variant?: "default" | "outline" | "secondary"; 
+function Badge({
+  children,
+  variant = "default",
+  className = "",
+}: {
+  children: React.ReactNode;
+  variant?: "default" | "outline" | "secondary";
   className?: string;
 }) {
-  const baseClasses = "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium";
+  const baseClasses =
+    "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium";
   const variantClasses = {
     default: "bg-blue-100 text-blue-800",
     outline: "border border-gray-200 text-gray-700",
-    secondary: "bg-gray-100 text-gray-700"
+    secondary: "bg-gray-100 text-gray-700",
   };
-  
+
   return (
     <span className={`${baseClasses} ${variantClasses[variant]} ${className}`}>
       {children}
@@ -34,19 +51,20 @@ function Badge({ children, variant = "default", className = "" }: {
 }
 
 export function SessionManager() {
-  const { getActiveSessions, logoutAllSessions, isAuthenticated } = useSessionValidation();
+  const { getActiveSessions, logoutAllSessions, isAuthenticated } =
+    useSessionValidation();
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [loading, setLoading] = useState(false);
 
   const loadSessions = useCallback(async () => {
     if (!isAuthenticated) return;
-    
+
     setLoading(true);
     try {
       const activeSessions = await getActiveSessions();
       setSessions(activeSessions);
     } catch (error) {
-      console.error('Failed to load sessions:', error);
+      console.error("Failed to load sessions:", error);
     }
     setLoading(false);
   }, [isAuthenticated, getActiveSessions]);
@@ -56,13 +74,17 @@ export function SessionManager() {
   }, [isAuthenticated, loadSessions]);
 
   const handleLogoutAll = async () => {
-    if (confirm('Are you sure you want to logout from all sessions? This will sign you out from all devices.')) {
+    if (
+      confirm(
+        "Are you sure you want to logout from all sessions? This will sign you out from all devices."
+      )
+    ) {
       await logoutAllSessions();
     }
   };
 
   const getDeviceIcon = (userAgent: string) => {
-    if (userAgent?.toLowerCase().includes('mobile')) {
+    if (userAgent?.toLowerCase().includes("mobile")) {
       return <Smartphone className="h-4 w-4" />;
     }
     return <Monitor className="h-4 w-4" />;
@@ -80,11 +102,20 @@ export function SessionManager() {
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    return `${Math.floor(diffInHours / 24)}d ago`;
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) {
+      const mins = diffMins % 60;
+      if (mins === 0) return `${diffHours}h ago`;
+      return `${diffHours}h ${mins}m ago`;
+    }
+    if (diffDays === 1) return "1 day ago";
+    return `${diffDays} days ago`;
   };
 
   if (!isAuthenticated) {
@@ -92,7 +123,9 @@ export function SessionManager() {
       <Card>
         <CardHeader>
           <CardTitle>Session Management</CardTitle>
-          <CardDescription>Please sign in to view your active sessions.</CardDescription>
+          <CardDescription>
+            Please sign in to view your active sessions.
+          </CardDescription>
         </CardHeader>
       </Card>
     );
@@ -125,9 +158,11 @@ export function SessionManager() {
                   className="flex items-center justify-between p-3 border rounded-lg"
                 >
                   <div className="flex items-center gap-3">
-                    {getDeviceIcon('')}
+                    {getDeviceIcon("")}
                     <div>
-                      <div className="font-medium">Session {session.id.slice(0, 8)}...</div>
+                      <div className="font-medium">
+                        Session {session.id.slice(0, 8)}...
+                      </div>
                       <div className="text-sm text-muted-foreground">
                         Created {formatTimeAgo(session.createdAt)}
                       </div>
@@ -147,9 +182,9 @@ export function SessionManager() {
               <Button onClick={loadSessions} variant="outline" size="sm">
                 Refresh
               </Button>
-              <Button 
-                onClick={handleLogoutAll} 
-                variant="destructive" 
+              <Button
+                onClick={handleLogoutAll}
+                variant="destructive"
                 size="sm"
                 className="flex items-center gap-2"
               >

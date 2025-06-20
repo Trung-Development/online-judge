@@ -245,7 +245,7 @@ export function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/security" className="w-full cursor-pointer">
+                  <Link href="/accounts/security" className="w-full cursor-pointer">
                     Security
                   </Link>
                 </DropdownMenuItem>
