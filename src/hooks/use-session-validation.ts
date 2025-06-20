@@ -103,16 +103,17 @@ export function usePeriodicSessionValidation(intervalMs: number = 60000) {
   const { validateSession } = useSessionValidation();
 
   useEffect(() => {
-    // Don't start validation immediately to avoid conflicts with initial load
+    // Set up periodic validation
+    const interval = setInterval(validateSession, intervalMs);
+
+    // Delay the first validation to avoid conflicts with initial load
     const timer = setTimeout(() => {
       validateSession();
-      
-      // Set up periodic validation
-      const interval = setInterval(validateSession, intervalMs);
-      
-      return () => clearInterval(interval);
     }, 5000); // Wait 5 seconds before first validation
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, [validateSession, intervalMs]);
 }
