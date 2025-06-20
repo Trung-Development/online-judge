@@ -21,7 +21,7 @@ export function useSessionValidation() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_ENDPOINT}/client/users/me`,
+        new URL("/client/users/me", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(),
         {
           headers: { Authorization: `Bearer ${session.accessToken}` },
         },
@@ -61,7 +61,7 @@ export function useSessionValidation() {
     // Logout from all sessions
     if (session?.accessToken) {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/client/sessions/logout-all`, {
+        await fetch(new URL("/client/sessions/logout-all", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(), {
           method: "DELETE",
           headers: { Authorization: `Bearer ${session.accessToken}` },
         });
@@ -79,7 +79,7 @@ export function useSessionValidation() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_ENDPOINT}/client/sessions/active`,
+        new URL("/client/sessions/active", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(),
         {
           headers: { Authorization: `Bearer ${session.accessToken}` },
         },

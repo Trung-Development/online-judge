@@ -40,7 +40,7 @@ declare module "next-auth/jwt" {
 async function refreshAccessToken(token: JWT) {
   try {
     const response = await fetch(
-      `${process.env.API_ENDPOINT}/client/sessions/refresh`,
+      new URL("/client/sessions/refresh", process.env.API_ENDPOINT).toString(),
       {
         method: "POST",
         headers: {
@@ -88,7 +88,7 @@ const handler = NextAuth({
         try {
           // 1. Get JWT from /client/sessions/
           const sessionRes = await fetch(
-            `${process.env.API_ENDPOINT}/client/sessions/`,
+            new URL("/client/sessions/", process.env.API_ENDPOINT).toString(),
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -119,7 +119,7 @@ const handler = NextAuth({
 
           // 2. Get user data from /client/users/me using the access token
           const userRes = await fetch(
-            `${process.env.API_ENDPOINT}/client/users/me`,
+            new URL("/client/users/me", process.env.API_ENDPOINT).toString(),
             {
               headers: { Authorization: `Bearer ${tokenData.accessToken}` },
             },
@@ -196,7 +196,7 @@ const handler = NextAuth({
       // Delete the session from the backend when signing out
       if (token?.accessToken) {
         try {
-          await fetch(`${process.env.API_ENDPOINT}/client/sessions/logout`, {
+          await fetch(new URL("/client/sessions/logout", process.env.API_ENDPOINT).toString(), {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token.accessToken}` },
           });

@@ -22,7 +22,7 @@ export default function ProblemPage() {
 
   useEffect(() => {
     if (!slug) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_ENDPOINT}/client/problems/${slug}`)
+    fetch(new URL(`/client/problems/${slug}`, process.env.NEXT_PUBLIC_API_ENDPOINT!).toString())
       .then((res) => {
         const ct = res.headers.get("content-type") || "";
         if (res.status === 404 || !ct.includes("application/json")) {

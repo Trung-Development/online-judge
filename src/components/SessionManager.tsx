@@ -118,6 +118,29 @@ export function SessionManager() {
     return `${diffDays} days ago`;
   };
 
+  const formatTimeUntil = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = date.getTime() - now.getTime();
+    
+    // If the date is in the past, it's expired
+    if (diffMs <= 0) return "Expired";
+    
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return "Less than 1m";
+    if (diffMins < 60) return `${diffMins}m`;
+    if (diffHours < 24) {
+      const mins = diffMins % 60;
+      if (mins === 0) return `${diffHours}h`;
+      return `${diffHours}h ${mins}m`;
+    }
+    if (diffDays === 1) return "1 day";
+    return `${diffDays} days`;
+  };
+
   if (!isAuthenticated) {
     return (
       <Card>
@@ -171,7 +194,7 @@ export function SessionManager() {
                   <div className="flex items-center gap-2">
                     {getLocationBadge(session.ip)}
                     <Badge variant="secondary" className="text-xs">
-                      Expires {formatTimeAgo(session.expiresAt)}
+                      Expires in {formatTimeUntil(session.expiresAt)}
                     </Badge>
                   </div>
                 </div>
