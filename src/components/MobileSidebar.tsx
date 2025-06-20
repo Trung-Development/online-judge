@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
   ActivityIcon,
   Menu,
@@ -11,6 +12,7 @@ import {
   Users,
   Trophy,
   ChevronDown,
+  Shield,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
@@ -55,6 +57,11 @@ const navigationItems = [
     url: "/contests",
     icon: Trophy,
   },
+  {
+    title: "Security",
+    url: "/accounts/security",
+    icon: Shield,
+  },
 ];
 
 const aboutItems = [
@@ -74,6 +81,16 @@ const aboutItems = [
 
 export function MobileSidebar() {
   const [open, setOpen] = React.useState(false);
+  const { data: session } = useSession();
+
+  // Filter navigation items based on authentication
+  const filteredNavigationItems = navigationItems.filter(item => {
+    // Show Security link only for authenticated users
+    if (item.title === "Security") {
+      return !!session;
+    }
+    return true;
+  });
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -112,7 +129,7 @@ export function MobileSidebar() {
                   Navigation
                 </h4>
                 <div className="space-y-1">
-                  {navigationItems.map((item) => (
+                  {filteredNavigationItems.map((item) => (
                     <Link
                       key={item.title}
                       href={item.url}

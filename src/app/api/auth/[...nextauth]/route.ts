@@ -3,7 +3,9 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 declare module "next-auth" {
   interface Session {
-    accessToken?: string;
+    sessionToken?: string;
+    sessionExpires?: number;
+    error?: string;
     user: {
       id: string;
       email: string;
@@ -17,16 +19,39 @@ declare module "next-auth" {
     email: string;
     username: string;
     fullname: string;
+    sessionToken?: string;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    accessToken?: string;
+    sessionToken?: string;
     id: string;
     email: string;
     username: string;
     fullname: string;
+    sessionExpires?: number;
+    error?: string;
+  }
+}
+
+// Decode JWT token to extract session data
+function decodeJWT(token: string) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(function (c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error('Failed to decode JWT:', error);
+    return null;
   }
 }
 
@@ -37,20 +62,22 @@ const handler = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        userAgent: { label: "User Agent", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials) return null;
 
         try {
-          // 1. Get JWT from /client/sessions/
+          // Get JWT session token from backend
           const sessionRes = await fetch(
-            `${process.env.API_ENDPOINT}/client/sessions/`,
+            new URL("/client/sessions/", process.env.API_ENDPOINT).toString(),
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 email: credentials.email,
                 password: credentials.password,
+                userAgent: credentials.userAgent,
               }),
             },
           );
@@ -60,24 +87,29 @@ const handler = NextAuth({
             if (errorBody.message === "INCORRECT_CREDENTIALS") {
               throw new Error("Incorrect email or password. Please try again.");
             }
-            // Handle other potential backend errors
             throw new Error(
               errorBody.message || "An authentication error occurred.",
             );
           }
 
           const sessionData = await sessionRes.json();
-          const token = sessionData.data;
+          const sessionToken = sessionData.data; // This is the JWT token
 
-          if (!token) {
-            throw new Error("Authentication failed: No token received.");
+          if (!sessionToken) {
+            throw new Error("Authentication failed: No session token received.");
           }
 
-          // 2. Get user data from /client/users/me using the JWT
+          // Decode the JWT to get session information
+          const decodedSession = decodeJWT(sessionToken);
+          if (!decodedSession) {
+            throw new Error("Failed to decode session token.");
+          }
+
+          // Get user data from /client/users/me using the session token
           const userRes = await fetch(
-            `${process.env.API_ENDPOINT}/client/users/me`,
+            new URL("/client/users/me", process.env.API_ENDPOINT).toString(),
             {
-              headers: { Authorization: `Bearer ${token}` },
+              headers: { Authorization: `Bearer ${sessionToken}` },
             },
           );
 
@@ -86,14 +118,12 @@ const handler = NextAuth({
           }
           const userData = await userRes.json();
 
-          // 3. Return a complete user object for the JWT callback
+          // Return user object with session token
           return {
             ...userData,
-            accessToken: token,
+            sessionToken: sessionToken,
           };
         } catch (e) {
-          // This will catch both network errors and the errors thrown above.
-          // NextAuth will pass the error message to the client.
           if (e instanceof Error) {
             throw e;
           }
@@ -108,33 +138,71 @@ const handler = NextAuth({
     strategy: "jwt",
   },
   callbacks: {
-    // The `user` object is from `authorize` on sign-in
     async jwt({ token, user }) {
       if (user) {
-        token.accessToken = (
-          user as {
-            accessToken?: string;
-            id: string;
-            email: string;
-            username: string;
-            fullname: string;
+        // Initial sign-in: store session token and user data
+        if (user.sessionToken) {
+          token.sessionToken = user.sessionToken;
+          token.id = user.id;
+          token.email = user.email;
+          token.username = user.username;
+          token.fullname = user.fullname;
+          
+          // Decode JWT to get expiry
+          const decodedSession = decodeJWT(user.sessionToken);
+          if (decodedSession && decodedSession.exp) {
+            token.sessionExpires = decodedSession.exp * 1000; // Convert to milliseconds
           }
-        ).accessToken;
-        token.id = user.id;
-        token.email = user.email;
-        token.username = user.username;
-        token.fullname = user.fullname;
+        }
+        
+        return token;
       }
-      return token;
+
+      // For subsequent requests, check if session is still valid
+      const now = Date.now();
+      if (token.sessionExpires && now < token.sessionExpires) {
+        return token; // Session is still valid
+      }
+
+      // Session has expired, force sign out by clearing token data
+      return {
+        id: token.id,
+        email: token.email,
+        username: token.username,
+        fullname: token.fullname,
+        error: "SessionExpired"
+      };
     },
-    // The `token` object is from `jwt`
+    
     async session({ session, token }) {
-      session.accessToken = token.accessToken;
+      if (!token || token.error === "SessionExpired") {
+        session.error = "SessionExpired";
+        return session;
+      }
+
+      session.sessionToken = token.sessionToken;
+      session.sessionExpires = token.sessionExpires;
       session.user.id = token.id;
       session.user.email = token.email;
       session.user.username = token.username;
       session.user.fullname = token.fullname;
       return session;
+    },
+  },
+  events: {
+    async signOut({ token }) {
+      // Delete the session from the backend when signing out
+      if (token?.sessionToken) {
+        try {
+          await fetch(new URL("/client/sessions/me", process.env.API_ENDPOINT).toString(), {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token.sessionToken}` },
+          });
+        } catch (error) {
+          console.error("Failed to delete session on backend:", error);
+          // Don't throw error here as we still want to complete the logout
+        }
+      }
     },
   },
   pages: {
