@@ -85,6 +85,7 @@ const handler = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        userAgent: { label: "User Agent", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials) return null;
@@ -99,6 +100,7 @@ const handler = NextAuth({
               body: JSON.stringify({
                 email: credentials.email,
                 password: credentials.password,
+                userAgent: credentials.userAgent,
               }),
             },
           );

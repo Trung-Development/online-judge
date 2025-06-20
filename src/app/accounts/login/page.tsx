@@ -51,6 +51,7 @@ export default function LoginPage() {
       redirect: false,
       email: formData.email,
       password: formData.password,
+      userAgent: navigator.userAgent,
     });
 
     if (result?.error) {

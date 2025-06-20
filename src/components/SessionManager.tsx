@@ -85,7 +85,10 @@ export function SessionManager() {
   };
 
   const getDeviceIcon = (userAgent: string) => {
-    if (userAgent?.toLowerCase().includes("mobile")) {
+    if (!userAgent) return <Monitor className="h-4 w-4" />;
+    
+    const ua = userAgent.toLowerCase();
+    if (ua.includes("mobile") || ua.includes("android") || ua.includes("iphone")) {
       return <Smartphone className="h-4 w-4" />;
     }
     return <Monitor className="h-4 w-4" />;
@@ -190,6 +193,11 @@ export function SessionManager() {
                       <div className="text-sm text-muted-foreground">
                         Created {formatTimeAgo(session.createdAt)}
                       </div>
+                      {session.userAgent && (
+                        <div className="text-xs text-muted-foreground truncate max-w-48">
+                          {session.userAgent.split(' ')[0] || 'Unknown browser'}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
