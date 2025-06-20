@@ -6,6 +6,7 @@ declare module "next-auth" {
   interface Session {
     accessToken?: string;
     refreshToken?: string;
+    accessTokenExpires?: number;
     error?: string;
     user: {
       id: string;
@@ -70,7 +71,6 @@ async function refreshAccessToken(token: JWT) {
       accessTokenExpires: Date.now() + 15 * 60 * 1000, // 15 minutes
     };
   } catch (error) {
-    console.error("Error refreshing access token:", error);
     return {
       ...token,
       error: "RefreshAccessTokenError",
@@ -160,8 +160,9 @@ const handler = NextAuth({
   },
   callbacks: {
     // The `user` object is from `authorize` on sign-in
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
+        // This only happens on initial sign-in
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
         token.id = user.id;
@@ -170,10 +171,17 @@ const handler = NextAuth({
         token.fullname = user.fullname;
         // Set access token expiry (15 minutes from now)
         token.accessTokenExpires = Date.now() + 15 * 60 * 1000;
+        return token; // Return early for initial login
       }
 
-      // Check if access token needs refresh
-      if (token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
+      // For subsequent requests, check if access token needs refresh
+      // Only refresh if we're close to expiry (5 minutes before) to avoid constant refreshing
+      const now = Date.now();
+      const expiresAt = token.accessTokenExpires;
+      const timeUntilExpiry = expiresAt ? expiresAt - now : 0;
+      
+      // Only refresh if less than 5 minutes remaining or already expired
+      if (token.accessTokenExpires && timeUntilExpiry > 5 * 60 * 1000) {
         return token;
       }
 
@@ -190,6 +198,7 @@ const handler = NextAuth({
 
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
+      session.accessTokenExpires = token.accessTokenExpires;
       session.user.id = token.id;
       session.user.email = token.email;
       session.user.username = token.username;

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { useSessionValidation } from "@/hooks/use-session-validation";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,10 +53,16 @@ function Badge({
 }
 
 export function SessionManager() {
+  const { data: session } = useSession();
   const { getActiveSessions, logoutAllSessions, isAuthenticated } =
     useSessionValidation();
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [loading, setLoading] = useState(false);
+
+  // Get access token expiry from NextAuth session
+  const getAccessTokenExpiry = () => {
+    return session?.accessTokenExpires || null;
+  };
 
   const loadSessions = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -179,35 +186,51 @@ export function SessionManager() {
         ) : (
           <>
             <div className="space-y-3">
-              {sessions.map((session) => (
-                <div
-                  key={session.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  <div className="flex items-center gap-3">
-                    {getDeviceIcon(session.userAgent)}
-                    <div>
-                      <div className="font-medium">
-                        Session {session.id.slice(0, 8)}...
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Created {formatTimeAgo(session.createdAt)}
-                      </div>
-                      {session.userAgent && (
-                        <div className="text-xs text-muted-foreground truncate max-w-48">
-                          {session.userAgent.split(' ')[0] || 'Unknown browser'}
+              {sessions.map((sessionItem, index) => {
+                const accessTokenExpires = getAccessTokenExpiry();
+                // Assume the first session is the current one (most recent)
+                const isCurrentSession = index === 0;
+                
+                return (
+                  <div
+                    key={sessionItem.id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      {getDeviceIcon(sessionItem.userAgent)}
+                      <div>
+                        <div className="font-medium flex items-center gap-2">
+                          Session {sessionItem.id.slice(0, 8)}...
+                          {isCurrentSession && (
+                            <Badge variant="default" className="text-xs">Current</Badge>
+                          )}
                         </div>
-                      )}
+                        <div className="text-sm text-muted-foreground">
+                          Created {formatTimeAgo(sessionItem.createdAt)}
+                        </div>
+                        {sessionItem.userAgent && (
+                          <div className="text-xs text-muted-foreground truncate max-w-48">
+                            {sessionItem.userAgent.split(' ')[0] || 'Unknown browser'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      {getLocationBadge(sessionItem.ip)}
+                      <div className="flex flex-col items-end gap-1">
+                        {isCurrentSession && accessTokenExpires && (
+                          <Badge variant="outline" className="text-xs">
+                            Access Token: {formatTimeUntil(new Date(accessTokenExpires).toISOString())}
+                          </Badge>
+                        )}
+                        <Badge variant="secondary" className="text-xs">
+                          Session: {formatTimeUntil(sessionItem.expiresAt)}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {getLocationBadge(session.ip)}
-                    <Badge variant="secondary" className="text-xs">
-                      Expires in {formatTimeUntil(session.expiresAt)}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="flex gap-2 pt-4 border-t">

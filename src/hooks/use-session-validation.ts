@@ -14,8 +14,6 @@ export function useSessionValidation() {
 
     // Check if there's a token refresh error
     if ('error' in session && session.error === 'RefreshAccessTokenError') {
-      console.log("Token refresh failed, signing out");
-      await signOut({ callbackUrl: "/accounts/login" });
       return false;
     }
 
@@ -29,7 +27,6 @@ export function useSessionValidation() {
 
       // If we get a 401 Unauthorized, the session is invalid
       if (response.status === 401) {
-        console.log("Session expired or invalid, signing out");
         // Sign out without calling DELETE since the session is already invalid
         await signOut({ callbackUrl: "/accounts/login" });
         return false;
@@ -37,14 +34,12 @@ export function useSessionValidation() {
 
       // Check for IP mismatch or other security violations
       if (response.status === 403) {
-        console.log("Security violation detected, signing out");
         await signOut({ callbackUrl: "/accounts/login" });
         return false;
       }
 
       return response.ok;
     } catch (error) {
-      console.error("Error validating session:", error);
       // On network errors, we might want to keep the session
       // but log the error for debugging
       return true;
