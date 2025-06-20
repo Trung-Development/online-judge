@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
 import { useSessionValidation } from "@/hooks/use-session-validation";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,16 +52,10 @@ function Badge({
 }
 
 export function SessionManager() {
-  const { data: session } = useSession();
   const { getActiveSessions, logoutAllSessions, isAuthenticated } =
     useSessionValidation();
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [loading, setLoading] = useState(false);
-
-  // Get access token expiry from NextAuth session
-  const getAccessTokenExpiry = () => {
-    return session?.accessTokenExpires || null;
-  };
 
   const loadSessions = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -187,7 +180,6 @@ export function SessionManager() {
           <>
             <div className="space-y-3">
               {sessions.map((sessionItem, index) => {
-                const accessTokenExpires = getAccessTokenExpiry();
                 // Assume the first session is the current one (most recent)
                 const isCurrentSession = index === 0;
                 
@@ -218,13 +210,8 @@ export function SessionManager() {
                     <div className="flex flex-col items-end gap-1">
                       {getLocationBadge(sessionItem.ip)}
                       <div className="flex flex-col items-end gap-1">
-                        {isCurrentSession && accessTokenExpires && (
-                          <Badge variant="outline" className="text-xs">
-                            Access Token: {formatTimeUntil(new Date(accessTokenExpires).toISOString())}
-                          </Badge>
-                        )}
                         <Badge variant="secondary" className="text-xs">
-                          Session: {formatTimeUntil(sessionItem.expiresAt)}
+                          Session Expiration: {formatTimeUntil(sessionItem.expiresAt)}
                         </Badge>
                       </div>
                     </div>

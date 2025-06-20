@@ -23,14 +23,15 @@ export async function authenticatedFetch(
   // Get the current session
   const session = await getSession();
   
-  if (!session?.accessToken) {
+  if (!session?.sessionToken) {
     throw new Error("No valid session found");
   }
 
-  // Add authorization header
+  // Add authorization header and User Agent
   const authHeaders: Record<string, string> = {
     ...headers,
-    Authorization: `Bearer ${session.accessToken}`,
+    Authorization: `Bearer ${session.sessionToken}`,
+    'X-User-Agent': navigator.userAgent, // Send the original browser User Agent
   };
 
   // Add content-type for POST/PUT requests with body

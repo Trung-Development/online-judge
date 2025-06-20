@@ -7,13 +7,13 @@ export function useSessionValidation() {
   const { data: session, status } = useSession();
 
   const validateSession = useCallback(async () => {
-    // Only validate if we have a session and access token
-    if (status !== "authenticated" || !session?.accessToken) {
+    // Only validate if we have a session and session token
+    if (status !== "authenticated" || !session?.sessionToken) {
       return false;
     }
 
-    // Check if there's a token refresh error
-    if ('error' in session && session.error === 'RefreshAccessTokenError') {
+    // Check if there's a session expired error
+    if ('error' in session && session.error === 'SessionExpired') {
       return false;
     }
 
@@ -21,7 +21,7 @@ export function useSessionValidation() {
       const response = await fetch(
         new URL("/client/users/me", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(),
         {
-          headers: { Authorization: `Bearer ${session.accessToken}` },
+          headers: { Authorization: `Bearer ${session.sessionToken}` },
         },
       );
 
@@ -54,11 +54,11 @@ export function useSessionValidation() {
 
   const logoutAllSessions = useCallback(async () => {
     // Logout from all sessions
-    if (session?.accessToken) {
+    if (session?.sessionToken) {
       try {
-        await fetch(new URL("/client/sessions/logout-all", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(), {
+        await fetch(new URL("/client/sessions/all", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(), {
           method: "DELETE",
-          headers: { Authorization: `Bearer ${session.accessToken}` },
+          headers: { Authorization: `Bearer ${session.sessionToken}` },
         });
       } catch (error) {
         console.error("Failed to logout all sessions:", error);
@@ -68,15 +68,15 @@ export function useSessionValidation() {
   }, [session]);
 
   const getActiveSessions = useCallback(async () => {
-    if (!session?.accessToken) {
+    if (!session?.sessionToken) {
       return [];
     }
 
     try {
       const response = await fetch(
-        new URL("/client/sessions/active", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(),
+        new URL("/client/sessions/all", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(),
         {
-          headers: { Authorization: `Bearer ${session.accessToken}` },
+          headers: { Authorization: `Bearer ${session.sessionToken}` },
         },
       );
 
@@ -95,7 +95,7 @@ export function useSessionValidation() {
     logout, 
     logoutAllSessions, 
     getActiveSessions,
-    isAuthenticated: status === "authenticated" && !!session?.accessToken
+    isAuthenticated: status === "authenticated" && !!session?.sessionToken
   };
 }
 
