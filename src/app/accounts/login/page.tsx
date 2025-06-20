@@ -18,6 +18,11 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import dynamic from "next/dynamic";
+
+const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), {
+  ssr: false,
+});
 
 export default function LoginPage() {
   const { theme } = useTheme();
@@ -29,6 +34,12 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [hcaptchaToken, setHcaptchaToken] = useState<string | null>(null);
+  
+  const hcaptchaSiteKey =
+    process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY ||
+    process.env.HCAPTCHA_SITE_KEY ||
+    "";
 
   useEffect(() => {
     setMounted(true);
@@ -47,15 +58,24 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
+    if (!hcaptchaToken) {
+      setError("Please complete the hCaptcha challenge.");
+      setIsLoading(false);
+      return;
+    }
+
     const result = await signIn("credentials", {
       redirect: false,
       email: formData.email,
       password: formData.password,
       userAgent: navigator.userAgent,
+      captchaToken: hcaptchaToken,
     });
 
     if (result?.error) {
       setError(result.error);
+      // Reset captcha on error
+      setHcaptchaToken(null);
     } else if (result?.ok) {
       router.push("/");
     }
@@ -115,6 +135,17 @@ export default function LoginPage() {
                     required
                     value={formData.password}
                     onChange={handleChange}
+                  />
+                </div>
+                
+                {/* hCaptcha */}
+                <div className="grid gap-2">
+                  <HCaptcha
+                    sitekey={hcaptchaSiteKey}
+                    onVerify={(token) => setHcaptchaToken(token)}
+                    onExpire={() => setHcaptchaToken(null)}
+                    onError={() => setHcaptchaToken(null)}
+                    theme={mounted && theme === "dark" ? "dark" : "light"}
                   />
                 </div>
               </div>

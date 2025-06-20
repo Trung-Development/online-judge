@@ -63,9 +63,67 @@ const handler = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
         userAgent: { label: "User Agent", type: "text" },
+        clientIp: { label: "Client IP", type: "text" },
+        captchaToken: { label: "Captcha Token", type: "text" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials) return null;
+
+        // Extract real client IP from the NextAuth request
+        const getClientIp = (request: {
+          headers?: Record<string, string | string[]>;
+          ip?: string;
+          connection?: { remoteAddress?: string };
+        }) => {
+          // Check various headers that might contain the real client IP
+          const headers = request.headers || {};
+          
+          // Cloudflare
+          if (headers['cf-connecting-ip']) {
+            return headers['cf-connecting-ip'];
+          }
+          
+          // Standard forwarded headers
+          if (headers['x-forwarded-for']) {
+            const forwarded = headers['x-forwarded-for'];
+            const ips = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+            return ips.split(',')[0].trim();
+          }
+          
+          // Other common headers
+          if (headers['x-real-ip']) {
+            return headers['x-real-ip'];
+          }
+          
+          if (headers['x-client-ip']) {
+            return headers['x-client-ip'];
+          }
+          
+          if (headers['x-forwarded']) {
+            const forwarded = headers['x-forwarded'];
+            const ips = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+            return ips.split(',')[0].trim();
+          }
+          
+          if (headers['forwarded-for']) {
+            const forwardedFor = headers['forwarded-for'];
+            const ips = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
+            return ips.split(',')[0].trim();
+          }
+          
+          if (headers['forwarded']) {
+            const forwarded = Array.isArray(headers['forwarded'])
+              ? headers['forwarded'][0]
+              : headers['forwarded'];
+            const match = forwarded.match(/for=([^;]+)/);
+            if (match) return match[1];
+          }
+          
+          // Fallback to connection remote address
+          return request.ip || request.connection?.remoteAddress || 'unknown';
+        };
+
+        const clientIp = getClientIp(req);
 
         try {
           // Get JWT session token from backend
@@ -78,6 +136,8 @@ const handler = NextAuth({
                 email: credentials.email,
                 password: credentials.password,
                 userAgent: credentials.userAgent,
+                clientIp: clientIp,
+                captchaToken: credentials.captchaToken,
               }),
             },
           );
