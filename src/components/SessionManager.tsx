@@ -23,6 +23,7 @@ interface SessionData {
   ip: string;
   createdAt: string;
   expiresAt: string;
+  userAgent: string;
 }
 
 // Simple Badge component since it's not available
