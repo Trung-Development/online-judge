@@ -52,9 +52,10 @@ function Badge({
 }
 
 export function SessionManager() {
-  const { getActiveSessions, logoutAllSessions, isAuthenticated } =
+  const { getActiveSessions, getCurrentSession, logoutAllSessions, isAuthenticated } =
     useSessionValidation();
   const [sessions, setSessions] = useState<SessionData[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const loadSessions = useCallback(async () => {
@@ -62,13 +63,19 @@ export function SessionManager() {
 
     setLoading(true);
     try {
-      const activeSessions = await getActiveSessions();
+      // Fetch both current session and all sessions
+      const [currentSession, activeSessions] = await Promise.all([
+        getCurrentSession(),
+        getActiveSessions()
+      ]);
+      
       setSessions(activeSessions);
+      setCurrentSessionId(currentSession?.id || null);
     } catch (error) {
       console.error("Failed to load sessions:", error);
     }
     setLoading(false);
-  }, [isAuthenticated, getActiveSessions]);
+  }, [isAuthenticated, getCurrentSession, getActiveSessions]);
 
   useEffect(() => {
     loadSessions();
@@ -179,9 +186,9 @@ export function SessionManager() {
         ) : (
           <>
             <div className="space-y-3">
-              {sessions.map((sessionItem, index) => {
-                // Assume the first session is the current one (most recent)
-                const isCurrentSession = index === 0;
+              {sessions.map((sessionItem) => {
+                // Check if this session matches the current session ID
+                const isCurrentSession = sessionItem.id === currentSessionId;
                 
                 return (
                   <div
