@@ -70,7 +70,7 @@ async function refreshAccessToken(token: JWT) {
       refreshToken: tokenData.refreshToken,
       accessTokenExpires: Date.now() + 15 * 60 * 1000, // 15 minutes
     };
-  } catch (error) {
+  } catch {
     return {
       ...token,
       error: "RefreshAccessTokenError",
@@ -160,7 +160,7 @@ const handler = NextAuth({
   },
   callbacks: {
     // The `user` object is from `authorize` on sign-in
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user }) {
       if (user) {
         // This only happens on initial sign-in
         token.accessToken = user.accessToken;

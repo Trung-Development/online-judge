@@ -39,7 +39,7 @@ export function useSessionValidation() {
       }
 
       return response.ok;
-    } catch (error) {
+    } catch {
       // On network errors, we might want to keep the session
       // but log the error for debugging
       return true;
