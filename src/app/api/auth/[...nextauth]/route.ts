@@ -1,9 +1,12 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { JWT } from "next-auth/jwt";
 
 declare module "next-auth" {
   interface Session {
     accessToken?: string;
+    refreshToken?: string;
+    error?: string;
     user: {
       id: string;
       email: string;
@@ -17,16 +20,57 @@ declare module "next-auth" {
     email: string;
     username: string;
     fullname: string;
+    accessToken?: string;
+    refreshToken?: string;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     accessToken?: string;
+    refreshToken?: string;
     id: string;
     email: string;
     username: string;
     fullname: string;
+    accessTokenExpires?: number;
+  }
+}
+
+async function refreshAccessToken(token: JWT) {
+  try {
+    const response = await fetch(
+      `${process.env.API_ENDPOINT}/client/sessions/refresh`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          refreshToken: token.refreshToken,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to refresh token");
+    }
+
+    const refreshedTokens = await response.json();
+    const tokenData = refreshedTokens.data;
+
+    return {
+      ...token,
+      accessToken: tokenData.accessToken,
+      refreshToken: tokenData.refreshToken,
+      accessTokenExpires: Date.now() + 15 * 60 * 1000, // 15 minutes
+    };
+  } catch (error) {
+    console.error("Error refreshing access token:", error);
+    return {
+      ...token,
+      error: "RefreshAccessTokenError",
+    };
   }
 }
 
@@ -67,17 +111,17 @@ const handler = NextAuth({
           }
 
           const sessionData = await sessionRes.json();
-          const token = sessionData.data;
+          const tokenData = sessionData.data;
 
-          if (!token) {
-            throw new Error("Authentication failed: No token received.");
+          if (!tokenData?.accessToken || !tokenData?.refreshToken) {
+            throw new Error("Authentication failed: No tokens received.");
           }
 
-          // 2. Get user data from /client/users/me using the JWT
+          // 2. Get user data from /client/users/me using the access token
           const userRes = await fetch(
             `${process.env.API_ENDPOINT}/client/users/me`,
             {
-              headers: { Authorization: `Bearer ${token}` },
+              headers: { Authorization: `Bearer ${tokenData.accessToken}` },
             },
           );
 
@@ -89,7 +133,8 @@ const handler = NextAuth({
           // 3. Return a complete user object for the JWT callback
           return {
             ...userData,
-            accessToken: token,
+            accessToken: tokenData.accessToken,
+            refreshToken: tokenData.refreshToken,
           };
         } catch (e) {
           // This will catch both network errors and the errors thrown above.
@@ -111,30 +156,55 @@ const handler = NextAuth({
     // The `user` object is from `authorize` on sign-in
     async jwt({ token, user }) {
       if (user) {
-        token.accessToken = (
-          user as {
-            accessToken?: string;
-            id: string;
-            email: string;
-            username: string;
-            fullname: string;
-          }
-        ).accessToken;
+        token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
         token.id = user.id;
         token.email = user.email;
         token.username = user.username;
         token.fullname = user.fullname;
+        // Set access token expiry (15 minutes from now)
+        token.accessTokenExpires = Date.now() + 15 * 60 * 1000;
       }
-      return token;
+
+      // Check if access token needs refresh
+      if (token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
+        return token;
+      }
+
+      // Try to refresh the access token
+      return await refreshAccessToken(token);
     },
     // The `token` object is from `jwt`
     async session({ session, token }) {
+      // Check for token refresh errors
+      if (token.error === 'RefreshAccessTokenError') {
+        // Force re-authentication
+        session.error = 'RefreshAccessTokenError';
+      }
+
       session.accessToken = token.accessToken;
+      session.refreshToken = token.refreshToken;
       session.user.id = token.id;
       session.user.email = token.email;
       session.user.username = token.username;
       session.user.fullname = token.fullname;
       return session;
+    },
+  },
+  events: {
+    async signOut({ token }) {
+      // Delete the session from the backend when signing out
+      if (token?.accessToken) {
+        try {
+          await fetch(`${process.env.API_ENDPOINT}/client/sessions/logout`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token.accessToken}` },
+          });
+        } catch (error) {
+          console.error("Failed to delete session on backend:", error);
+          // Don't throw error here as we still want to complete the logout
+        }
+      }
     },
   },
   pages: {

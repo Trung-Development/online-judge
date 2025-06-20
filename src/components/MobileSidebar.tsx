@@ -11,6 +11,7 @@ import {
   Users,
   Trophy,
   ChevronDown,
+  Shield,
 } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
@@ -54,6 +55,11 @@ const navigationItems = [
     title: "Contests",
     url: "/contests",
     icon: Trophy,
+  },
+  {
+    title: "Security",
+    url: "/security",
+    icon: Shield,
   },
 ];
 

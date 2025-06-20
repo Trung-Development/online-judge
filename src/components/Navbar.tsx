@@ -7,7 +7,8 @@ import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 
-import { useSession, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { useSessionValidation } from "@/hooks/use-session-validation";
 
 import {
   NavigationMenu,
@@ -64,6 +65,7 @@ function ListItem({
 
 export function Navbar() {
   const { data: session, status } = useSession();
+  const { logout } = useSessionValidation();
   const user = session?.user;
   const avatarUrl = user?.email ? getGravatarURL(user.email) : undefined;
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
@@ -243,9 +245,14 @@ export function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link href="/security" className="w-full cursor-pointer">
+                    Security
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <button
                     className="w-full text-left cursor-pointer"
-                    onClick={() => signOut()}
+                    onClick={() => logout()}
                   >
                     Logout
                   </button>
