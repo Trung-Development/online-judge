@@ -17,8 +17,9 @@ import { MagicCard } from "@/components/magicui/magic-card";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
+import Loading from "@/app/loading";
 
 const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), {
   ssr: false,
@@ -27,6 +28,7 @@ const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), {
 export default function LoginPage() {
   const { theme } = useTheme();
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -44,6 +46,25 @@ export default function LoginPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      router.push("/");
+    }
+  }, [status, session, router]);
+
+  // Show loading while checking authentication
+  if (status === "loading") {
+    return (
+      <Loading />
+    );
+  }
+
+  // Don't render the form if user is authenticated
+  if (status === "authenticated") {
+    return null;
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({

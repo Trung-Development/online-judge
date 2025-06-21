@@ -15,8 +15,9 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { MagicCard } from "@/components/magicui/magic-card";
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { languages } from "@/constants";
 import * as React from "react";
 import { ChevronDownIcon, ChevronsUpDown, Check } from "lucide-react";
@@ -43,6 +44,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import Loading from "@/app/loading";
 
 const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), {
   ssr: false,
@@ -51,6 +53,7 @@ const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), {
 export default function SignupPage() {
   const { theme } = useTheme();
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -70,6 +73,25 @@ export default function SignupPage() {
     process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY ||
     process.env.HCAPTCHA_SITE_KEY ||
     "";
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (status === "authenticated" && session) {
+      router.push("/");
+    }
+  }, [status, session, router]);
+
+  // Show loading while checking authentication
+  if (status === "loading") {
+    return (
+      <Loading />
+    );
+  }
+
+  // Don't render the form if user is authenticated
+  if (status === "authenticated") {
+    return null;
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
