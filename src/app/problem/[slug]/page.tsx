@@ -82,12 +82,8 @@ export default function ProblemPage() {
         <div className="lg:flex-1 lg:w-[70%]">
           {/* PDF Viewer (if available) */}
           {problem.pdf && (
-            <div className="w-full h-96 mb-6">
-              <iframe
-                src={`/pdf/${problem.pdf}`}
-                className="w-full h-full border rounded-md"
-                title={`${problem.name} PDF Statement`}
-              />
+            <div className="w-full mb-6" style={{ height: "auto" }}>
+              <PDFViewer src={`/pdf/${problem.pdf}`} title={`${problem.name} PDF Statement`} />
             </div>
           )}
 
@@ -278,5 +274,52 @@ function SampleIO({ text }: { text: string }) {
         </pre>
       </div>
     </div>
+  );
+}
+
+function PDFViewer({ src, title }: { src: string; title: string }) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const onLoad = () => {
+      try {
+        // Try to access the PDF's document height (works only if same-origin)
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (doc) {
+          const html = doc.documentElement;
+          const body = doc.body;
+          const height = Math.max(
+            body?.scrollHeight || 0,
+            html?.scrollHeight || 0,
+            body?.offsetHeight || 0,
+            html?.offsetHeight || 0
+          );
+          if (height > 0) {
+            iframe.style.height = `${height}px`;
+          }
+        }
+      } catch {
+        // If cross-origin, fallback to a default height
+        iframe.style.height = "80vh";
+      }
+    };
+
+    iframe.addEventListener("load", onLoad);
+    return () => {
+      iframe.removeEventListener("load", onLoad);
+    };
+  }, [src]);
+
+  return (
+    <iframe
+      ref={iframeRef}
+      src={src}
+      className="w-full border rounded-md"
+      title={title}
+      style={{ minHeight: 400, height: "auto" }}
+    />
   );
 }
