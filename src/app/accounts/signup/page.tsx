@@ -26,6 +26,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import dynamic from "next/dynamic";
 import {
   Command,
@@ -58,6 +65,7 @@ export default function SignupPage() {
   const [dobOpen, setDobOpen] = useState(false);
   const [hcaptchaToken, setHcaptchaToken] = useState<string | null>(null);
   const [comboboxOpen, setComboboxOpen] = useState(false);
+  const [calendarDate, setCalendarDate] = useState<Date>(new Date());
   const hcaptchaSiteKey =
     process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY ||
     process.env.HCAPTCHA_SITE_KEY ||
@@ -75,6 +83,29 @@ export default function SignupPage() {
       ...formData,
       dateOfBirth: date,
     });
+    if (date) {
+      setCalendarDate(date);
+    }
+  };
+
+  // Helper functions for custom calendar navigation
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
+
+  const handleMonthChange = (month: string) => {
+    const monthIndex = months.indexOf(month);
+    const newDate = new Date(calendarDate.getFullYear(), monthIndex, 1);
+    setCalendarDate(newDate);
+  };
+
+  const handleYearChange = (year: string) => {
+    const newDate = new Date(parseInt(year), calendarDate.getMonth(), 1);
+    setCalendarDate(newDate);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -289,14 +320,50 @@ export default function SignupPage() {
                       className="w-auto overflow-hidden p-0"
                       align="start"
                     >
+                      <div className="p-3 border-b border-border">
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <Select
+                            value={months[calendarDate.getMonth()]}
+                            onValueChange={handleMonthChange}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {months.map((month) => (
+                                <SelectItem key={month} value={month}>
+                                  {month}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select
+                            value={calendarDate.getFullYear().toString()}
+                            onValueChange={handleYearChange}
+                          >
+                            <SelectTrigger className="w-20">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="max-h-48">
+                              {years.map((year) => (
+                                <SelectItem key={year} value={year.toString()}>
+                                  {year}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                       <Calendar
                         mode="single"
                         selected={formData.dateOfBirth}
-                        captionLayout="dropdown"
+                        month={calendarDate}
+                        onMonthChange={setCalendarDate}
                         onSelect={(date) => {
-                          handleDateChange(date); // store the picked date
-                          setDobOpen(false); // then close the popover
+                          handleDateChange(date);
+                          setDobOpen(false);
                         }}
+                        className="p-3"
                       />
                     </PopoverContent>
                   </Popover>

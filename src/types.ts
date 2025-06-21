@@ -12,7 +12,7 @@ export interface IProblemData {
     // Basic information
     code: string; // Unique identifier for the problem
     name: string;
-    statement: string;
+    body: string;
     org: string[];
     
     // Limits
@@ -31,5 +31,18 @@ export interface IProblemData {
     author: string[];
     curator: string[];
     tester: string[];
+    pdf?: string; // PDF Statement name.
     solution?: string;
+
+    stats: {
+        submissions: number;
+        ACSumissions: number;
+        WASubmissions: number;
+        RTESubmissions: number;
+        OLESubmissions: number;
+        IRSubmissions: number;
+        TLESubmissions: number;
+        MLESubmissions: number;
+        RESubmissions: number;
+    }
 }

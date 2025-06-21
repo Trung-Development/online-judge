@@ -70,11 +70,6 @@ export function Navbar() {
   const avatarUrl = user?.email ? getGravatarURL(user.email) : undefined;
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 
-  // Prevent hydration mismatch by not rendering until session is loaded
-  if (status === "loading") {
-    return null;
-  }
-
   return (
     <div className="w-full bg-zinc-900 border-b border-zinc-800 relative z-50">
       <div className="flex items-center justify-between">
@@ -201,7 +196,11 @@ export function Navbar() {
 
         {/* Auth Buttons or User Dropdown */}
         <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 px-2 sm:px-3 lg:px-6">
-          {!user ? (
+          {status === "loading" ? (
+            // Optional: show skeleton or loading spinner
+            <div className="h-6 w-24 bg-zinc-700 rounded animate-pulse" />
+          ) : !user ? (
+            // Not authenticated
             <>
               <Link
                 href="/accounts/login"
@@ -218,7 +217,11 @@ export function Navbar() {
               </Link>
             </>
           ) : (
-            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+            // Authenticated: show dropdown
+            <DropdownMenu
+              open={isDropdownOpen}
+              onOpenChange={setIsDropdownOpen}
+            >
               <DropdownMenuTrigger className="flex items-center gap-2 bg-transparent hover:bg-zinc-800 text-zinc-100 p-2 rounded-md focus:ring-0 focus:ring-offset-0 outline-none transition-colors">
                 {avatarUrl && (
                   <Image
@@ -232,10 +235,10 @@ export function Navbar() {
                 <span className="inline">
                   <b>{user.fullname || user.username}</b>
                 </span>
-                <ChevronDown 
+                <ChevronDown
                   className={`h-4 w-4 transition-transform duration-200 ease-in-out ${
-                    isDropdownOpen ? 'rotate-180' : 'rotate-0'
-                  }`} 
+                    isDropdownOpen ? "rotate-180" : "rotate-0"
+                  }`}
                 />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[150px]">
@@ -245,7 +248,10 @@ export function Navbar() {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/accounts/security" className="w-full cursor-pointer">
+                  <Link
+                    href="/accounts/security"
+                    className="w-full cursor-pointer"
+                  >
                     Security
                   </Link>
                 </DropdownMenuItem>
