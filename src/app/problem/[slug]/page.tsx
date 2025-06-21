@@ -138,11 +138,11 @@ export default function ProblemPage() {
               <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 text-lg">
                 <div className="flex flex-col gap-2">
                   <Button asChild className="w-full">
-                    <Link href={`/problem/${slug}/submit`}>Submit</Link>
+                    <Link href={`/problem/${slug}/submit`}>Submit solution</Link>
                   </Button>
                   {problem.solution && (
                     <Button variant="outline" asChild className="w-full">
-                      <Link href={`/problem/${slug}/solution`}>Solution</Link>
+                      <Link href={`/problem/${slug}/solution`}>Read editorial</Link>
                     </Button>
                   )}
                 </div>
