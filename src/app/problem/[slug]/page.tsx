@@ -14,7 +14,7 @@ import "katex/dist/katex.min.css";
 
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faClone, faFilePdf, faClock, faServer, faPencilSquare, faKeyboard, faPrint } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faClone, faFilePdf, faClock, faServer, faPencilSquare, faKeyboard, faPrint, faChevronRight, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import Loading from "@/app/loading";
 
 import { IProblemData } from "@/types";
@@ -23,6 +23,7 @@ export default function ProblemPage() {
   const slug = useParams().slug;
   const [problem, setProblem] = useState<IProblemData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [typeExpanded, setTypeExpanded] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -147,19 +148,25 @@ export default function ProblemPage() {
                 </div>
               </div>
 
+              {/* Separator */}
+              <hr className="border-gray-300 lg:border-gray-200" />
+
               {/* Time and Memory Limits */}
               <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <FontAwesomeIcon icon={faClock} className="text-primary w-4" />
-                    <span className="font-bold text-foreground">Time: {problem.timeLimit}s</span>
+                    <span className="font-bold text-foreground">Time limit: {problem.timeLimit}s</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <FontAwesomeIcon icon={faServer} className="text-primary w-4" />
-                    <span className="font-bold text-foreground">Memory: {problem.memoryLimit} MB</span>
+                    <span className="font-bold text-foreground">Memory limit: {problem.memoryLimit} MB</span>
                   </div>
                 </div>
               </div>
+
+              {/* Separator */}
+              <hr className="border-gray-300 lg:border-gray-200" />
 
               {/* I/O Information */}
               <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0">
@@ -177,19 +184,41 @@ export default function ProblemPage() {
                 </div>
               </div>
 
+              {/* Separator */}
+              <hr className="border-gray-300 lg:border-gray-200" />
+
               {/* Author and Type */}
               <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0">
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="flex items-start gap-2">
                     <FontAwesomeIcon icon={faPencilSquare} className="text-primary w-4 mt-0.5" />
                     <div>
-                      <span className="font-bold text-foreground">Author: </span>
-                      <span className="text-foreground">{problem.author.join(", ")}</span>
+                      <div className="font-bold text-foreground">Author:</div>
+                      <div className="text-foreground">{problem.author.join(", ")}</div>
                     </div>
                   </div>
                   <div>
-                    <span className="font-bold text-foreground">Type: </span>
-                    <span className="text-foreground">{problem.type.join(", ")}</span>
+                    <button
+                      onClick={() => setTypeExpanded(!typeExpanded)}
+                      className="flex items-center gap-2 w-full text-left hover:opacity-70 transition-opacity"
+                    >
+                      <FontAwesomeIcon 
+                        icon={typeExpanded ? faChevronDown : faChevronRight} 
+                        className="text-primary w-3 transition-transform duration-200"
+                      />
+                      <span className="font-bold text-foreground">
+                        Problem type{problem.type.length > 1 ? 's' : ''}
+                      </span>
+                    </button>
+                    <div 
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        typeExpanded ? 'max-h-32 opacity-100 mt-2' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="text-foreground ml-5">
+                        {problem.type.join(", ")}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
