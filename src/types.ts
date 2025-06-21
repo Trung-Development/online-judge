@@ -33,4 +33,16 @@ export interface IProblemData {
     tester: string[];
     pdf?: string; // PDF Statement name.
     solution?: string;
+
+    stats: {
+        submissions: number;
+        ACSumissions: number;
+        WASubmissions: number;
+        RTESubmissions: number;
+        OLESubmissions: number;
+        IRSubmissions: number;
+        TLESubmissions: number;
+        MLESubmissions: number;
+        RESubmissions: number;
+    }
 }
