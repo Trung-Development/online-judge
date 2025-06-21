@@ -20,10 +20,16 @@ import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Loading from "@/app/loading";
+import { Config } from "../../../../config";
 
 const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), {
   ssr: false,
 });
+
+export const metadata = {
+  title: `Login - ${Config.siteDescription}`,
+  description: `Login to your account on ${Config.sitename}`,
+}
 
 export default function LoginPage() {
   const { theme } = useTheme();
