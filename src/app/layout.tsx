@@ -5,13 +5,6 @@ import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import NextAuthProvider from "@/components/NextAuthProvider";
 import SessionValidator from "@/components/SessionValidator";
-import { Config } from "../../config";
-
-export const metadata = {
-  metadataBase: new URL(Config.siteURL),
-  title: Config.sitename,
-  description: Config.siteDescription,
-}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
