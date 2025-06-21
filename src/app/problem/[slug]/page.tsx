@@ -18,26 +18,6 @@ import { faCheck, faClone, faFilePdf, faClock, faServer, faPencilSquare, faKeybo
 import Loading from "@/app/loading";
 
 import { IProblemData } from "@/types";
-import { Config } from "../../../../config";
-
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const slug = params.slug;
-  try {
-    const res = await fetch(
-      new URL(`/client/problems/${slug}`, process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(),
-      { cache: "no-store" }
-    );
-    if (!res.ok) throw new Error();
-    const data: IProblemData = await res.json();
-    return {
-      title: `${data.name} - ${Config.siteDescription}`,
-    };
-  } catch {
-    return {
-      title: `No such problem - ${Config.siteDescription}`,
-    };
-  }
-}
 
 export default function ProblemPage() {
   const slug = useParams().slug;

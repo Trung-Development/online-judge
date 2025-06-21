@@ -14,11 +14,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Construction, Rocket, Coffee, Code2 } from "lucide-react";
 
-export const metadata = {
-  title: "YACPS - Yet Another Competitive Programming System",
-  description: "Welcome to YACPS Online Judge, under development!",
-};
-
 export default function Home() {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);

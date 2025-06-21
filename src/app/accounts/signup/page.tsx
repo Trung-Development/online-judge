@@ -45,16 +45,10 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import Loading from "@/app/loading";
-import { Config } from "../../../../config";
 
 const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), {
   ssr: false,
 });
-
-export const metadata = {
-  title: `Signup - ${Config.siteDescription}`,
-  description: `Create an account on ${Config.sitename}`,
-}
 
 export default function SignupPage() {
   const { theme } = useTheme();
