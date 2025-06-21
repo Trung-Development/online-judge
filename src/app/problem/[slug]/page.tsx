@@ -135,7 +135,7 @@ export default function ProblemPage() {
             {/* Mobile: Show as card, Desktop: Show as sidebar */}
             <div className="lg:space-y-4">
               {/* Buttons */}
-              <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0">
+              <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 text-lg">
                 <div className="flex flex-col gap-2">
                   <Button asChild className="w-full">
                     <Link href={`/problem/${slug}/submit`}>Submit</Link>
@@ -149,27 +149,37 @@ export default function ProblemPage() {
               </div>
 
               {/* Separator */}
-              <hr className="border-gray-300 lg:border-gray-200" />
+              <hr className="hidden lg:block border-gray-300 lg:border-gray-200" />
 
               {/* Time and Memory Limits */}
-              <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0">
+              <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0 text-lg">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <FontAwesomeIcon icon={faClock} className="text-primary w-4" />
-                    <span className="font-bold text-foreground">Time limit: {problem.timeLimit}s</span>
+                    <span className="font-bold text-foreground">
+                      Time limit:
+                    </span>
+                    <span className="text-foreground">
+                      {problem.timeLimit}s
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <FontAwesomeIcon icon={faServer} className="text-primary w-4" />
-                    <span className="font-bold text-foreground">Memory limit: {problem.memoryLimit} MB</span>
+                    <span className="font-bold text-foreground">
+                      Memory limit:
+                    </span>
+                    <span className="text-foreground">
+                      {problem.memoryLimit}M
+                    </span>
                   </div>
                 </div>
               </div>
 
               {/* Separator */}
-              <hr className="border-gray-300 lg:border-gray-200" />
+              <hr className="hidden lg:block border-gray-300 lg:border-gray-200" />
 
               {/* I/O Information */}
-              <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0">
+              <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0 text-lg">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <FontAwesomeIcon icon={faKeyboard} className="text-primary w-4" />
@@ -185,16 +195,28 @@ export default function ProblemPage() {
               </div>
 
               {/* Separator */}
-              <hr className="border-gray-300 lg:border-gray-200" />
+              <hr className="hidden lg:block border-gray-300 lg:border-gray-200" />
 
               {/* Author and Type */}
-              <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0">
+              <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0 text-lg">
                 <div className="space-y-3">
                   <div className="flex items-start gap-2">
                     <FontAwesomeIcon icon={faPencilSquare} className="text-primary w-4 mt-0.5" />
                     <div>
                       <div className="font-bold text-foreground">Author:</div>
-                      <div className="text-foreground">{problem.author.join(", ")}</div>
+                      <div className="text-foreground">
+                        {problem.author.map((username: string, idx: number) => (
+                          <React.Fragment key={username}>
+                            <Link
+                              href={`/user/${username}`}
+                              className="text-foreground"
+                            >
+                              {username}
+                            </Link>
+                            {idx < problem.author.length - 1 && ', '}
+                          </React.Fragment>
+                        ))}
+                      </div>
                     </div>
                   </div>
                   <div>
