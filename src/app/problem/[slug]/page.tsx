@@ -159,7 +159,7 @@ export default function ProblemPage() {
             },
           }}
         >
-          {problem.statement.replace(/__([^_\n]+)__/g, '<u>$1</u>')}
+          {problem.body.replace(/__([^_\n]+)__/g, '<u>$1</u>')}
         </ReactMarkdown>
       </div>
     </main>

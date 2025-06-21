@@ -12,7 +12,7 @@ export interface IProblemData {
     // Basic information
     code: string; // Unique identifier for the problem
     name: string;
-    statement: string;
+    body: string;
     org: string[];
     
     // Limits
