@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -10,9 +11,12 @@ import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import remarkHeadingSeparator from "@/lib/remarkHeadingSeparator";
 import "katex/dist/katex.min.css";
+
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faClone, faFilePdf } from "@fortawesome/free-solid-svg-icons";
+import Loading from "@/app/loading";
+
 import { IProblemData } from "@/types";
 
 export default function ProblemPage() {
@@ -43,7 +47,7 @@ export default function ProblemPage() {
       });
   }, [slug]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <Loading />;
   if (!problem)
     return (
       <main className="max-w-3xl mx-auto py-8 px-4">
@@ -110,6 +114,17 @@ export default function ProblemPage() {
           </div>
         </div>
       </div>
+
+      {/* PDF Viewer (if available) */}
+      {problem.pdf && (
+        <div className="w-full h-screen mb-6">
+          <iframe
+            src={`/pdf/${problem.pdf}`}
+            className="w-full h-full border rounded-md"
+            title={`${problem.name} PDF Statement`}
+          />
+        </div>
+      )}
 
       {/* Statement + SampleIO and separators */}
       <div className="prose max-w-none">

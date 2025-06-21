@@ -31,5 +31,6 @@ export interface IProblemData {
     author: string[];
     curator: string[];
     tester: string[];
+    pdf?: string; // PDF Statement name.
     solution?: string;
 }
