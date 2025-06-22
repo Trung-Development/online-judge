@@ -36,6 +36,16 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
     )
   ).sort();
 
+  // Helper to format memory limit
+  function formatMemoryLimit(memoryLimit: number) {
+    if (memoryLimit >= 1024) {
+      // Show up to 1 decimal if not integer
+      const gb = memoryLimit / 1024;
+      return gb % 1 === 0 ? `${gb}G` : `${parseFloat(gb.toFixed(1))}G`;
+    }
+    return `${memoryLimit}M`;
+  }
+
   return (
     <main className="max-w-7xl mx-auto py-8 px-4">
       {/* Title & PDF */}
@@ -151,7 +161,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                       Memory limit:
                     </span>
                     <span className="text-foreground">
-                      {problem.memoryLimit}M
+                      {formatMemoryLimit(problem.memoryLimit)}
                     </span>
                   </div>
                 </div>
