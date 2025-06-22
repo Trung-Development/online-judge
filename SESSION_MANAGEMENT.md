@@ -22,7 +22,7 @@ import { useSessionValidation } from "@/hooks/use-session-validation";
 
 function MyComponent() {
   const { validateSession, logout } = useSessionValidation();
-  
+
   // Manual session validation
   const handleCheckSession = async () => {
     const isValid = await validateSession();
@@ -30,7 +30,7 @@ function MyComponent() {
       console.log("Session expired");
     }
   };
-  
+
   // Manual logout
   const handleLogout = () => {
     logout();
@@ -121,12 +121,14 @@ The system integrates with these backend endpoints:
 - `GET /client/users/me` - Get current user (session validation)
 
 Backend responses:
+
 - **401 Unauthorized**: Session expired/invalid/not found
 - **200 OK**: Session is valid
 
 ## Configuration
 
 Environment variables required:
+
 - `API_ENDPOINT` - Backend API base URL (server-side)
 - `NEXT_PUBLIC_API_ENDPOINT` - Backend API base URL (client-side)
 
@@ -184,7 +186,7 @@ function MyComponent() {
       alert("Your session has expired. Please login again.");
       return;
     }
-    
+
     // Proceed with action
     // ...
   };

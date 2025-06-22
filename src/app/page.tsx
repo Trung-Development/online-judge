@@ -4,7 +4,7 @@ import { Config } from "@/config";
 
 export const metadata: Metadata = {
   title: `Home - ${Config.siteDescription}`,
-}
+};
 
 export default function Page() {
   return <Home />;

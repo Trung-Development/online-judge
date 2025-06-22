@@ -52,8 +52,12 @@ function Badge({
 }
 
 export function SessionManager() {
-  const { getActiveSessions, getCurrentSession, logoutAllSessions, isAuthenticated } =
-    useSessionValidation();
+  const {
+    getActiveSessions,
+    getCurrentSession,
+    logoutAllSessions,
+    isAuthenticated,
+  } = useSessionValidation();
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -66,9 +70,9 @@ export function SessionManager() {
       // Fetch both current session and all sessions
       const [currentSession, activeSessions] = await Promise.all([
         getCurrentSession(),
-        getActiveSessions()
+        getActiveSessions(),
       ]);
-      
+
       setSessions(activeSessions);
       setCurrentSessionId(currentSession?.id || null);
     } catch (error) {
@@ -84,7 +88,7 @@ export function SessionManager() {
   const handleLogoutAll = async () => {
     if (
       confirm(
-        "Are you sure you want to logout from all sessions? This will sign you out from all devices."
+        "Are you sure you want to logout from all sessions? This will sign you out from all devices.",
       )
     ) {
       await logoutAllSessions();
@@ -93,9 +97,13 @@ export function SessionManager() {
 
   const getDeviceIcon = (userAgent: string) => {
     if (!userAgent) return <Monitor className="h-4 w-4" />;
-    
+
     const ua = userAgent.toLowerCase();
-    if (ua.includes("mobile") || ua.includes("android") || ua.includes("iphone")) {
+    if (
+      ua.includes("mobile") ||
+      ua.includes("android") ||
+      ua.includes("iphone")
+    ) {
       return <Smartphone className="h-4 w-4" />;
     }
     return <Monitor className="h-4 w-4" />;
@@ -133,10 +141,10 @@ export function SessionManager() {
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = date.getTime() - now.getTime();
-    
+
     // If the date is in the past, it's expired
     if (diffMs <= 0) return "Expired";
-    
+
     const diffMins = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
@@ -189,7 +197,7 @@ export function SessionManager() {
               {sessions.map((sessionItem) => {
                 // Check if this session matches the current session ID
                 const isCurrentSession = sessionItem.id === currentSessionId;
-                
+
                 return (
                   <div
                     key={sessionItem.id}
@@ -201,7 +209,9 @@ export function SessionManager() {
                         <div className="font-medium flex items-center gap-2">
                           Session {sessionItem.id.slice(0, 8)}...
                           {isCurrentSession && (
-                            <Badge variant="default" className="text-xs">Current</Badge>
+                            <Badge variant="default" className="text-xs">
+                              Current
+                            </Badge>
                           )}
                         </div>
                         <div className="text-sm text-muted-foreground">
@@ -209,7 +219,8 @@ export function SessionManager() {
                         </div>
                         {sessionItem.userAgent && (
                           <div className="text-xs text-muted-foreground truncate max-w-48">
-                            {sessionItem.userAgent.split(' ')[0] || 'Unknown browser'}
+                            {sessionItem.userAgent.split(" ")[0] ||
+                              "Unknown browser"}
                           </div>
                         )}
                       </div>
@@ -218,7 +229,8 @@ export function SessionManager() {
                       {getLocationBadge(sessionItem.ip)}
                       <div className="flex flex-col items-end gap-1">
                         <Badge variant="secondary" className="text-xs">
-                          Session Expiration: {formatTimeUntil(sessionItem.expiresAt)}
+                          Session Expiration:{" "}
+                          {formatTimeUntil(sessionItem.expiresAt)}
                         </Badge>
                       </div>
                     </div>

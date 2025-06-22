@@ -11,18 +11,13 @@ export interface ApiCallOptions {
 
 export async function authenticatedFetch(
   url: string,
-  options: ApiCallOptions = {}
+  options: ApiCallOptions = {},
 ): Promise<Response> {
-  const {
-    method = "GET",
-    headers = {},
-    body,
-    autoLogout = true,
-  } = options;
+  const { method = "GET", headers = {}, body, autoLogout = true } = options;
 
   // Get the current session
   const session = await getSession();
-  
+
   if (!session?.sessionToken) {
     throw new Error("No valid session found");
   }
@@ -31,7 +26,7 @@ export async function authenticatedFetch(
   const authHeaders: Record<string, string> = {
     ...headers,
     Authorization: `Bearer ${session.sessionToken}`,
-    'X-User-Agent': navigator.userAgent, // Send the original browser User Agent
+    "X-User-Agent": navigator.userAgent, // Send the original browser User Agent
   };
 
   // Add content-type for POST/PUT requests with body
@@ -42,7 +37,11 @@ export async function authenticatedFetch(
   const response = await fetch(url, {
     method,
     headers: authHeaders,
-    body: body ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined,
+    body: body
+      ? typeof body === "string"
+        ? body
+        : JSON.stringify(body)
+      : undefined,
   });
 
   // Handle 401 Unauthorized responses
@@ -57,13 +56,17 @@ export async function authenticatedFetch(
 
 export async function apiCall<T = unknown>(
   url: string,
-  options: ApiCallOptions = {}
+  options: ApiCallOptions = {},
 ): Promise<T> {
   const response = await authenticatedFetch(url, options);
-  
+
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: "Unknown error" }));
-    throw new Error(errorData.message || `API call failed with status ${response.status}`);
+    const errorData = await response
+      .json()
+      .catch(() => ({ message: "Unknown error" }));
+    throw new Error(
+      errorData.message || `API call failed with status ${response.status}`,
+    );
   }
 
   return response.json();

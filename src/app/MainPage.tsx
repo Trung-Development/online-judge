@@ -48,29 +48,36 @@ export default function Home() {
           <CardContent className="px-8 pb-8">
             <div className="text-center space-y-6">
               <p className="text-lg text-muted-foreground">
-                We&apos;re working hard to bring you an amazing competitive programming platform!
+                We&apos;re working hard to bring you an amazing competitive
+                programming platform!
               </p>
-              
+
               <div className="grid md:grid-cols-3 gap-4 my-8">
                 <div className="flex flex-col items-center p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20">
                   <Code2 className="h-8 w-8 text-blue-600 mb-2" />
-                  <h3 className="font-semibold text-blue-900 dark:text-blue-200">Problem Solving</h3>
+                  <h3 className="font-semibold text-blue-900 dark:text-blue-200">
+                    Problem Solving
+                  </h3>
                   <p className="text-sm text-blue-700 dark:text-blue-300 text-center">
                     Challenging problems for all skill levels
                   </p>
                 </div>
-                
+
                 <div className="flex flex-col items-center p-4 rounded-lg bg-green-50 dark:bg-green-950/20">
                   <Rocket className="h-8 w-8 text-green-600 mb-2" />
-                  <h3 className="font-semibold text-green-900 dark:text-green-200">Contests</h3>
+                  <h3 className="font-semibold text-green-900 dark:text-green-200">
+                    Contests
+                  </h3>
                   <p className="text-sm text-green-700 dark:text-green-300 text-center">
                     Regular programming contests
                   </p>
                 </div>
-                
+
                 <div className="flex flex-col items-center p-4 rounded-lg bg-purple-50 dark:bg-purple-950/20">
                   <Coffee className="h-8 w-8 text-purple-600 mb-2" />
-                  <h3 className="font-semibold text-purple-900 dark:text-purple-200">Community</h3>
+                  <h3 className="font-semibold text-purple-900 dark:text-purple-200">
+                    Community
+                  </h3>
                   <p className="text-sm text-purple-700 dark:text-purple-300 text-center">
                     Connect with fellow programmers
                   </p>
@@ -78,7 +85,9 @@ export default function Home() {
               </div>
 
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
-                <h4 className="font-semibold text-lg mb-2">What&apos;s Coming Soon?</h4>
+                <h4 className="font-semibold text-lg mb-2">
+                  What&apos;s Coming Soon?
+                </h4>
                 <ul className="text-left space-y-2 text-muted-foreground">
                   <li className="flex items-center">
                     <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
@@ -98,7 +107,7 @@ export default function Home() {
                   </li>
                 </ul>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button asChild className="flex-1">
                   <Link href="/accounts/login">
@@ -113,9 +122,10 @@ export default function Home() {
                   </Link>
                 </Button>
               </div>
-              
+
               <p className="text-sm text-muted-foreground mt-6">
-                💡 Want to stay updated? Create an account and we&apos;ll notify you when we launch!
+                💡 Want to stay updated? Create an account and we&apos;ll notify
+                you when we launch!
               </p>
             </div>
           </CardContent>

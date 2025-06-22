@@ -3,8 +3,21 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Clock, Globe, Users, AlertTriangle, CheckCircle } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Shield,
+  Clock,
+  Globe,
+  Users,
+  AlertTriangle,
+  CheckCircle,
+} from "lucide-react";
 import SessionManager from "@/components/SessionManager";
 
 export default function SecurityPage() {
@@ -40,7 +53,9 @@ export default function SecurityPage() {
   return (
     <div className="container mx-auto py-8 px-4 max-w-6xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Security & Sessions</h1>
+        <h1 className="text-3xl font-bold text-foreground mb-2">
+          Security & Sessions
+        </h1>
         <p className="text-muted-foreground">
           Manage your account security and active sessions across devices.
         </p>
@@ -50,7 +65,9 @@ export default function SecurityPage() {
         {/* Security Status Cards */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Session Security</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Session Security
+            </CardTitle>
             <Shield className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -63,14 +80,14 @@ export default function SecurityPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Session Duration</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Session Duration
+            </CardTitle>
             <Clock className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Valid</div>
-            <p className="text-xs text-muted-foreground">
-              JWT-based sessions
-            </p>
+            <p className="text-xs text-muted-foreground">JWT-based sessions</p>
           </CardContent>
         </Card>
 
@@ -89,7 +106,9 @@ export default function SecurityPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Concurrent Sessions</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Concurrent Sessions
+            </CardTitle>
             <Globe className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
@@ -124,7 +143,7 @@ export default function SecurityPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <div>
@@ -134,17 +153,19 @@ export default function SecurityPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <div>
-                  <div className="font-medium">Suspicious Activity Detection</div>
+                  <div className="font-medium">
+                    Suspicious Activity Detection
+                  </div>
                   <div className="text-sm text-muted-foreground">
                     Automatic detection and prevention of security threats
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <div>
@@ -179,7 +200,7 @@ export default function SecurityPage() {
                   IP binding may log you out when switching networks
                 </div>
               </div>
-              
+
               <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
                 <div className="font-medium text-blue-800 dark:text-blue-200">
                   Monitor Active Sessions
@@ -188,7 +209,7 @@ export default function SecurityPage() {
                   Regularly check and remove unknown sessions
                 </div>
               </div>
-              
+
               <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
                 <div className="font-medium text-green-800 dark:text-green-200">
                   Use Strong Passwords

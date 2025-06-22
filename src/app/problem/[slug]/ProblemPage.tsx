@@ -13,9 +13,21 @@ import "katex/dist/katex.min.css";
 
 import { Button } from "@/components/ui/button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faClone, faFilePdf, faClock, faServer, faPencilSquare, faKeyboard, faPrint, faChevronRight, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheck,
+  faClone,
+  faFilePdf,
+  faClock,
+  faServer,
+  faPencilSquare,
+  faKeyboard,
+  faPrint,
+  faChevronRight,
+  faChevronDown,
+} from "@fortawesome/free-solid-svg-icons";
 
 import { IProblemData } from "@/types";
+import { languages } from "@/constants";
 
 interface ProblemPageProps {
   problem: IProblemData;
@@ -24,6 +36,29 @@ interface ProblemPageProps {
 
 export default function ProblemPage({ problem, slug }: ProblemPageProps) {
   const [typeExpanded, setTypeExpanded] = useState(false);
+  const [langExpanded, setLangExpanded] = useState(true); // default open
+
+  // Extract unique common names from allowed languages
+  const allowedLanguageNames = Array.from(
+    new Set(
+      problem.allowedLanguages
+        .map(
+          (langValue) =>
+            languages.find((lang) => lang.value === langValue)?.commonName,
+        )
+        .filter(Boolean),
+    ),
+  ).sort();
+
+  // Helper to format memory limit
+  function formatMemoryLimit(memoryLimit: number) {
+    if (memoryLimit >= 1024) {
+      // Show up to 1 decimal if not integer
+      const gb = memoryLimit / 1024;
+      return gb % 1 === 0 ? `${gb}G` : `${parseFloat(gb.toFixed(1))}G`;
+    }
+    return `${memoryLimit}M`;
+  }
 
   return (
     <main className="max-w-7xl mx-auto py-8 px-4">
@@ -47,7 +82,10 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
           {/* PDF Viewer (if available) */}
           {problem.pdf && (
             <div className="w-full mb-6" style={{ height: "auto" }}>
-              <PDFViewer src={`/pdf/${problem.pdf}`} title={`${problem.name} PDF Statement`} />
+              <PDFViewer
+                src={`/pdf/${problem.pdf}`}
+                title={`${problem.name} PDF Statement`}
+              />
             </div>
           )}
 
@@ -70,7 +108,9 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                   <u className="underline" {...props} />
                 ),
                 code: (
-                  props: React.HTMLAttributes<HTMLElement> & { inline?: boolean },
+                  props: React.HTMLAttributes<HTMLElement> & {
+                    inline?: boolean;
+                  },
                 ) => {
                   const { inline, children, ...rest } = props;
                   // inline is now recognized as any, so no TS error
@@ -84,7 +124,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                 },
               }}
             >
-              {problem.body.replace(/__([^_\n]+)__/g, '<u>$1</u>')}
+              {problem.body.replace(/__([^_\n]+)__/g, "<u>$1</u>")}
             </ReactMarkdown>
           </div>
         </div>
@@ -98,11 +138,15 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
               <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 text-lg">
                 <div className="flex flex-col gap-2">
                   <Button asChild className="w-full">
-                    <Link href={`/problem/${slug}/submit`}>Submit solution</Link>
+                    <Link href={`/problem/${slug}/submit`}>
+                      Submit solution
+                    </Link>
                   </Button>
                   {problem.solution && (
                     <Button variant="outline" asChild className="w-full">
-                      <Link href={`/problem/${slug}/solution`}>Read editorial</Link>
+                      <Link href={`/problem/${slug}/solution`}>
+                        Read editorial
+                      </Link>
                     </Button>
                   )}
                 </div>
@@ -111,11 +155,23 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
               {/* Separator */}
               <hr className="hidden lg:block border-gray-300 lg:border-gray-200" />
 
-              {/* Time and Memory Limits */}
+              {/* Points, TL, ML */}
               <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0 text-lg">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <FontAwesomeIcon icon={faClock} className="text-primary w-4" />
+                    <FontAwesomeIcon
+                      icon={faCheck}
+                      className="text-primary w-4"
+                    />
+                    <span className="font-bold text-foreground">Points:</span>
+                    <span className="text-foreground">{problem.points}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <FontAwesomeIcon
+                      icon={faClock}
+                      className="text-primary w-4"
+                    />
                     <span className="font-bold text-foreground">
                       Time limit:
                     </span>
@@ -123,13 +179,17 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                       {problem.timeLimit}s
                     </span>
                   </div>
+
                   <div className="flex items-center gap-2">
-                    <FontAwesomeIcon icon={faServer} className="text-primary w-4" />
+                    <FontAwesomeIcon
+                      icon={faServer}
+                      className="text-primary w-4"
+                    />
                     <span className="font-bold text-foreground">
                       Memory limit:
                     </span>
                     <span className="text-foreground">
-                      {problem.memoryLimit}M
+                      {formatMemoryLimit(problem.memoryLimit)}
                     </span>
                   </div>
                 </div>
@@ -142,12 +202,18 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
               <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0 text-lg">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <FontAwesomeIcon icon={faKeyboard} className="text-primary w-4" />
+                    <FontAwesomeIcon
+                      icon={faKeyboard}
+                      className="text-primary w-4"
+                    />
                     <span className="font-bold text-foreground">Input: </span>
                     <span className="text-foreground">{problem.input}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <FontAwesomeIcon icon={faPrint} className="text-primary w-4" />
+                    <FontAwesomeIcon
+                      icon={faPrint}
+                      className="text-primary w-4"
+                    />
                     <span className="font-bold text-foreground">Output: </span>
                     <span className="text-foreground">{problem.output}</span>
                   </div>
@@ -157,11 +223,14 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
               {/* Separator */}
               <hr className="hidden lg:block border-gray-300 lg:border-gray-200" />
 
-              {/* Author and Type */}
+              {/* Author, type, Allowed Languages */}
               <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0 text-lg">
                 <div className="space-y-3">
                   <div className="flex items-start gap-2">
-                    <FontAwesomeIcon icon={faPencilSquare} className="text-primary w-4 mt-0.5" />
+                    <FontAwesomeIcon
+                      icon={faPencilSquare}
+                      className="text-primary w-4 mt-0.5"
+                    />
                     <div>
                       <div className="font-bold text-foreground">Author:</div>
                       <div className="text-foreground">
@@ -173,7 +242,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                             >
                               {username}
                             </Link>
-                            {idx < problem.author.length - 1 && ', '}
+                            {idx < problem.author.length - 1 && ", "}
                           </React.Fragment>
                         ))}
                       </div>
@@ -184,21 +253,49 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                       onClick={() => setTypeExpanded(!typeExpanded)}
                       className="flex items-center gap-2 w-full text-left hover:opacity-70 transition-opacity"
                     >
-                      <FontAwesomeIcon 
-                        icon={typeExpanded ? faChevronDown : faChevronRight} 
+                      <FontAwesomeIcon
+                        icon={typeExpanded ? faChevronDown : faChevronRight}
                         className="text-primary w-3 transition-transform duration-200"
                       />
                       <span className="font-bold text-foreground">
-                        Problem type{problem.type.length > 1 ? 's' : ''}
+                        Problem type{problem.type.length > 1 ? "s" : ""}
                       </span>
                     </button>
-                    <div 
+                    <div
                       className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        typeExpanded ? 'max-h-32 opacity-100 mt-2' : 'max-h-0 opacity-0'
+                        typeExpanded
+                          ? "max-h-32 opacity-100 mt-2"
+                          : "max-h-0 opacity-0"
                       }`}
                     >
                       <div className="text-foreground ml-5">
                         {problem.type.join(", ")}
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => setLangExpanded(!langExpanded)}
+                      className="flex items-center gap-2 w-full text-left hover:opacity-70 transition-opacity"
+                    >
+                      <FontAwesomeIcon
+                        icon={langExpanded ? faChevronDown : faChevronRight}
+                        className="text-primary w-3 transition-transform duration-200"
+                      />
+                      <span className="font-bold text-foreground">
+                        Allowed language
+                        {allowedLanguageNames.length > 1 ? "s" : ""}
+                      </span>
+                    </button>
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        langExpanded
+                          ? "max-h-32 opacity-100 mt-2"
+                          : "max-h-0 opacity-0"
+                      }`}
+                    >
+                      <div className="text-foreground ml-5">
+                        {allowedLanguageNames.join(", ")}
                       </div>
                     </div>
                   </div>
@@ -259,7 +356,7 @@ function PDFViewer({ src, title }: { src: string; title: string }) {
             body?.scrollHeight || 0,
             html?.scrollHeight || 0,
             body?.offsetHeight || 0,
-            html?.offsetHeight || 0
+            html?.offsetHeight || 0,
           );
           if (height > 0) {
             iframe.style.height = `${height}px`;

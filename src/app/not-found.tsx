@@ -38,7 +38,9 @@ export default function NotFound() {
                 </div>
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold">404 - Page Not Found</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              404 - Page Not Found
+            </CardTitle>
             <CardDescription className="text-lg mt-2">
               This page is under development or not found.
             </CardDescription>
@@ -46,8 +48,9 @@ export default function NotFound() {
           <CardContent className="px-8 pb-8">
             <div className="text-center space-y-4">
               <p className="text-muted-foreground">
-                The page you&apos;re looking for doesn&apos;t exist or is currently being worked on. 
-                Please check the URL or navigate back to continue exploring.
+                The page you&apos;re looking for doesn&apos;t exist or is
+                currently being worked on. Please check the URL or navigate back
+                to continue exploring.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button asChild className="flex-1">
@@ -56,8 +59,8 @@ export default function NotFound() {
                     Go to Homepage
                   </Link>
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="flex-1"
                   onClick={() => window.history.back()}
                 >

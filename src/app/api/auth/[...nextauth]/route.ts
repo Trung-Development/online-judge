@@ -38,19 +38,19 @@ declare module "next-auth/jwt" {
 // Decode JWT token to extract session data
 function decodeJWT(token: string) {
   try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
       atob(base64)
-        .split('')
+        .split("")
         .map(function (c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
         })
-        .join('')
+        .join(""),
     );
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error('Failed to decode JWT:', error);
+    console.error("Failed to decode JWT:", error);
     return null;
   }
 }
@@ -77,50 +77,52 @@ const handler = NextAuth({
         }) => {
           // Check various headers that might contain the real client IP
           const headers = request.headers || {};
-          
+
           // Cloudflare
-          if (headers['cf-connecting-ip']) {
-            return headers['cf-connecting-ip'];
+          if (headers["cf-connecting-ip"]) {
+            return headers["cf-connecting-ip"];
           }
-          
+
           // Standard forwarded headers
-          if (headers['x-forwarded-for']) {
-            const forwarded = headers['x-forwarded-for'];
+          if (headers["x-forwarded-for"]) {
+            const forwarded = headers["x-forwarded-for"];
             const ips = Array.isArray(forwarded) ? forwarded[0] : forwarded;
-            return ips.split(',')[0].trim();
+            return ips.split(",")[0].trim();
           }
-          
+
           // Other common headers
-          if (headers['x-real-ip']) {
-            return headers['x-real-ip'];
+          if (headers["x-real-ip"]) {
+            return headers["x-real-ip"];
           }
-          
-          if (headers['x-client-ip']) {
-            return headers['x-client-ip'];
+
+          if (headers["x-client-ip"]) {
+            return headers["x-client-ip"];
           }
-          
-          if (headers['x-forwarded']) {
-            const forwarded = headers['x-forwarded'];
+
+          if (headers["x-forwarded"]) {
+            const forwarded = headers["x-forwarded"];
             const ips = Array.isArray(forwarded) ? forwarded[0] : forwarded;
-            return ips.split(',')[0].trim();
+            return ips.split(",")[0].trim();
           }
-          
-          if (headers['forwarded-for']) {
-            const forwardedFor = headers['forwarded-for'];
-            const ips = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor;
-            return ips.split(',')[0].trim();
+
+          if (headers["forwarded-for"]) {
+            const forwardedFor = headers["forwarded-for"];
+            const ips = Array.isArray(forwardedFor)
+              ? forwardedFor[0]
+              : forwardedFor;
+            return ips.split(",")[0].trim();
           }
-          
-          if (headers['forwarded']) {
-            const forwarded = Array.isArray(headers['forwarded'])
-              ? headers['forwarded'][0]
-              : headers['forwarded'];
+
+          if (headers["forwarded"]) {
+            const forwarded = Array.isArray(headers["forwarded"])
+              ? headers["forwarded"][0]
+              : headers["forwarded"];
             const match = forwarded.match(/for=([^;]+)/);
             if (match) return match[1];
           }
-          
+
           // Fallback to connection remote address
-          return request.ip || request.connection?.remoteAddress || 'unknown';
+          return request.ip || request.connection?.remoteAddress || "unknown";
         };
 
         const clientIp = getClientIp(req);
@@ -156,7 +158,9 @@ const handler = NextAuth({
           const sessionToken = sessionData.data; // This is the JWT token
 
           if (!sessionToken) {
-            throw new Error("Authentication failed: No session token received.");
+            throw new Error(
+              "Authentication failed: No session token received.",
+            );
           }
 
           // Decode the JWT to get session information
@@ -207,14 +211,14 @@ const handler = NextAuth({
           token.email = user.email;
           token.username = user.username;
           token.fullname = user.fullname;
-          
+
           // Decode JWT to get expiry
           const decodedSession = decodeJWT(user.sessionToken);
           if (decodedSession && decodedSession.exp) {
             token.sessionExpires = decodedSession.exp * 1000; // Convert to milliseconds
           }
         }
-        
+
         return token;
       }
 
@@ -230,10 +234,10 @@ const handler = NextAuth({
         email: token.email,
         username: token.username,
         fullname: token.fullname,
-        error: "SessionExpired"
+        error: "SessionExpired",
       };
     },
-    
+
     async session({ session, token }) {
       if (!token || token.error === "SessionExpired") {
         session.error = "SessionExpired";
@@ -254,10 +258,13 @@ const handler = NextAuth({
       // Delete the session from the backend when signing out
       if (token?.sessionToken) {
         try {
-          await fetch(new URL("/client/sessions/me", process.env.API_ENDPOINT).toString(), {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token.sessionToken}` },
-          });
+          await fetch(
+            new URL("/client/sessions/me", process.env.API_ENDPOINT).toString(),
+            {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token.sessionToken}` },
+            },
+          );
         } catch (error) {
           console.error("Failed to delete session on backend:", error);
           // Don't throw error here as we still want to complete the logout

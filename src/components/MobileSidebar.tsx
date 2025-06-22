@@ -84,7 +84,7 @@ export function MobileSidebar() {
   const { data: session } = useSession();
 
   // Filter navigation items based on authentication
-  const filteredNavigationItems = navigationItems.filter(item => {
+  const filteredNavigationItems = navigationItems.filter((item) => {
     // Show Security link only for authenticated users
     if (item.title === "Security") {
       return !!session;
