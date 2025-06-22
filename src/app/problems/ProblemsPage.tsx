@@ -20,10 +20,27 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { IProblemData } from "@/types";
 import Loading from "../loading";
 
 const PROBLEMS_PER_PAGE = 50;
+
+interface IProblemData {
+    // Basic information
+    code: string; // Unique identifier for the problem
+    name: string;
+    org: string[];
+    
+    // Metadata
+    category: string[];
+    type: string[];
+    points: number;
+    solution: boolean;
+
+    stats: {
+        submissions: number;
+        ACSubmissions: number;
+    }
+}
 
 export default function ProblemsPage() {
   const [problems, setProblems] = useState<IProblemData[]>([]);
@@ -73,7 +90,7 @@ export default function ProblemsPage() {
     // Editorial filter
     if (showEditorialOnly) {
       filtered = filtered.filter(
-        (problem) => problem.solution && problem.solution.trim() !== "",
+        (problem) => problem.solution,
       );
     }
 
@@ -270,7 +287,7 @@ export default function ProblemsPage() {
                       </span>
                     </td>
                     <td className="p-4 align-middle text-center w-16">
-                      {problem.solution && problem.solution.trim() !== "" ? (
+                      {problem.solution ? (
                         <FontAwesomeIcon
                           icon={faCheck}
                           className="w-4 h-4 text-green-600 dark:text-green-400"
