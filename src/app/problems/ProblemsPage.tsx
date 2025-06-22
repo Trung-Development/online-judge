@@ -71,7 +71,7 @@ export default function ProblemsPage() {
   }, [searchTerm, problems, showEditorialOnly]);
 
   const calculateAcceptanceRate = (stats: IProblemData['stats']) => {
-    return (stats.ACSumissions / stats.submissions) * 100;
+    return (stats.ACSubmissions / stats.submissions) * 100;
   };
 
   const formatAcceptanceRate = (stats: IProblemData['stats']) => {

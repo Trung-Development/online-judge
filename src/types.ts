@@ -36,7 +36,7 @@ export interface IProblemData {
 
     stats: {
         submissions: number;
-        ACSumissions: number;
+        ACSubmissions: number;
         WASubmissions: number;
         RTESubmissions: number;
         OLESubmissions: number;
