@@ -42,7 +42,9 @@ export default function Error({ error, reset }: ErrorProps) {
                 <AlertTriangle className="h-16 w-16 text-red-500" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold">Something went wrong!</CardTitle>
+            <CardTitle className="text-2xl font-bold">
+              Something went wrong!
+            </CardTitle>
             <CardDescription className="text-lg mt-2">
               An unexpected error occurred while processing your request.
             </CardDescription>
@@ -50,8 +52,9 @@ export default function Error({ error, reset }: ErrorProps) {
           <CardContent className="px-8 pb-8">
             <div className="text-center space-y-4">
               <p className="text-muted-foreground">
-                We&apos;re sorry for the inconvenience. Please try refreshing the page or 
-                return to the homepage. If the problem persists, please contact support.
+                We&apos;re sorry for the inconvenience. Please try refreshing
+                the page or return to the homepage. If the problem persists,
+                please contact support.
               </p>
               {process.env.NODE_ENV === "development" && (
                 <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-md p-3 text-left">

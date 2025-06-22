@@ -83,9 +83,7 @@ export default function SignupPage() {
 
   // Show loading while checking authentication
   if (status === "loading") {
-    return (
-      <Loading />
-    );
+    return <Loading />;
   }
 
   // Don't render the form if user is authenticated
@@ -112,8 +110,18 @@ export default function SignupPage() {
 
   // Helper functions for custom calendar navigation
   const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
   const currentYear = new Date().getFullYear();
@@ -161,15 +169,15 @@ export default function SignupPage() {
       // Get client IP
       const getClientIp = async () => {
         try {
-          const response = await fetch('/api/get-client-ip');
+          const response = await fetch("/api/get-client-ip");
           if (response.ok) {
             const data = await response.json();
             return data.ip;
           }
         } catch (error) {
-          console.error('Failed to get client IP:', error);
+          console.error("Failed to get client IP:", error);
         }
-        return 'unknown';
+        return "unknown";
       };
 
       const clientIp = await getClientIp();

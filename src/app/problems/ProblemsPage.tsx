@@ -3,7 +3,12 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBook, faCheck, faMinusCircle, faSearch } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBook,
+  faCheck,
+  faMinusCircle,
+  faSearch,
+} from "@fortawesome/free-solid-svg-icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +40,12 @@ export default function ProblemsPage() {
   const currentProblems = filteredProblems.slice(startIndex, endIndex);
 
   useEffect(() => {
-    fetch(new URL("/client/problems/all", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString())
+    fetch(
+      new URL(
+        "/client/problems/all",
+        process.env.NEXT_PUBLIC_API_ENDPOINT!,
+      ).toString(),
+    )
       .then((res) => res.json())
       .then((data) => {
         setProblems(data);
@@ -53,16 +63,17 @@ export default function ProblemsPage() {
 
     // Search filter
     if (searchTerm) {
-      filtered = filtered.filter((problem) =>
-        problem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        problem.code.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (problem) =>
+          problem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          problem.code.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
     // Editorial filter
     if (showEditorialOnly) {
-      filtered = filtered.filter((problem) =>
-        problem.solution && problem.solution.trim() !== ""
+      filtered = filtered.filter(
+        (problem) => problem.solution && problem.solution.trim() !== "",
       );
     }
 
@@ -70,11 +81,11 @@ export default function ProblemsPage() {
     setCurrentPage(1); // Reset to first page when filters change
   }, [searchTerm, problems, showEditorialOnly]);
 
-  const calculateAcceptanceRate = (stats: IProblemData['stats']) => {
+  const calculateAcceptanceRate = (stats: IProblemData["stats"]) => {
     return (stats.ACSubmissions / stats.submissions) * 100;
   };
 
-  const formatAcceptanceRate = (stats: IProblemData['stats']) => {
+  const formatAcceptanceRate = (stats: IProblemData["stats"]) => {
     return calculateAcceptanceRate(stats).toFixed(1);
   };
 
@@ -89,9 +100,7 @@ export default function ProblemsPage() {
   };
 
   if (loading) {
-    return (
-      <Loading />
-    );
+    return <Loading />;
   }
 
   return (
@@ -102,8 +111,8 @@ export default function ProblemsPage() {
         {/* Search Box */}
         <div className="flex gap-2 mb-6">
           <div className="relative flex-1 max-w-md">
-            <FontAwesomeIcon 
-              icon={faSearch} 
+            <FontAwesomeIcon
+              icon={faSearch}
               className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"
             />
             <Input
@@ -115,10 +124,7 @@ export default function ProblemsPage() {
             />
           </div>
           {searchTerm && (
-            <Button 
-              variant="outline" 
-              onClick={() => setSearchTerm("")}
-            >
+            <Button variant="outline" onClick={() => setSearchTerm("")}>
               Clear
             </Button>
           )}
@@ -133,9 +139,11 @@ export default function ProblemsPage() {
               onChange={(e) => setShowEditorialOnly(e.target.checked)}
               className="rounded border border-input bg-background"
             />
-            <span className="text-foreground">Show problems with editorial only</span>
+            <span className="text-foreground">
+              Show problems with editorial only
+            </span>
           </label>
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -149,7 +157,10 @@ export default function ProblemsPage() {
         {/* Results count */}
         <div className="mb-4 text-sm text-muted-foreground">
           {totalPages > 1 && (
-            <> • Page {currentPage} of {totalPages}</>
+            <>
+              {" "}
+              • Page {currentPage} of {totalPages}
+            </>
           )}
         </div>
       </div>
@@ -160,31 +171,57 @@ export default function ProblemsPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b bg-gray-800 dark:bg-white">
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 first:rounded-tl-md">ID</th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300">Problem</th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 min-w-[200px] border-r border-gray-600 dark:border-gray-300">Category</th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 first:rounded-tl-md">
+                  ID
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300">
+                  Problem
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 min-w-[200px] border-r border-gray-600 dark:border-gray-300">
+                  Category
+                </th>
                 {showTypes && (
-                  <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 min-w-[150px] border-r border-gray-600 dark:border-gray-300">Types</th>
+                  <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 min-w-[150px] border-r border-gray-600 dark:border-gray-300">
+                    Types
+                  </th>
                 )}
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 w-[4.5rem]">Points</th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 w-16">%AC</th>
-                <th className={`h-12 px-4 text-center align-middle font-medium text-white dark:text-gray-900 w-16 rounded-tr-md`}>
-                  <FontAwesomeIcon icon={faBook} className="w-4 h-4" title="Editorial" />
+                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 w-[4.5rem]">
+                  Points
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 w-16">
+                  %AC
+                </th>
+                <th
+                  className={`h-12 px-4 text-center align-middle font-medium text-white dark:text-gray-900 w-16 rounded-tr-md`}
+                >
+                  <FontAwesomeIcon
+                    icon={faBook}
+                    className="w-4 h-4"
+                    title="Editorial"
+                  />
                 </th>
               </tr>
             </thead>
             <tbody>
               {currentProblems.length === 0 ? (
                 <tr>
-                  <td colSpan={showTypes ? 7 : 6} className="h-24 px-4 text-center text-muted-foreground">
-                    {searchTerm ? "No problems found matching your search." : "No problems available."}
+                  <td
+                    colSpan={showTypes ? 7 : 6}
+                    className="h-24 px-4 text-center text-muted-foreground"
+                  >
+                    {searchTerm
+                      ? "No problems found matching your search."
+                      : "No problems available."}
                   </td>
                 </tr>
               ) : (
                 currentProblems.map((problem) => (
-                  <tr key={problem.code} className="border-b transition-colors hover:bg-muted/50">
+                  <tr
+                    key={problem.code}
+                    className="border-b transition-colors hover:bg-muted/50"
+                  >
                     <td className="p-4 align-middle border-r border-border">
-                      <Link 
+                      <Link
                         href={`/problem/${problem.code}`}
                         className="font-mono text-primary hover:underline"
                       >
@@ -192,7 +229,7 @@ export default function ProblemsPage() {
                       </Link>
                     </td>
                     <td className="p-4 align-middle border-r border-border">
-                      <Link 
+                      <Link
                         href={`/problem/${problem.code}`}
                         className="text-primary hover:underline font-medium break-words"
                       >
@@ -215,29 +252,34 @@ export default function ProblemsPage() {
                       <span className="text-foreground">{problem.points}</span>
                     </td>
                     <td className="p-4 align-middle text-center border-r border-border w-16">
-                      <span className={`font-medium ${
-                        !problem.stats 
-                          ? 'text-muted-foreground'
-                          : calculateAcceptanceRate(problem.stats) >= 50 
-                          ? 'text-green-600 dark:text-green-400' 
-                          : calculateAcceptanceRate(problem.stats) >= 25
-                          ? 'text-yellow-600 dark:text-yellow-400'
-                          : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {problem.stats ? formatAcceptanceRate(problem.stats) : "N/A"}%
+                      <span
+                        className={`font-medium ${
+                          !problem.stats
+                            ? "text-muted-foreground"
+                            : calculateAcceptanceRate(problem.stats) >= 50
+                              ? "text-green-600 dark:text-green-400"
+                              : calculateAcceptanceRate(problem.stats) >= 25
+                                ? "text-yellow-600 dark:text-yellow-400"
+                                : "text-red-600 dark:text-red-400"
+                        }`}
+                      >
+                        {problem.stats
+                          ? formatAcceptanceRate(problem.stats)
+                          : "N/A"}
+                        %
                       </span>
                     </td>
                     <td className="p-4 align-middle text-center w-16">
                       {problem.solution && problem.solution.trim() !== "" ? (
-                        <FontAwesomeIcon 
-                          icon={faCheck} 
-                          className="w-4 h-4 text-green-600 dark:text-green-400" 
+                        <FontAwesomeIcon
+                          icon={faCheck}
+                          className="w-4 h-4 text-green-600 dark:text-green-400"
                           title="Editorial available"
                         />
                       ) : (
-                        <FontAwesomeIcon 
-                          icon={faMinusCircle} 
-                          className="w-4 h-4 text-red-600 dark:text-red-400" 
+                        <FontAwesomeIcon
+                          icon={faMinusCircle}
+                          className="w-4 h-4 text-red-600 dark:text-red-400"
                           title="No editorial available"
                         />
                       )}
@@ -256,12 +298,18 @@ export default function ProblemsPage() {
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious 
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                <PaginationPrevious
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  className={
+                    currentPage === 1
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
                 />
               </PaginationItem>
-              
+
               {/* Page numbers */}
               {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
                 let pageNumber;
@@ -274,23 +322,31 @@ export default function ProblemsPage() {
                 } else {
                   pageNumber = currentPage - 3 + i;
                 }
-                
-                if (pageNumber === currentPage - 2 && currentPage > 4 && totalPages > 7) {
+
+                if (
+                  pageNumber === currentPage - 2 &&
+                  currentPage > 4 &&
+                  totalPages > 7
+                ) {
                   return (
                     <PaginationItem key="ellipsis-start">
                       <PaginationEllipsis />
                     </PaginationItem>
                   );
                 }
-                
-                if (pageNumber === currentPage + 2 && currentPage < totalPages - 3 && totalPages > 7) {
+
+                if (
+                  pageNumber === currentPage + 2 &&
+                  currentPage < totalPages - 3 &&
+                  totalPages > 7
+                ) {
                   return (
                     <PaginationItem key="ellipsis-end">
                       <PaginationEllipsis />
                     </PaginationItem>
                   );
                 }
-                
+
                 return (
                   <PaginationItem key={pageNumber}>
                     <PaginationLink
@@ -303,11 +359,17 @@ export default function ProblemsPage() {
                   </PaginationItem>
                 );
               })}
-              
+
               <PaginationItem>
-                <PaginationNext 
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                <PaginationNext
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  className={
+                    currentPage === totalPages
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
                 />
               </PaginationItem>
             </PaginationContent>

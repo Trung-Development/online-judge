@@ -7,11 +7,11 @@ interface SessionValidatorProps {
   validationIntervalMs?: number;
 }
 
-export default function SessionValidator({ 
-  children, 
-  validationIntervalMs = 60000 // Default: check every minute
+export default function SessionValidator({
+  children,
+  validationIntervalMs = 60000, // Default: check every minute
 }: SessionValidatorProps) {
   usePeriodicSessionValidation(validationIntervalMs);
-  
+
   return <>{children}</>;
 }

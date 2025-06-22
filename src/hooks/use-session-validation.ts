@@ -13,13 +13,16 @@ export function useSessionValidation() {
     }
 
     // Check if there's a session expired error
-    if ('error' in session && session.error === 'SessionExpired') {
+    if ("error" in session && session.error === "SessionExpired") {
       return false;
     }
 
     try {
       const response = await fetch(
-        new URL("/client/users/me", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(),
+        new URL(
+          "/client/users/me",
+          process.env.NEXT_PUBLIC_API_ENDPOINT!,
+        ).toString(),
         {
           headers: { Authorization: `Bearer ${session.sessionToken}` },
         },
@@ -56,10 +59,16 @@ export function useSessionValidation() {
     // Logout from all sessions
     if (session?.sessionToken) {
       try {
-        await fetch(new URL("/client/sessions/all", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(), {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${session.sessionToken}` },
-        });
+        await fetch(
+          new URL(
+            "/client/sessions/all",
+            process.env.NEXT_PUBLIC_API_ENDPOINT!,
+          ).toString(),
+          {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${session.sessionToken}` },
+          },
+        );
       } catch (error) {
         console.error("Failed to logout all sessions:", error);
       }
@@ -74,7 +83,10 @@ export function useSessionValidation() {
 
     try {
       const response = await fetch(
-        new URL("/client/sessions/me", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(),
+        new URL(
+          "/client/sessions/me",
+          process.env.NEXT_PUBLIC_API_ENDPOINT!,
+        ).toString(),
         {
           headers: { Authorization: `Bearer ${session.sessionToken}` },
         },
@@ -97,7 +109,10 @@ export function useSessionValidation() {
 
     try {
       const response = await fetch(
-        new URL("/client/sessions/all", process.env.NEXT_PUBLIC_API_ENDPOINT!).toString(),
+        new URL(
+          "/client/sessions/all",
+          process.env.NEXT_PUBLIC_API_ENDPOINT!,
+        ).toString(),
         {
           headers: { Authorization: `Bearer ${session.sessionToken}` },
         },
@@ -113,13 +128,13 @@ export function useSessionValidation() {
     }
   }, [session]);
 
-  return { 
-    validateSession, 
-    logout, 
-    logoutAllSessions, 
+  return {
+    validateSession,
+    logout,
+    logoutAllSessions,
     getCurrentSession,
     getActiveSessions,
-    isAuthenticated: status === "authenticated" && !!session?.sessionToken
+    isAuthenticated: status === "authenticated" && !!session?.sessionToken,
   };
 }
 
