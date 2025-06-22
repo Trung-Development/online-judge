@@ -16,6 +16,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faClone, faFilePdf, faClock, faServer, faPencilSquare, faKeyboard, faPrint, faChevronRight, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 
 import { IProblemData } from "@/types";
+import { languages } from "@/constants";
 
 interface ProblemPageProps {
   problem: IProblemData;
@@ -24,6 +25,16 @@ interface ProblemPageProps {
 
 export default function ProblemPage({ problem, slug }: ProblemPageProps) {
   const [typeExpanded, setTypeExpanded] = useState(false);
+  const [langExpanded, setLangExpanded] = useState(true); // default open
+
+  // Extract unique common names from allowed languages
+  const allowedLanguageNames = Array.from(
+    new Set(
+      problem.allowedLanguages
+        .map(langValue => languages.find(lang => lang.value === langValue)?.commonName)
+        .filter(Boolean)
+    )
+  ).sort();
 
   return (
     <main className="max-w-7xl mx-auto py-8 px-4">
@@ -111,9 +122,19 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
               {/* Separator */}
               <hr className="hidden lg:block border-gray-300 lg:border-gray-200" />
 
-              {/* Time and Memory Limits */}
+              {/* Points, TL, ML */}
               <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0 text-lg">
                 <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <FontAwesomeIcon icon={faCheck} className="text-primary w-4" />
+                    <span className="font-bold text-foreground">
+                      Points:
+                    </span>
+                    <span className="text-foreground">
+                      {problem.points}
+                    </span>
+                  </div>
+
                   <div className="flex items-center gap-2">
                     <FontAwesomeIcon icon={faClock} className="text-primary w-4" />
                     <span className="font-bold text-foreground">
@@ -123,6 +144,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                       {problem.timeLimit}s
                     </span>
                   </div>
+
                   <div className="flex items-center gap-2">
                     <FontAwesomeIcon icon={faServer} className="text-primary w-4" />
                     <span className="font-bold text-foreground">
@@ -157,7 +179,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
               {/* Separator */}
               <hr className="hidden lg:block border-gray-300 lg:border-gray-200" />
 
-              {/* Author and Type */}
+              {/* Author, type, Allowed Languages */}
               <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0 text-lg">
                 <div className="space-y-3">
                   <div className="flex items-start gap-2">
@@ -199,6 +221,29 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                     >
                       <div className="text-foreground ml-5">
                         {problem.type.join(", ")}
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => setLangExpanded(!langExpanded)}
+                      className="flex items-center gap-2 w-full text-left hover:opacity-70 transition-opacity"
+                    >
+                      <FontAwesomeIcon
+                        icon={langExpanded ? faChevronDown : faChevronRight}
+                        className="text-primary w-3 transition-transform duration-200"
+                      />
+                      <span className="font-bold text-foreground">
+                        Allowed language{allowedLanguageNames.length > 1 ? 's' : ''}
+                      </span>
+                    </button>
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        langExpanded ? 'max-h-32 opacity-100 mt-2' : 'max-h-0 opacity-0'
+                      }`}
+                    >
+                      <div className="text-foreground ml-5">
+                        {allowedLanguageNames.join(", ")}
                       </div>
                     </div>
                   </div>
