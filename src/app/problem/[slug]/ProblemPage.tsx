@@ -124,7 +124,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                 },
               }}
             >
-              {problem.body.replace(/__([^_\n]+)__/g, "<u>$1</u>")}
+              {problem.description?.replace(/__([^_\n]+)__/g, "<u>$1</u>")}
             </ReactMarkdown>
           </div>
         </div>
@@ -234,17 +234,19 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                     <div>
                       <div className="font-bold text-foreground">Author:</div>
                       <div className="text-foreground">
-                        {problem.author.map((username: string, idx: number) => (
-                          <React.Fragment key={username}>
-                            <Link
-                              href={`/user/${username}`}
-                              className="text-foreground"
-                            >
-                              {username}
-                            </Link>
-                            {idx < problem.author.length - 1 && ", "}
-                          </React.Fragment>
-                        ))}
+                        {problem.author.map((username: string, idx: number) => {
+                          return (
+                            <React.Fragment key={username}>
+                              {username.startsWith('@') ? (<Link
+                                href={`/user/${username.split('@')[1]}`}
+                                className="text-foreground underline"
+                              >
+                                {username.split('@')[1]}
+                              </Link>) : username}
+                              {idx < problem.author.length - 1 && ", "}
+                            </React.Fragment>
+                          )
+                        })}
                       </div>
                     </div>
                   </div>

@@ -63,8 +63,8 @@ export interface IProblemData {
   // Basic information
   code: string; // Unique identifier for the problem
   name: string;
-  body: string;
-  org: string[];
+  description: string;
+  // org: string[]; // under construction
 
   // Limits
   timeLimit: number; // in seconds
@@ -83,17 +83,10 @@ export interface IProblemData {
   curator: string[];
   tester: string[];
   pdf?: string; // PDF Statement name.
-  solution?: string;
+  solution: boolean;
 
   stats: {
     submissions: number;
     ACSubmissions: number;
-    WASubmissions: number;
-    RTESubmissions: number;
-    OLESubmissions: number;
-    IRSubmissions: number;
-    TLESubmissions: number;
-    MLESubmissions: number;
-    RESubmissions: number;
   };
 }

@@ -44,5 +44,6 @@ export default async function Page({
 }) {
   const { slug } = await params;
   const problem = await getProblem(slug);
+  console.log(problem);
   return <ProblemPage problem={problem} slug={slug} />;
 }
