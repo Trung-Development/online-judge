@@ -214,8 +214,9 @@ const handler = NextAuth({
 
           // Decode JWT to get expiry
           const decodedSession = decodeJWT(user.sessionToken);
-          if (decodedSession && decodedSession.exp) {
-            token.sessionExpires = decodedSession.exp * 1000; // Convert to milliseconds
+          // Use expiresAt ISO string if present
+          if (decodedSession && decodedSession.expiresAt) {
+            token.sessionExpires = Date.parse(decodedSession.expiresAt);
           }
         }
 
