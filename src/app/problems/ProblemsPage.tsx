@@ -66,11 +66,14 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
   }, [searchTerm, initialProblems, showEditorialOnly]);
 
   const calculateAcceptanceRate = (stats: IProblemData["stats"]) => {
+    if (stats.submissions === 0) return null;
     return (stats.ACSubmissions / stats.submissions) * 100;
   };
 
   const formatAcceptanceRate = (stats: IProblemData["stats"]) => {
-    return calculateAcceptanceRate(stats).toFixed(1);
+    const rate = calculateAcceptanceRate(stats);
+    if (rate === null) return "-";
+    return rate.toFixed(1);
   };
 
   const getTypeDisplay = (types: string[]) => {
@@ -235,17 +238,19 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                         className={`font-medium ${
                           !problem.stats
                             ? "text-muted-foreground"
-                            : calculateAcceptanceRate(problem.stats) >= 50
-                              ? "text-green-600 dark:text-green-400"
-                              : calculateAcceptanceRate(problem.stats) >= 25
-                                ? "text-yellow-600 dark:text-yellow-400"
-                                : "text-red-600 dark:text-red-400"
+                            : calculateAcceptanceRate(problem.stats) === null
+                              ? "text-muted-foreground"
+                              : calculateAcceptanceRate(problem.stats)! >= 50
+                                ? "text-green-600 dark:text-green-400"
+                                : calculateAcceptanceRate(problem.stats)! >= 25
+                                  ? "text-yellow-600 dark:text-yellow-400"
+                                  : "text-red-600 dark:text-red-400"
                         }`}
                       >
                         {problem.stats
                           ? formatAcceptanceRate(problem.stats)
                           : "N/A"}
-                        %
+                        {formatAcceptanceRate(problem.stats) !== "-" && "%"}
                       </span>
                     </td>
                     <td className="p-4 align-middle text-center w-16">
