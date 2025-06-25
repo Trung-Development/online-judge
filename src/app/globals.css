@@ -3,6 +3,43 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* MDX Content Styling - Better image spacing and markdown layout */
+.prose img {
+  margin: 1.5rem 0;
+  line-height: 1.8;
+}
+
+.prose p {
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+.prose p + img {
+  margin-top: 1.5rem;
+}
+
+.prose img + p {
+  margin-top: 1.5rem;
+}
+
+.prose h1 + img,
+.prose h2 + img,
+.prose h3 + img,
+.prose h4 + img,
+.prose h5 + img,
+.prose h6 + img {
+  margin-top: 1rem;
+}
+
+.prose img + h1,
+.prose img + h2,
+.prose img + h3,
+.prose img + h4,
+.prose img + h5,
+.prose img + h6 {
+  margin-top: 2rem;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
