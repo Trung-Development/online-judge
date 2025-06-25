@@ -45,6 +45,5 @@ export default async function Page({
     notFound();
   }
   
-  console.log(problem);
   return <ProblemPage problem={problem} slug={slug} />;
 }
