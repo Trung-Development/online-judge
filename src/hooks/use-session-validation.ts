@@ -2,6 +2,7 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useCallback } from "react";
+import { validateUserSession, getCurrentSession, logoutAllSessions as serverLogoutAllSessions, getActiveSessions as serverGetActiveSessions } from "@/lib/server-actions/sessions";
 
 export function useSessionValidation() {
   const { data: session, status } = useSession();
@@ -18,30 +19,15 @@ export function useSessionValidation() {
     }
 
     try {
-      const response = await fetch(
-        new URL(
-          "/client/users/me",
-          process.env.NEXT_PUBLIC_API_ENDPOINT!,
-        ).toString(),
-        {
-          headers: { Authorization: `Bearer ${session.sessionToken}` },
-        },
-      );
+      const isValid = await validateUserSession(session.sessionToken);
 
-      // If we get a 401 Unauthorized, the session is invalid
-      if (response.status === 401) {
-        // Sign out without calling DELETE since the session is already invalid
+      // If the session is invalid, sign out
+      if (!isValid) {
         await signOut({ callbackUrl: "/accounts/login" });
         return false;
       }
 
-      // Check for IP mismatch or other security violations
-      if (response.status === 403) {
-        await signOut({ callbackUrl: "/accounts/login" });
-        return false;
-      }
-
-      return response.ok;
+      return true;
     } catch {
       // On network errors, we might want to keep the session
       // but log the error for debugging
@@ -59,16 +45,7 @@ export function useSessionValidation() {
     // Logout from all sessions
     if (session?.sessionToken) {
       try {
-        await fetch(
-          new URL(
-            "/client/sessions/all",
-            process.env.NEXT_PUBLIC_API_ENDPOINT!,
-          ).toString(),
-          {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${session.sessionToken}` },
-          },
-        );
+        await serverLogoutAllSessions(session.sessionToken);
       } catch (error) {
         console.error("Failed to logout all sessions:", error);
       }
@@ -76,52 +53,26 @@ export function useSessionValidation() {
     await signOut({ callbackUrl: "/accounts/login" });
   }, [session]);
 
-  const getCurrentSession = useCallback(async () => {
+  const getCurrentSessionData = useCallback(async () => {
     if (!session?.sessionToken) {
       return null;
     }
 
     try {
-      const response = await fetch(
-        new URL(
-          "/client/sessions/me",
-          process.env.NEXT_PUBLIC_API_ENDPOINT!,
-        ).toString(),
-        {
-          headers: { Authorization: `Bearer ${session.sessionToken}` },
-        },
-      );
-
-      if (response.ok) {
-        return await response.json();
-      }
-      return null;
+      return await getCurrentSession(session.sessionToken);
     } catch (error) {
       console.error("Error fetching current session:", error);
       return null;
     }
   }, [session]);
 
-  const getActiveSessions = useCallback(async () => {
+  const getActiveSessionsData = useCallback(async () => {
     if (!session?.sessionToken) {
       return [];
     }
 
     try {
-      const response = await fetch(
-        new URL(
-          "/client/sessions/all",
-          process.env.NEXT_PUBLIC_API_ENDPOINT!,
-        ).toString(),
-        {
-          headers: { Authorization: `Bearer ${session.sessionToken}` },
-        },
-      );
-
-      if (response.ok) {
-        return await response.json();
-      }
-      return [];
+      return await serverGetActiveSessions(session.sessionToken);
     } catch (error) {
       console.error("Error fetching active sessions:", error);
       return [];
@@ -132,8 +83,8 @@ export function useSessionValidation() {
     validateSession,
     logout,
     logoutAllSessions,
-    getCurrentSession,
-    getActiveSessions,
+    getCurrentSession: getCurrentSessionData,
+    getActiveSessions: getActiveSessionsData,
     isAuthenticated: status === "authenticated" && !!session?.sessionToken,
   };
 }

@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import Loading from "@/app/loading";
+import { registerUser } from "@/lib/server-actions/auth";
 
 const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), {
   ssr: false,
@@ -144,10 +145,6 @@ export default function SignupPage() {
     setError("");
 
     try {
-      const apiBase =
-        process.env.NEXT_PUBLIC_API_ENDPOINT || "http://unreachable.local";
-      const apiUrl = new URL("/client/users", apiBase).toString();
-
       if (
         !formData.username ||
         !formData.email ||
@@ -165,22 +162,6 @@ export default function SignupPage() {
       if (!hcaptchaToken) {
         throw new Error("Please complete the hCaptcha challenge.");
       }
-
-      // Get client IP
-      const getClientIp = async () => {
-        try {
-          const response = await fetch("/api/get-client-ip");
-          if (response.ok) {
-            const data = await response.json();
-            return data.ip;
-          }
-        } catch (error) {
-          console.error("Failed to get client IP:", error);
-        }
-        return "unknown";
-      };
-
-      const clientIp = await getClientIp();
 
       // Prepare data for API (convert dateOfBirth to mm/dd/yyyy if present)
       const formatDateMMDDYYYY = (date: Date) => {
@@ -200,43 +181,23 @@ export default function SignupPage() {
           ? formatDateMMDDYYYY(formData.dateOfBirth)
           : undefined,
         captchaToken: hcaptchaToken,
-        clientIp: clientIp,
       };
 
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(submitData),
-      });
+      // Use server action instead of client-side fetch
+      const result = await registerUser(submitData);
 
-      if (response.status !== 201) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "An error occurred during signup");
+      if (!result.success) {
+        throw new Error(result.error || "An error occurred during signup");
       }
 
-      // Signup successful (201), redirect to login page
+      // Signup successful, redirect to login page
       router.push("/accounts/login");
     } catch (err) {
-      // Check for network/server unreachable error
-      if (
-        err instanceof TypeError &&
-        err.message &&
-        (err.message.includes("Failed to fetch") ||
-          err.message.includes("NetworkError") ||
-          err.message.includes("Network request failed"))
-      ) {
-        setError(
-          "The server is unreachable. Please contact the administrator.",
-        );
-      } else {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "An error occurred during signup",
-        );
-      }
+      setError(
+        err instanceof Error
+          ? err.message
+          : "An error occurred during signup",
+      );
       console.error("Signup error:", err);
       // Reset captcha on error
       setHcaptchaToken(null);

@@ -21,31 +21,17 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import Loading from "../loading";
+import { IProblemData } from "@/lib/server-actions/problems";
 
 const PROBLEMS_PER_PAGE = 50;
 
-interface IProblemData {
-    // Basic information
-    code: string; // Unique identifier for the problem
-    name: string;
-    org: string[];
-    
-    // Metadata
-    category: string;
-    type: string[];
-    points: number;
-    solution: boolean;
-
-    stats: {
-        submissions: number;
-        ACSubmissions: number;
-    }
+interface ProblemsPageProps {
+  initialProblems: IProblemData[];
 }
 
-export default function ProblemsPage() {
-  const [problems, setProblems] = useState<IProblemData[]>([]);
-  const [filteredProblems, setFilteredProblems] = useState<IProblemData[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
+  const [filteredProblems, setFilteredProblems] = useState<IProblemData[]>(initialProblems);
+  const [loading] = useState(false); // No longer loading since we have initial data
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showEditorialOnly, setShowEditorialOnly] = useState(false);
@@ -57,26 +43,7 @@ export default function ProblemsPage() {
   const currentProblems = filteredProblems.slice(startIndex, endIndex);
 
   useEffect(() => {
-    fetch(
-      new URL(
-        "/client/problems/all",
-        process.env.NEXT_PUBLIC_API_ENDPOINT!,
-      ).toString(),
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setProblems(data);
-        setFilteredProblems(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching problems:", err);
-        setLoading(false);
-      });
-  }, []);
-
-  useEffect(() => {
-    let filtered = problems;
+    let filtered = initialProblems;
 
     // Search filter
     if (searchTerm) {
@@ -96,7 +63,7 @@ export default function ProblemsPage() {
 
     setFilteredProblems(filtered);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [searchTerm, problems, showEditorialOnly]);
+  }, [searchTerm, initialProblems, showEditorialOnly]);
 
   const calculateAcceptanceRate = (stats: IProblemData["stats"]) => {
     return (stats.ACSubmissions / stats.submissions) * 100;

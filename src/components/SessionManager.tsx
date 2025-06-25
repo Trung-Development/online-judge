@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useSessionValidation } from "@/hooks/use-session-validation";
+import { SessionData } from "@/lib/server-actions/sessions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,14 +18,6 @@ import {
   Globe,
   LogOut,
 } from "lucide-react";
-
-interface SessionData {
-  id: string;
-  ip: string;
-  createdAt: string;
-  expiresAt: string;
-  userAgent: string;
-}
 
 // Simple Badge component since it's not available
 function Badge({
