@@ -139,7 +139,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                 <div className="flex flex-col gap-2">
                   <Button asChild className="w-full">
                     <Link href={`/problem/${slug}/submit`}>
-                      Submit solution
+                      Submit
                     </Link>
                   </Button>
                   {problem.solution && (
@@ -260,7 +260,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                         className="text-primary w-3 transition-transform duration-200"
                       />
                       <span className="font-bold text-foreground">
-                        Problem type{problem.type.length > 1 ? "s" : ""}
+                        Problem types{problem.type.length > 1 ? "s" : ""}
                       </span>
                     </button>
                     <div
@@ -285,7 +285,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                         className="text-primary w-3 transition-transform duration-200"
                       />
                       <span className="font-bold text-foreground">
-                        Allowed language
+                        Allowed languages
                         {allowedLanguageNames.length > 1 ? "s" : ""}
                       </span>
                     </button>

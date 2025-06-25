@@ -31,7 +31,7 @@ interface IProblemData {
     org: string[];
     
     // Metadata
-    category: string[];
+    category: string;
     type: string[];
     points: number;
     solution: boolean;
@@ -104,11 +104,6 @@ export default function ProblemsPage() {
 
   const formatAcceptanceRate = (stats: IProblemData["stats"]) => {
     return calculateAcceptanceRate(stats).toFixed(1);
-  };
-
-  const getCategoryDisplay = (categories: string[]) => {
-    if (categories.length === 0) return "-";
-    return categories.join(", ");
   };
 
   const getTypeDisplay = (types: string[]) => {
@@ -255,7 +250,7 @@ export default function ProblemsPage() {
                     </td>
                     <td className="p-4 align-top text-sm min-w-[200px] border-r border-border">
                       <span className="text-foreground break-words whitespace-normal">
-                        {getCategoryDisplay(problem.category)}
+                        {problem.category}
                       </span>
                     </td>
                     {showTypes && (

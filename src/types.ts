@@ -81,9 +81,9 @@ export interface IProblemData {
   points: number;
   author: string[];
   curator: string[];
-  tester: string[];
+  tester?: string[];
   pdf?: string; // PDF Statement name.
-  solution: boolean;
+  solution?: string;
 
   stats: {
     submissions: number;
