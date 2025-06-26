@@ -1,7 +1,7 @@
 import ProblemPage from "./ProblemPage";
 import { Metadata } from "next";
 import { Config } from "../../../config";
-import { notFound } from "next/navigation";
+import { forbidden, notFound } from "next/navigation";
 import { getProblem } from "@/lib/server-actions/problems";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -43,10 +43,9 @@ export default async function Page({
   const { slug } = await params;
   const session = await getServerSession(authOptions);
   const problem = await getProblem(slug, session?.sessionToken);
-  
-  if (!problem) {
-    notFound();
-  }
+
+  if(!problem || problem == 404) notFound();
+  else if(problem == 403) forbidden();
 
   return <ProblemPage problem={problem} slug={slug} />;
 }

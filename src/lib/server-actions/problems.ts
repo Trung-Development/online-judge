@@ -58,11 +58,9 @@ export async function getProblem(slug: string, token?: string) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        return null;
+        return 404;
       } else if(response.status === 403) {
-        throw new Error('You are not allowed to view this problem', {
-          cause: json?.message
-        });
+        return 403;
       }
       throw new Error(`Failed to fetch problem: ${json?.message || response.status}`);
     }
