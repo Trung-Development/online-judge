@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   experimental: {
     inlineCss: true,
     cssChunking: true,
+    authInterrupts: true,
   },
   async rewrites() {
     return [
