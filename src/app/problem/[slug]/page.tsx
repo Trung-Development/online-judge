@@ -3,6 +3,8 @@ import { Metadata } from "next";
 import { Config } from "../../../config";
 import { notFound } from "next/navigation";
 import { getProblem } from "@/lib/server-actions/problems";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 // Use Node.js runtime for server actions compatibility
 export const runtime = 'nodejs';
@@ -39,11 +41,12 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const problem = await getProblem(slug);
+  const session = await getServerSession(authOptions);
+  const problem = await getProblem(slug, session?.sessionToken);
   
   if (!problem) {
     notFound();
   }
-  
+
   return <ProblemPage problem={problem} slug={slug} />;
 }

@@ -17,13 +17,17 @@ export interface IProblemData {
 }
 
 // Server action to fetch all problems with caching
-export async function getProblems(): Promise<IProblemData[]> {
+export async function getProblems(token?: string): Promise<IProblemData[]> {
   try {
     const baseUrl = process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
     const url = new URL("/client/problems/all", baseUrl);
 
+
+    const headers = new Headers()
+    if(token && token.length > 0) headers.append('Authorization', `Bearer ${token}`);
+
     const response = await fetch(url.toString(), {
-      next: { revalidate: 300 }, // Cache for 5 minutes
+      headers
     });
 
     if (!response.ok) {
@@ -38,25 +42,33 @@ export async function getProblems(): Promise<IProblemData[]> {
 }
 
 // Server action to fetch a single problem
-export async function getProblem(slug: string) {
+export async function getProblem(slug: string, token?: string) {
   try {
     const baseUrl = process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
     const url = new URL(`/client/problems/${slug}`, baseUrl);
 
+    const headers = new Headers()
+    if(token && token.length > 0) headers.append('Authorization', `Bearer ${token}`);
+
     const response = await fetch(url.toString(), {
-      next: { revalidate: 30 }, // Cache for 30 seconds
+      headers
     });
+    
+    const json = await response.json();
 
     if (!response.ok) {
       if (response.status === 404) {
         return null;
+      } else if(response.status === 403) {
+        throw new Error('You are not allowed to view this problem', {
+          cause: json?.message
+        });
       }
-      throw new Error(`Failed to fetch problem: ${response.status}`);
+      throw new Error(`Failed to fetch problem: ${json?.message || response.status}`);
     }
 
-    return await response.json();
+    return json;
   } catch (error) {
-    console.error("Error fetching problem:", error);
     throw error;
   }
 }
