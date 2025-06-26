@@ -3,6 +3,10 @@ import type { NextConfig } from "next";
 import "@dotenvx/dotenvx/config";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    inlineCss: true,
+    cssChunking: true,
+  },
   async rewrites() {
     return [
       {
