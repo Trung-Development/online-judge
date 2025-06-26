@@ -56,7 +56,7 @@ export default function Error({ error, reset }: ErrorProps) {
                 the page or return to the homepage. If the problem persists,
                 please contact support.
               </p>
-              {process.env.NODE_ENV === "development" && (
+              {(
                 <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-md p-3 text-left">
                   <p className="text-sm font-mono text-red-600 dark:text-red-400 break-all">
                     {error.message}
