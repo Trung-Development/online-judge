@@ -17,7 +17,7 @@ const nextConfig: NextConfig = {
     ];
   },
   env: {
-    NEXT_PUBLIC_HCAPTCHA_SITE_KEY: process.env.HCAPTCHA_SITE_KEY,
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
     NEXT_PUBLIC_API_ENDPOINT: process.env.API_ENDPOINT,
   },
   images: {

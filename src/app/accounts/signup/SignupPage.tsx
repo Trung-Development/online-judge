@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { MagicCard } from "@/components/magicui/magic-card";
 import { useTheme } from "next-themes";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { languages } from "@/constants";
@@ -47,7 +47,9 @@ import { cn } from "@/lib/utils";
 import Loading from "@/app/loading";
 import { registerUser } from "@/lib/server-actions/auth";
 
-const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), {
+import { AlertCircle } from "lucide-react";
+
+const Turnstile = dynamic(() => import("next-turnstile").then(mod => mod.Turnstile), {
   ssr: false,
 });
 
@@ -67,13 +69,13 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [dobOpen, setDobOpen] = useState(false);
-  const [hcaptchaToken, setHcaptchaToken] = useState<string | null>(null);
   const [comboboxOpen, setComboboxOpen] = useState(false);
   const [calendarDate, setCalendarDate] = useState<Date>(new Date());
-  const hcaptchaSiteKey =
-    process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY ||
-    process.env.HCAPTCHA_SITE_KEY ||
-    "";
+  const [turnstileStatus, setTurnstileStatus] = useState<
+    "success" | "error" | "expired" | "required"
+  >("required");
+  const formRef = useRef<HTMLFormElement>(null);
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 
   // Redirect if already logged in
   useEffect(() => {
@@ -159,8 +161,20 @@ export default function SignupPage() {
         throw new Error("Passwords do not match");
       }
 
-      if (!hcaptchaToken) {
-        throw new Error("Please complete the hCaptcha challenge.");
+      if (!formRef.current) {
+        throw new Error("Form not found");
+      }
+
+      if (turnstileStatus !== "success") {
+        throw new Error("Please complete the Turnstile challenge.");
+      }
+
+      // Get the form data including the Turnstile token
+      const formDataObj = new FormData(formRef.current);
+      const token = formDataObj.get("cf-turnstile-response") as string;
+      
+      if (!token) {
+        throw new Error("Turnstile verification failed, please try again.");
       }
 
       // Prepare data for API (convert dateOfBirth to mm/dd/yyyy if present)
@@ -180,7 +194,7 @@ export default function SignupPage() {
         dateOfBirth: formData.dateOfBirth
           ? formatDateMMDDYYYY(formData.dateOfBirth)
           : undefined,
-        captchaToken: hcaptchaToken,
+        captchaToken: token,
       };
 
       // Use server action instead of client-side fetch
@@ -197,8 +211,8 @@ export default function SignupPage() {
         err instanceof Error ? err.message : "An error occurred during signup",
       );
       console.error("Signup error:", err);
-      // Reset captcha on error
-      setHcaptchaToken(null);
+      // Reset turnstile status on error
+      setTurnstileStatus("required");
     } finally {
       setIsLoading(false);
     }
@@ -223,11 +237,12 @@ export default function SignupPage() {
             </CardAction>
           </CardHeader>
           <CardContent className="p-4">
-            <form onSubmit={handleSubmit}>
+            <form ref={formRef} onSubmit={handleSubmit}>
               <div className="flex flex-col gap-4">
                 {error && (
-                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
-                    {error}
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded flex items-center gap-2">
+                    <AlertCircle size={16} />
+                    <span>{error}</span>
                   </div>
                 )}
                 {/* Full Name field */}
@@ -418,13 +433,30 @@ export default function SignupPage() {
                     </PopoverContent>
                   </Popover>
                 </div>
-                {/* hCaptcha widget */}
+                {/* Turnstile widget */}
                 <div className="flex justify-center mt-2">
-                  {hcaptchaSiteKey && (
-                    <HCaptcha
-                      sitekey={hcaptchaSiteKey}
-                      onVerify={setHcaptchaToken}
-                      onExpire={() => setHcaptchaToken(null)}
+                  {turnstileSiteKey && (
+                    <Turnstile
+                      siteKey={turnstileSiteKey}
+                      retry="auto"
+                      refreshExpired="auto"
+                      sandbox={process.env.NODE_ENV === "development"}
+                      onError={() => {
+                        setTurnstileStatus("error");
+                        setError("Security check failed. Please try again.");
+                      }}
+                      onExpire={() => {
+                        setTurnstileStatus("expired");
+                        setError("Security check expired. Please verify again.");
+                      }}
+                      onLoad={() => {
+                        setTurnstileStatus("required");
+                        setError("");
+                      }}
+                      onVerify={() => {
+                        setTurnstileStatus("success");
+                        setError("");
+                      }}
                       theme={theme === "dark" ? "dark" : "light"}
                     />
                   )}

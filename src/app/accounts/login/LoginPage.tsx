@@ -15,13 +15,14 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { MagicCard } from "@/components/magicui/magic-card";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import Loading from "@/app/loading";
+import { AlertCircle } from "lucide-react";
 
-const HCaptcha = dynamic(() => import("@hcaptcha/react-hcaptcha"), {
+const Turnstile = dynamic(() => import("next-turnstile").then(mod => mod.Turnstile), {
   ssr: false,
 });
 
@@ -36,12 +37,12 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
-  const [hcaptchaToken, setHcaptchaToken] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [turnstileStatus, setTurnstileStatus] = useState<
+    "success" | "error" | "expired" | "required"
+  >("required");
 
-  const hcaptchaSiteKey =
-    process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY ||
-    process.env.HCAPTCHA_SITE_KEY ||
-    "";
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 
   useEffect(() => {
     setMounted(true);
@@ -77,24 +78,33 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
-    if (!hcaptchaToken) {
-      setError("Please complete the hCaptcha challenge.");
+    if (!formRef.current) {
       setIsLoading(false);
       return;
     }
+
+    if (turnstileStatus !== "success") {
+      setError("Please complete the Turnstile challenge.");
+      setIsLoading(false);
+      return;
+    }
+
+    // Get the form data including the Turnstile token
+    const formDataObj = new FormData(formRef.current);
+    const token = formDataObj.get("cf-turnstile-response") as string;
 
     const result = await signIn("credentials", {
       redirect: false,
       email: formData.email,
       password: formData.password,
       userAgent: navigator.userAgent,
-      captchaToken: hcaptchaToken,
+      captchaToken: token,
     });
 
     if (result?.error) {
       setError(result.error);
-      // Reset captcha on error
-      setHcaptchaToken(null);
+      // Reset turnstile status
+      setTurnstileStatus("required");
     } else if (result?.ok) {
       router.push("/");
     }
@@ -120,17 +130,19 @@ export default function LoginPage() {
             </CardAction>
           </CardHeader>
           <CardContent className="p-4">
-            <form onSubmit={handleSubmit}>
+            <form ref={formRef} onSubmit={handleSubmit}>
               <div className="flex flex-col gap-6">
                 {error && (
-                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">
-                    {error}
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded flex items-center gap-2">
+                    <AlertCircle size={16} />
+                    <span>{error}</span>
                   </div>
                 )}
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="name@example.com"
                     required
@@ -150,6 +162,7 @@ export default function LoginPage() {
                   </div>
                   <Input
                     id="password"
+                    name="password"
                     type="password"
                     required
                     value={formData.password}
@@ -157,13 +170,29 @@ export default function LoginPage() {
                   />
                 </div>
 
-                {/* hCaptcha */}
+                {/* Turnstile */}
                 <div className="grid gap-2">
-                  <HCaptcha
-                    sitekey={hcaptchaSiteKey}
-                    onVerify={(token) => setHcaptchaToken(token)}
-                    onExpire={() => setHcaptchaToken(null)}
-                    onError={() => setHcaptchaToken(null)}
+                  <Turnstile
+                    siteKey={turnstileSiteKey}
+                    retry="auto"
+                    refreshExpired="auto"
+                    sandbox={process.env.NODE_ENV === "development"}
+                    onError={() => {
+                      setTurnstileStatus("error");
+                      setError("Security check failed. Please try again.");
+                    }}
+                    onExpire={() => {
+                      setTurnstileStatus("expired");
+                      setError("Security check expired. Please verify again.");
+                    }}
+                    onLoad={() => {
+                      setTurnstileStatus("required");
+                      setError("");
+                    }}
+                    onVerify={() => {
+                      setTurnstileStatus("success");
+                      setError("");
+                    }}
                     theme={mounted && theme === "dark" ? "dark" : "light"}
                   />
                 </div>
