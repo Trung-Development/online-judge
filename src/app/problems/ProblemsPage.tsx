@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -12,6 +12,9 @@ import {
   faLock,
   faMinusCircle,
   faSearch,
+  faSort,
+  faSortUp,
+  faSortDown,
 } from "@fortawesome/free-solid-svg-icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,6 +32,9 @@ import { IProblemData } from "@/lib/server-actions/problems";
 import { useSession } from "next-auth/react";
 
 const PROBLEMS_PER_PAGE = 50;
+
+type SortField = 'id' | 'name' | 'category' | 'points' | 'acceptance';
+type SortOrder = 'asc' | 'desc' | null;
 
 interface ProblemsPageProps {
   initialProblems: IProblemData[];
@@ -57,6 +63,8 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
   const [showEditorialOnly, setShowEditorialOnly] = useState(false);
   const [showTypes, setShowTypes] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
   // Use client session after hydration to avoid SSR mismatch
   const isAuthenticated = isHydrated ? !!clientSession?.sessionToken : false;
@@ -64,6 +72,88 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Cycle through: null -> asc -> desc -> null
+      if (sortOrder === null) {
+        setSortOrder('asc');
+      } else if (sortOrder === 'asc') {
+        setSortOrder('desc');
+      } else {
+        setSortField(null);
+        setSortOrder(null);
+      }
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) return faSort;
+    if (sortOrder === 'asc') return faSortUp;
+    if (sortOrder === 'desc') return faSortDown;
+    return faSort;
+  };
+
+  const sortProblems = useCallback((problems: IProblemData[]) => {
+    if (!sortField || !sortOrder) return problems;
+
+    return [...problems].sort((a, b) => {
+      let aValue: string | number;
+      let bValue: string | number;
+
+      switch (sortField) {
+        case 'id':
+          aValue = a.code;
+          bValue = b.code;
+          break;
+        case 'name':
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case 'category':
+          aValue = a.category.toLowerCase();
+          bValue = b.category.toLowerCase();
+          break;
+        case 'points':
+          aValue = a.points;
+          bValue = b.points;
+          break;
+        case 'acceptance':
+          // Handle acceptance rate with special case for null/undefined stats
+          const aRate = a.stats ? (a.stats.submissions === 0 ? -1 : (a.stats.ACSubmissions / a.stats.submissions) * 100) : -1;
+          const bRate = b.stats ? (b.stats.submissions === 0 ? -1 : (b.stats.ACSubmissions / b.stats.submissions) * 100) : -1;
+          aValue = aRate;
+          bValue = bRate;
+          break;
+        default:
+          return 0;
+      }
+
+      // Handle string comparison
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        const comparison = aValue.localeCompare(bValue);
+        return sortOrder === 'asc' ? comparison : -comparison;
+      }
+
+      // Handle numeric comparison (including acceptance rate)
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        // For acceptance rate, put -1 (no data) values at the end regardless of sort order
+        if (sortField === 'acceptance') {
+          if (aValue === -1 && bValue === -1) return 0;
+          if (aValue === -1) return 1; // a goes to end
+          if (bValue === -1) return -1; // b goes to end
+        }
+        
+        const comparison = aValue - bValue;
+        return sortOrder === 'asc' ? comparison : -comparison;
+      }
+
+      return 0;
+    });
+  }, [sortField, sortOrder]);
 
   const totalPages = Math.ceil(filteredProblems.length / PROBLEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * PROBLEMS_PER_PAGE;
@@ -89,9 +179,12 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
       );
     }
 
+    // Apply sorting
+    filtered = sortProblems(filtered);
+
     setFilteredProblems(filtered);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [searchTerm, initialProblems, showEditorialOnly]);
+  }, [searchTerm, initialProblems, showEditorialOnly, sortField, sortOrder, sortProblems]);
 
   const calculateAcceptanceRate = (stats: IProblemData["stats"]) => {
     if (stats.submissions === 0) return null;
@@ -196,25 +289,60 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                     </span>
                   </th>
                 )}
-                <th className={`h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 ${!isAuthenticated ? 'first:rounded-tl-md' : ''}`}>
-                  ID
+                <th className={`h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 ${!isAuthenticated ? 'first:rounded-tl-md' : ''} cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100`}
+                    onClick={() => handleSort('id')}>
+                  <div className="flex items-center gap-2">
+                    ID
+                    <FontAwesomeIcon
+                      icon={getSortIcon('id')}
+                      className="w-3 h-3"
+                    />
+                  </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300">
-                  Problem
+                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100"
+                    onClick={() => handleSort('name')}>
+                  <div className="flex items-center gap-2">
+                    Problem
+                    <FontAwesomeIcon
+                      icon={getSortIcon('name')}
+                      className="w-3 h-3"
+                    />
+                  </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 min-w-[200px] border-r border-gray-600 dark:border-gray-300">
-                  Category
+                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 min-w-[200px] border-r border-gray-600 dark:border-gray-300 cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100"
+                    onClick={() => handleSort('category')}>
+                  <div className="flex items-center gap-2">
+                    Category
+                    <FontAwesomeIcon
+                      icon={getSortIcon('category')}
+                      className="w-3 h-3"
+                    />
+                  </div>
                 </th>
                 {showTypes && (
                   <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 min-w-[150px] border-r border-gray-600 dark:border-gray-300">
                     Types
                   </th>
                 )}
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 w-[4.5rem]">
-                  Points
+                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 w-[4.5rem] cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100"
+                    onClick={() => handleSort('points')}>
+                  <div className="flex items-center gap-2">
+                    Points
+                    <FontAwesomeIcon
+                      icon={getSortIcon('points')}
+                      className="w-3 h-3"
+                    />
+                  </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 w-16">
-                  %AC
+                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 w-16 cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100"
+                    onClick={() => handleSort('acceptance')}>
+                  <div className="flex items-center gap-2">
+                    %AC
+                    <FontAwesomeIcon
+                      icon={getSortIcon('acceptance')}
+                      className="w-3 h-3"
+                    />
+                  </div>
                 </th>
                 <th
                   className={`h-12 px-4 text-center align-middle font-medium text-white dark:text-gray-900 w-16 rounded-tr-md`}
