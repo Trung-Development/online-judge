@@ -34,8 +34,8 @@ import { useSession } from "next-auth/react";
 
 const PROBLEMS_PER_PAGE = 50;
 
-type SortField = 'id' | 'name' | 'category' | 'points' | 'acceptance';
-type SortOrder = 'asc' | 'desc' | null;
+type SortField = "id" | "name" | "category" | "points" | "acceptance";
+type SortOrder = "asc" | "desc" | null;
 
 interface ProblemsPageProps {
   initialProblems: IProblemData[];
@@ -43,20 +43,21 @@ interface ProblemsPageProps {
 
 function getStatusIcon(status?: ProblemStatus) {
   // handle color
-  const result = {icon: faEyeSlash, color: 'red'};
-  if(!status) return { icon: faEye, color: 'red' };
-  if(status.solved == true) result.color = 'green';
-  else if(status.attempted == true) result.color = 'yellow';
+  const result = { icon: faEyeSlash, color: "red" };
+  if (!status) return { icon: faEye, color: "red" };
+  if (status.solved == true) result.color = "green";
+  else if (status.attempted == true) result.color = "yellow";
   // handle icon
-  if(status.isLocked && status.isPublic) result.icon = faLockOpen;
-  else if(status.isLocked) result.icon = faLock;
-  else if(status.isPublic) result.icon = faEye;
+  if (status.isLocked && status.isPublic) result.icon = faLockOpen;
+  else if (status.isLocked) result.icon = faLock;
+  else if (status.isPublic) result.icon = faEye;
   return result;
 }
 
 export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
   const { data: clientSession } = useSession();
-  const [filteredProblems, setFilteredProblems] = useState<IProblemData[]>(initialProblems);
+  const [filteredProblems, setFilteredProblems] =
+    useState<IProblemData[]>(initialProblems);
   const [loading] = useState(false); // No longer loading since we have initial data
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -77,83 +78,94 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
     if (sortField === field) {
       // Cycle through: null -> asc -> desc -> null
       if (sortOrder === null) {
-        setSortOrder('asc');
-      } else if (sortOrder === 'asc') {
-        setSortOrder('desc');
+        setSortOrder("asc");
+      } else if (sortOrder === "asc") {
+        setSortOrder("desc");
       } else {
         setSortField(null);
         setSortOrder(null);
       }
     } else {
       setSortField(field);
-      setSortOrder('asc');
+      setSortOrder("asc");
     }
   };
 
   const getSortIcon = (field: SortField) => {
     if (sortField !== field) return faSort;
-    if (sortOrder === 'asc') return faSortUp;
-    if (sortOrder === 'desc') return faSortDown;
+    if (sortOrder === "asc") return faSortUp;
+    if (sortOrder === "desc") return faSortDown;
     return faSort;
   };
 
-  const sortProblems = useCallback((problems: IProblemData[]) => {
-    if (!sortField || !sortOrder) return problems;
+  const sortProblems = useCallback(
+    (problems: IProblemData[]) => {
+      if (!sortField || !sortOrder) return problems;
 
-    return [...problems].sort((a, b) => {
-      let aValue: string | number;
-      let bValue: string | number;
+      return [...problems].sort((a, b) => {
+        let aValue: string | number;
+        let bValue: string | number;
 
-      switch (sortField) {
-        case 'id':
-          aValue = a.code;
-          bValue = b.code;
-          break;
-        case 'name':
-          aValue = a.name.toLowerCase();
-          bValue = b.name.toLowerCase();
-          break;
-        case 'category':
-          aValue = a.category.toLowerCase();
-          bValue = b.category.toLowerCase();
-          break;
-        case 'points':
-          aValue = a.points;
-          bValue = b.points;
-          break;
-        case 'acceptance':
-          // Handle acceptance rate with special case for null/undefined stats
-          const aRate = a.stats ? (a.stats.submissions === 0 ? -1 : (a.stats.ACSubmissions / a.stats.submissions) * 100) : -1;
-          const bRate = b.stats ? (b.stats.submissions === 0 ? -1 : (b.stats.ACSubmissions / b.stats.submissions) * 100) : -1;
-          aValue = aRate;
-          bValue = bRate;
-          break;
-        default:
-          return 0;
-      }
-
-      // Handle string comparison
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        const comparison = aValue.localeCompare(bValue);
-        return sortOrder === 'asc' ? comparison : -comparison;
-      }
-
-      // Handle numeric comparison (including acceptance rate)
-      if (typeof aValue === 'number' && typeof bValue === 'number') {
-        // For acceptance rate, put -1 (no data) values at the end regardless of sort order
-        if (sortField === 'acceptance') {
-          if (aValue === -1 && bValue === -1) return 0;
-          if (aValue === -1) return 1; // a goes to end
-          if (bValue === -1) return -1; // b goes to end
+        switch (sortField) {
+          case "id":
+            aValue = a.code;
+            bValue = b.code;
+            break;
+          case "name":
+            aValue = a.name.toLowerCase();
+            bValue = b.name.toLowerCase();
+            break;
+          case "category":
+            aValue = a.category.toLowerCase();
+            bValue = b.category.toLowerCase();
+            break;
+          case "points":
+            aValue = a.points;
+            bValue = b.points;
+            break;
+          case "acceptance":
+            // Handle acceptance rate with special case for null/undefined stats
+            const aRate = a.stats
+              ? a.stats.submissions === 0
+                ? -1
+                : (a.stats.ACSubmissions / a.stats.submissions) * 100
+              : -1;
+            const bRate = b.stats
+              ? b.stats.submissions === 0
+                ? -1
+                : (b.stats.ACSubmissions / b.stats.submissions) * 100
+              : -1;
+            aValue = aRate;
+            bValue = bRate;
+            break;
+          default:
+            return 0;
         }
-        
-        const comparison = aValue - bValue;
-        return sortOrder === 'asc' ? comparison : -comparison;
-      }
 
-      return 0;
-    });
-  }, [sortField, sortOrder]);
+        // Handle string comparison
+        if (typeof aValue === "string" && typeof bValue === "string") {
+          const comparison = aValue.localeCompare(bValue);
+          return sortOrder === "asc" ? comparison : -comparison;
+        }
+
+        // Handle numeric comparison (including acceptance rate)
+        if (typeof aValue === "number" && typeof bValue === "number") {
+          // For acceptance rate, put -1 (no data) values at the end regardless of sort order
+          if (sortField === "acceptance") {
+            if (aValue === -1 && bValue === -1) return 0;
+            if (aValue === -1) return 1; // a goes to end
+            if (bValue === -1) return -1; // b goes to end
+          }
+
+          const comparison = aValue - bValue;
+          return sortOrder === "asc" ? comparison : -comparison;
+        }
+
+        return 0;
+      });
+    },
+    [sortField, sortOrder],
+  );
 
   const totalPages = Math.ceil(filteredProblems.length / PROBLEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * PROBLEMS_PER_PAGE;
@@ -174,9 +186,7 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
 
     // Editorial filter
     if (showEditorialOnly) {
-      filtered = filtered.filter(
-        (problem) => problem.solution,
-      );
+      filtered = filtered.filter((problem) => problem.solution);
     }
 
     // Apply sorting
@@ -184,7 +194,14 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
 
     setFilteredProblems(filtered);
     setCurrentPage(1); // Reset to first page when filters change
-  }, [searchTerm, initialProblems, showEditorialOnly, sortField, sortOrder, sortProblems]);
+  }, [
+    searchTerm,
+    initialProblems,
+    showEditorialOnly,
+    sortField,
+    sortOrder,
+    sortProblems,
+  ]);
 
   const calculateAcceptanceRate = (stats: IProblemData["stats"]) => {
     if (stats.submissions === 0) return null;
@@ -277,7 +294,13 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                 {isAuthenticated && (
                   <th
                     className="h-12 px-4 text-center align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 first:rounded-tl-md"
-                    style={{ width: "2.5rem", minWidth: "2.5rem", maxWidth: "2.5rem", paddingLeft: "0.5rem", paddingRight: "0.5rem" }}
+                    style={{
+                      width: "2.5rem",
+                      minWidth: "2.5rem",
+                      maxWidth: "2.5rem",
+                      paddingLeft: "0.5rem",
+                      paddingRight: "0.5rem",
+                    }}
                   >
                     <span className="flex items-center justify-center h-full">
                       <FontAwesomeIcon
@@ -289,32 +312,38 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                     </span>
                   </th>
                 )}
-                <th className={`h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 ${!isAuthenticated ? 'first:rounded-tl-md' : ''} cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100`}
-                    onClick={() => handleSort('id')}>
+                <th
+                  className={`h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 ${!isAuthenticated ? "first:rounded-tl-md" : ""} cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100`}
+                  onClick={() => handleSort("id")}
+                >
                   <div className="flex items-center gap-2">
                     ID
                     <FontAwesomeIcon
-                      icon={getSortIcon('id')}
+                      icon={getSortIcon("id")}
                       className="w-3 h-3"
                     />
                   </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100"
-                    onClick={() => handleSort('name')}>
+                <th
+                  className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100"
+                  onClick={() => handleSort("name")}
+                >
                   <div className="flex items-center gap-2">
                     Problem
                     <FontAwesomeIcon
-                      icon={getSortIcon('name')}
+                      icon={getSortIcon("name")}
                       className="w-3 h-3"
                     />
                   </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 min-w-[200px] border-r border-gray-600 dark:border-gray-300 cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100"
-                    onClick={() => handleSort('category')}>
+                <th
+                  className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 min-w-[200px] border-r border-gray-600 dark:border-gray-300 cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100"
+                  onClick={() => handleSort("category")}
+                >
                   <div className="flex items-center gap-2">
                     Category
                     <FontAwesomeIcon
-                      icon={getSortIcon('category')}
+                      icon={getSortIcon("category")}
                       className="w-3 h-3"
                     />
                   </div>
@@ -324,22 +353,26 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                     Types
                   </th>
                 )}
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 w-[4.5rem] cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100"
-                    onClick={() => handleSort('points')}>
+                <th
+                  className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 w-[4.5rem] cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100"
+                  onClick={() => handleSort("points")}
+                >
                   <div className="flex items-center gap-2">
                     Points
                     <FontAwesomeIcon
-                      icon={getSortIcon('points')}
+                      icon={getSortIcon("points")}
                       className="w-3 h-3"
                     />
                   </div>
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 w-16 cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100"
-                    onClick={() => handleSort('acceptance')}>
+                <th
+                  className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 w-16 cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100"
+                  onClick={() => handleSort("acceptance")}
+                >
                   <div className="flex items-center gap-2">
                     %AC
                     <FontAwesomeIcon
-                      icon={getSortIcon('acceptance')}
+                      icon={getSortIcon("acceptance")}
                       className="w-3 h-3"
                     />
                   </div>
@@ -375,12 +408,18 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                 currentProblems.map((problem) => (
                   <tr
                     key={problem.code}
-                    className={`border-b transition-colors ${problem.isDeleted ? 'bg-muted/100 opacity-50 pointer-events-none' : 'hover:bg-muted/50'}`}
+                    className={`border-b transition-colors ${problem.isDeleted ? "bg-muted/100 opacity-50 pointer-events-none" : "hover:bg-muted/50"}`}
                   >
                     {isAuthenticated && (
                       <td
                         className="p-4 align-middle border-r border-border"
-                        style={{ width: "2.5rem", minWidth: "2.5rem", maxWidth: "2.5rem", paddingLeft: "0.5rem", paddingRight: "0.5rem" }}
+                        style={{
+                          width: "2.5rem",
+                          minWidth: "2.5rem",
+                          maxWidth: "2.5rem",
+                          paddingLeft: "0.5rem",
+                          paddingRight: "0.5rem",
+                        }}
                       >
                         <span className="flex items-center justify-center h-full w-full">
                           <FontAwesomeIcon
@@ -402,7 +441,7 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                       <Link
                         href={`/problem/${problem.code}`}
                         className="text-primary hover:underline font-medium break-words"
-                      > 
+                      >
                         {problem.name}
                       </Link>
                     </td>

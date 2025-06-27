@@ -13,7 +13,7 @@ export interface IProblemData {
   org: string[];
 
   status?: ProblemStatus;
-  
+
   // Metadata
   category: string;
   type: string[];
@@ -23,22 +23,23 @@ export interface IProblemData {
   stats: {
     submissions: number;
     ACSubmissions: number;
-  }
-  isDeleted: boolean
+  };
+  isDeleted: boolean;
 }
 
 // Server action to fetch all problems with caching
 export async function getProblems(token?: string): Promise<IProblemData[]> {
   try {
-    const baseUrl = process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const baseUrl =
+      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
     const url = new URL("/client/problems/all", baseUrl);
 
-
-    const headers = new Headers()
-    if(token && token.length > 0) headers.append('Authorization', `Bearer ${token}`);
+    const headers = new Headers();
+    if (token && token.length > 0)
+      headers.append("Authorization", `Bearer ${token}`);
 
     const response = await fetch(url.toString(), {
-      headers
+      headers,
     });
 
     if (!response.ok) {
@@ -55,25 +56,29 @@ export async function getProblems(token?: string): Promise<IProblemData[]> {
 // Server action to fetch a single problem
 export async function getProblem(slug: string, token?: string) {
   try {
-    const baseUrl = process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const baseUrl =
+      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
     const url = new URL(`/client/problems/${slug}`, baseUrl);
 
-    const headers = new Headers()
-    if(token && token.length > 0) headers.append('Authorization', `Bearer ${token}`);
+    const headers = new Headers();
+    if (token && token.length > 0)
+      headers.append("Authorization", `Bearer ${token}`);
 
     const response = await fetch(url.toString(), {
-      headers
+      headers,
     });
-    
+
     const json = await response.json();
 
     if (!response.ok) {
       if (response.status === 404) {
         return 404;
-      } else if(response.status === 403) {
+      } else if (response.status === 403) {
         return 403;
       }
-      throw new Error(`Failed to fetch problem: ${json?.message || response.status}`);
+      throw new Error(
+        `Failed to fetch problem: ${json?.message || response.status}`,
+      );
     }
 
     return json;
@@ -82,28 +87,33 @@ export async function getProblem(slug: string, token?: string) {
   }
 }
 
-export async function getProblemStatus(token?: string): Promise<ProblemStatus[]> {
-  if(!token) return [];
+export async function getProblemStatus(
+  token?: string,
+): Promise<ProblemStatus[]> {
+  if (!token) return [];
   try {
-    const baseUrl = process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const baseUrl =
+      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
     const url = new URL(`/client/problems/all/status`, baseUrl);
 
-    const headers = new Headers()
-    headers.append('Authorization', `Bearer ${token}`);
+    const headers = new Headers();
+    headers.append("Authorization", `Bearer ${token}`);
 
     const response = await fetch(url.toString(), {
-      headers
+      headers,
     });
-    
+
     const json = await response.json();
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch problems status: ${json?.message || response.status}`);
+      throw new Error(
+        `Failed to fetch problems status: ${json?.message || response.status}`,
+      );
     }
 
     return json;
   } catch (error) {
-    console.error('Error fetching problems status: ', error);
+    console.error("Error fetching problems status: ", error);
     return [];
   }
 }

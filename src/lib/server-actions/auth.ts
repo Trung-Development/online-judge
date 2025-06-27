@@ -1,6 +1,6 @@
-'use server';
+"use server";
 
-import { headers } from 'next/headers';
+import { headers } from "next/headers";
 
 interface SignupData {
   fullname: string;
@@ -20,7 +20,7 @@ interface SignupResult {
 // Get client IP from headers
 export async function getClientIP(): Promise<string> {
   const headersList = await headers();
-  
+
   // Cloudflare
   const cfConnecting = headersList.get("cf-connecting-ip");
   if (cfConnecting) return cfConnecting;
@@ -56,20 +56,21 @@ export async function getClientIP(): Promise<string> {
 // Server action for user registration
 export async function registerUser(data: SignupData): Promise<SignupResult> {
   try {
-    const apiBase = process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const apiBase =
+      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
     if (!apiBase) {
       return { success: false, error: "API endpoint not configured" };
     }
 
     const clientIp = await getClientIP();
-    
+
     const submitData = {
       ...data,
       clientIp,
     };
 
     const apiUrl = new URL("/client/users", apiBase).toString();
-    
+
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
@@ -80,16 +81,16 @@ export async function registerUser(data: SignupData): Promise<SignupResult> {
 
     if (response.status !== 201) {
       const errorData = await response.json().catch(() => ({}));
-      return { 
-        success: false, 
-        error: errorData.message || "An error occurred during signup" 
+      return {
+        success: false,
+        error: errorData.message || "An error occurred during signup",
       };
     }
 
     return { success: true };
   } catch (error) {
     console.error("Registration error:", error);
-    
+
     // Check for network/server unreachable error
     if (
       error instanceof TypeError &&
@@ -98,15 +99,18 @@ export async function registerUser(data: SignupData): Promise<SignupResult> {
         error.message.includes("NetworkError") ||
         error.message.includes("Network request failed"))
     ) {
-      return { 
-        success: false, 
-        error: "The server is unreachable. Please contact the administrator." 
+      return {
+        success: false,
+        error: "The server is unreachable. Please contact the administrator.",
       };
     }
-    
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : "An error occurred during signup" 
+
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "An error occurred during signup",
     };
   }
 }

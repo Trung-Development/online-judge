@@ -6,7 +6,10 @@ import { ActivityIcon, ChevronDown, Cog, Shield } from "lucide-react";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import { faSquarePen, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSquarePen,
+  faRightFromBracket,
+} from "@fortawesome/free-solid-svg-icons";
 
 import { useSession } from "next-auth/react";
 import { useSessionValidation } from "@/hooks/use-session-validation";
@@ -244,7 +247,10 @@ export function Navbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[170px]">
                 <DropdownMenuItem asChild>
-                  <Link href="/profile/edit" className="w-full cursor-pointer flex items-center gap-2">
+                  <Link
+                    href="/profile/edit"
+                    className="w-full cursor-pointer flex items-center gap-2"
+                  >
                     <FontAwesomeIcon icon={faSquarePen} className="h-4 w-4" />
                     Profile
                   </Link>
@@ -272,7 +278,10 @@ export function Navbar() {
                     className="w-full text-left cursor-pointer flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-950/20"
                     onClick={() => logout()}
                   >
-                    <FontAwesomeIcon icon={faRightFromBracket} className="h-4 w-4" />
+                    <FontAwesomeIcon
+                      icon={faRightFromBracket}
+                      className="h-4 w-4"
+                    />
                     Sign out
                   </button>
                 </DropdownMenuItem>

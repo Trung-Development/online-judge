@@ -16,12 +16,12 @@ import { Home, RefreshCw, OctagonMinus } from "lucide-react";
 import { useParams } from "next/navigation";
 
 interface ForbiddenErrorProps {
-    reset: () => void;
+  reset: () => void;
 }
 
-export default function Forbidden({reset}: ForbiddenErrorProps) {
+export default function Forbidden({ reset }: ForbiddenErrorProps) {
   const { theme } = useTheme();
-  const {slug} = useParams();
+  const { slug } = useParams();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -54,8 +54,9 @@ export default function Forbidden({reset}: ForbiddenErrorProps) {
           <CardContent className="px-8 pb-8">
             <div className="text-center space-y-4">
               <p className="text-muted-foreground">
-                The problem you&apos;re looking for is private and only available to some users.
-                Please check the problems list page or try again.
+                The problem you&apos;re looking for is private and only
+                available to some users. Please check the problems list page or
+                try again.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button onClick={reset} className="flex-1">

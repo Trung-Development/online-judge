@@ -38,9 +38,7 @@ export default function NotFound() {
                 </div>
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold">
-              Page not found
-            </CardTitle>
+            <CardTitle className="text-2xl font-bold">Page not found</CardTitle>
             <CardDescription className="text-lg mt-2">
               This page does not exist or is in under development.
             </CardDescription>

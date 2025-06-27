@@ -2,7 +2,12 @@
 
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useCallback } from "react";
-import { validateUserSession, getCurrentSession, logoutAllSessions as serverLogoutAllSessions, getActiveSessions as serverGetActiveSessions } from "@/lib/server-actions/sessions";
+import {
+  validateUserSession,
+  getCurrentSession,
+  logoutAllSessions as serverLogoutAllSessions,
+  getActiveSessions as serverGetActiveSessions,
+} from "@/lib/server-actions/sessions";
 
 export function useSessionValidation() {
   const { data: session, status } = useSession();

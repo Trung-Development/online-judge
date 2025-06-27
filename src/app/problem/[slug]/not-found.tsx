@@ -17,7 +17,7 @@ import { useParams } from "next/navigation";
 
 export default function NotFound() {
   const { theme } = useTheme();
-  const {slug} = useParams();
+  const { slug } = useParams();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -50,8 +50,9 @@ export default function NotFound() {
           <CardContent className="px-8 pb-8">
             <div className="text-center space-y-4">
               <p className="text-muted-foreground">
-                The problem you&apos;re looking for doesn&apos;t exist or is unavailable. 
-                Please check your spellings or explore the problems list page.
+                The problem you&apos;re looking for doesn&apos;t exist or is
+                unavailable. Please check your spellings or explore the problems
+                list page.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button asChild className="flex-1">

@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 
 // Use Node.js runtime for server actions compatibility
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 
 export const metadata: Metadata = {
   title: `Problem - ${Config.siteDescription}`,
@@ -20,8 +20,8 @@ export default async function Page() {
   problems = problems.map((v) => {
     return {
       ...v,
-      status: statuses.find(x => x.slug == v.code)
-    }
-  })
+      status: statuses.find((x) => x.slug == v.code),
+    };
+  });
   return <ProblemsPage initialProblems={problems} />;
 }

@@ -1,4 +1,4 @@
-'use server';
+"use server";
 
 export interface SessionData {
   id: string;
@@ -10,9 +10,12 @@ export interface SessionData {
 }
 
 // Server action to validate session
-export async function validateUserSession(sessionToken: string): Promise<boolean> {
+export async function validateUserSession(
+  sessionToken: string,
+): Promise<boolean> {
   try {
-    const apiBase = process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const apiBase =
+      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
     if (!apiBase) {
       return false;
     }
@@ -32,9 +35,12 @@ export async function validateUserSession(sessionToken: string): Promise<boolean
 }
 
 // Server action to get current session
-export async function getCurrentSession(sessionToken: string): Promise<SessionData | null> {
+export async function getCurrentSession(
+  sessionToken: string,
+): Promise<SessionData | null> {
   try {
-    const apiBase = process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const apiBase =
+      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
     if (!apiBase) {
       return null;
     }
@@ -57,9 +63,12 @@ export async function getCurrentSession(sessionToken: string): Promise<SessionDa
 }
 
 // Server action to logout all sessions
-export async function logoutAllSessions(sessionToken: string): Promise<boolean> {
+export async function logoutAllSessions(
+  sessionToken: string,
+): Promise<boolean> {
   try {
-    const apiBase = process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const apiBase =
+      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
     if (!apiBase) {
       return false;
     }
@@ -80,9 +89,12 @@ export async function logoutAllSessions(sessionToken: string): Promise<boolean> 
 }
 
 // Server action to get all active sessions
-export async function getActiveSessions(sessionToken: string): Promise<SessionData[]> {
+export async function getActiveSessions(
+  sessionToken: string,
+): Promise<SessionData[]> {
   try {
-    const apiBase = process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const apiBase =
+      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
     if (!apiBase) {
       return [];
     }

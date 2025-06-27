@@ -276,7 +276,7 @@ export const authOptions: AuthOptions = {
   pages: {
     signIn: "/accounts/login", // your custom login page
   },
-}
+};
 
 const handler = NextAuth({
   providers: [

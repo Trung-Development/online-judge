@@ -11,7 +11,7 @@ export interface ApiCallOptions {
 
 export async function publicFetchWithAuthentication(
   url: string,
-  options: ApiCallOptions = {}
+  options: ApiCallOptions = {},
 ): Promise<Response> {
   const { method = "GET", headers = {}, body, autoLogout = true } = options;
 
@@ -24,7 +24,7 @@ export async function publicFetchWithAuthentication(
     ...headers,
     "X-User-Agent": navigator.userAgent, // Send the original browser User Agent
   };
-  if(isLoggedIn) authHeaders.Authorization = `Bearer ${session.sessionToken}`
+  if (isLoggedIn) authHeaders.Authorization = `Bearer ${session.sessionToken}`;
 
   // Add content-type for POST/PUT requests with body
   if (body && !headers["Content-Type"]) {

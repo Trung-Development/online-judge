@@ -138,9 +138,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
               <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 text-lg">
                 <div className="flex flex-col gap-2">
                   <Button asChild className="w-full">
-                    <Link href={`/problem/${slug}/submit`}>
-                      Submit
-                    </Link>
+                    <Link href={`/problem/${slug}/submit`}>Submit</Link>
                   </Button>
                   {problem.solution && (
                     <Button variant="outline" asChild className="w-full">
@@ -237,15 +235,19 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                         {problem.author.map((username: string, idx: number) => {
                           return (
                             <React.Fragment key={username}>
-                              {username.startsWith('@') ? (<Link
-                                href={`/user/${username.split('@')[1]}`}
-                                className="text-foreground underline"
-                              >
-                                {username.split('@')[1]}
-                              </Link>) : username}
+                              {username.startsWith("@") ? (
+                                <Link
+                                  href={`/user/${username.split("@")[1]}`}
+                                  className="text-foreground underline"
+                                >
+                                  {username.split("@")[1]}
+                                </Link>
+                              ) : (
+                                username
+                              )}
                               {idx < problem.author.length - 1 && ", "}
                             </React.Fragment>
-                          )
+                          );
                         })}
                       </div>
                     </div>

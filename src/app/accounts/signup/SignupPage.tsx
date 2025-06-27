@@ -194,9 +194,7 @@ export default function SignupPage() {
       router.push("/accounts/login");
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "An error occurred during signup",
+        err instanceof Error ? err.message : "An error occurred during signup",
       );
       console.error("Signup error:", err);
       // Reset captcha on error
