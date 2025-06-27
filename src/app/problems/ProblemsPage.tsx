@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/pagination";
 import Loading from "../loading";
 import { IProblemData } from "@/lib/server-actions/problems";
+import { useSession } from "next-auth/react";
 
 const PROBLEMS_PER_PAGE = 50;
 
@@ -48,12 +49,21 @@ function getStatusIcon(problem: IProblemData) {
 }
 
 export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
+  const { data: clientSession } = useSession();
   const [filteredProblems, setFilteredProblems] = useState<IProblemData[]>(initialProblems);
   const [loading] = useState(false); // No longer loading since we have initial data
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showEditorialOnly, setShowEditorialOnly] = useState(false);
   const [showTypes, setShowTypes] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Use client session after hydration to avoid SSR mismatch
+  const isAuthenticated = isHydrated ? !!clientSession?.sessionToken : false;
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const totalPages = Math.ceil(filteredProblems.length / PROBLEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * PROBLEMS_PER_PAGE;
@@ -171,15 +181,22 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
           <table className="w-full">
             <thead>
               <tr className="border-b bg-gray-800 dark:bg-white">
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 first:rounded-tl-md">
+                {isAuthenticated && (
+                  <th
+                    className="h-12 px-4 text-center align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 first:rounded-tl-md"
+                    style={{ width: "2.5rem", minWidth: "2.5rem", maxWidth: "2.5rem", paddingLeft: "0.5rem", paddingRight: "0.5rem" }}
+                  >
+                    <span className="flex items-center justify-center h-full">
                       <FontAwesomeIcon
                         icon={faEyeDropper}
                         aria-label="Visibility"
-                        className={`w-4 h-4`}
+                        className="w-4 h-4"
                         title="Visibility"
                       />
-                </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 first:rounded-tl-md">
+                    </span>
+                  </th>
+                )}
+                <th className={`h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 ${!isAuthenticated ? 'first:rounded-tl-md' : ''}`}>
                   ID
                 </th>
                 <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300">
@@ -214,7 +231,11 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
               {currentProblems.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={showTypes ? 7 : 6}
+                    colSpan={
+                      (isAuthenticated ? 1 : 0) + // visibility column
+                      6 + // ID, Problem, Category, Points, %AC, Editorial
+                      (showTypes ? 1 : 0) // types column
+                    }
                     className="h-24 px-4 text-center text-muted-foreground"
                   >
                     {searchTerm
@@ -228,14 +249,21 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                     key={problem.code}
                     className={`border-b transition-colors ${problem.isDeleted ? 'bg-muted/100 opacity-50 pointer-events-none' : 'hover:bg-muted/50'}`}
                   >
-                    <td className="p-4 align-middle border-r border-border">
-                      <FontAwesomeIcon
-                        icon={getStatusIcon(problem).icon}
-                        aria-label={problem.status}
-                        className={`w-4 h-4 text-${getStatusIcon(problem).color}-600 dark:text-${getStatusIcon(problem).color}-400`}
-                        title={problem.status}
-                      />
-                    </td>
+                    {isAuthenticated && (
+                      <td
+                        className="p-4 align-middle border-r border-border"
+                        style={{ width: "2.5rem", minWidth: "2.5rem", maxWidth: "2.5rem", paddingLeft: "0.5rem", paddingRight: "0.5rem" }}
+                      >
+                        <span className="flex items-center justify-center h-full w-full">
+                          <FontAwesomeIcon
+                            icon={getStatusIcon(problem).icon}
+                            aria-label={problem.status}
+                            className={`w-4 h-4 text-${getStatusIcon(problem).color}-600 dark:text-${getStatusIcon(problem).color}-400`}
+                            title={problem.status}
+                          />
+                        </span>
+                      </td>
+                    )}
                     <td className="p-4 align-middle border-r border-border">
                       <Link
                         href={`/problem/${problem.code}`}
