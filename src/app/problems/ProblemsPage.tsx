@@ -28,7 +28,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import Loading from "../loading";
 import { IProblemData, ProblemStatus } from "@/lib/server-actions/problems";
 import { useSession } from "next-auth/react";
 
@@ -58,7 +57,6 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
   const { data: clientSession } = useSession();
   const [filteredProblems, setFilteredProblems] =
     useState<IProblemData[]>(initialProblems);
-  const [loading] = useState(false); // No longer loading since we have initial data
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showEditorialOnly, setShowEditorialOnly] = useState(false);
@@ -218,10 +216,6 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
     if (types.length === 0) return "-";
     return types.join(", ");
   };
-
-  if (loading) {
-    return <Loading />;
-  }
 
   return (
     <main className="max-w-7xl mx-auto py-8 px-4">
@@ -411,7 +405,7 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                   <tr
                     key={problem.code}
                     className={`border-b transition-colors ${
-                      problem.isDeleted
+                      problem.isDeleted // The problem is deleted
                         ? "bg-muted/100 opacity-50 pointer-events-none"
                         : "hover:bg-muted/50"
                     }`}
