@@ -164,7 +164,7 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
         return 0;
       });
     },
-    [sortField, sortOrder],
+    [sortField, sortOrder]
   );
 
   const totalPages = Math.ceil(filteredProblems.length / PROBLEMS_PER_PAGE);
@@ -180,7 +180,7 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
       filtered = filtered.filter(
         (problem) =>
           problem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          problem.code.toLowerCase().includes(searchTerm.toLowerCase()),
+          problem.code.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -313,7 +313,9 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                   </th>
                 )}
                 <th
-                  className={`h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 ${!isAuthenticated ? "first:rounded-tl-md" : ""} cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100`}
+                  className={`h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 ${
+                    !isAuthenticated ? "first:rounded-tl-md" : ""
+                  } cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100`}
                   onClick={() => handleSort("id")}
                 >
                   <div className="flex items-center gap-2">
@@ -408,7 +410,11 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                 currentProblems.map((problem) => (
                   <tr
                     key={problem.code}
-                    className={`border-b transition-colors ${problem.isDeleted ? "bg-muted/100 opacity-50 pointer-events-none" : "hover:bg-muted/50"}`}
+                    className={`border-b transition-colors ${
+                      problem.isDeleted
+                        ? "bg-muted/100 opacity-50 pointer-events-none"
+                        : "hover:bg-muted/50"
+                    }`}
                   >
                     {isAuthenticated && (
                       <td
@@ -424,7 +430,11 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                         <span className="flex items-center justify-center h-full w-full">
                           <FontAwesomeIcon
                             icon={getStatusIcon(problem.status).icon}
-                            className={`w-4 h-4 text-${getStatusIcon(problem.status).color}-600 dark:text-${getStatusIcon(problem.status).color}-400`}
+                            className={`w-4 h-4 text-${
+                              getStatusIcon(problem.status).color
+                            }-600 dark:text-${
+                              getStatusIcon(problem.status).color
+                            }-400`}
                           />
                         </span>
                       </td>
@@ -466,12 +476,12 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                           !problem.stats
                             ? "text-muted-foreground"
                             : calculateAcceptanceRate(problem.stats) === null
-                              ? "text-muted-foreground"
-                              : calculateAcceptanceRate(problem.stats)! >= 50
-                                ? "text-green-600 dark:text-green-400"
-                                : calculateAcceptanceRate(problem.stats)! >= 25
-                                  ? "text-yellow-600 dark:text-yellow-400"
-                                  : "text-red-600 dark:text-red-400"
+                            ? "text-muted-foreground"
+                            : calculateAcceptanceRate(problem.stats)! >= 50
+                            ? "text-green-600 dark:text-green-400"
+                            : calculateAcceptanceRate(problem.stats)! >= 25
+                            ? "text-yellow-600 dark:text-yellow-400"
+                            : "text-red-600 dark:text-red-400"
                         }`}
                       >
                         {problem.stats

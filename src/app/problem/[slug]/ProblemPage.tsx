@@ -44,10 +44,10 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
       problem.allowedLanguages
         .map(
           (langValue) =>
-            languages.find((lang) => lang.value === langValue)?.commonName,
+            languages.find((lang) => lang.value === langValue)?.commonName
         )
-        .filter(Boolean),
-    ),
+        .filter(Boolean)
+    )
   ).sort();
 
   // Helper to format memory limit
@@ -110,7 +110,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                 code: (
                   props: React.HTMLAttributes<HTMLElement> & {
                     inline?: boolean;
-                  },
+                  }
                 ) => {
                   const { inline, children, ...rest } = props;
                   // inline is now recognized as any, so no TS error
@@ -360,7 +360,7 @@ function PDFViewer({ src, title }: { src: string; title: string }) {
             body?.scrollHeight || 0,
             html?.scrollHeight || 0,
             body?.offsetHeight || 0,
-            html?.offsetHeight || 0,
+            html?.offsetHeight || 0
           );
           if (height > 0) {
             iframe.style.height = `${height}px`;
