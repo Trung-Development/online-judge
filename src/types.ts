@@ -59,7 +59,7 @@ export type TAllowedLang =
   | "ZIG"
   | "CPP20";
 
-export interface IProblemData {
+export interface IProblemPageData {
   // Basic information
   code: string; // Unique identifier for the problem
   name: string;

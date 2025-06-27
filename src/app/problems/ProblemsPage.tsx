@@ -6,6 +6,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBook,
   faCheck,
+  faEye,
+  faEyeDropper,
+  faEyeSlash,
+  faLock,
   faMinusCircle,
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
@@ -27,6 +31,20 @@ const PROBLEMS_PER_PAGE = 50;
 
 interface ProblemsPageProps {
   initialProblems: IProblemData[];
+}
+
+function getStatusIcon(problem: IProblemData) {
+  const /*status: 'ACTIVE' | 'HIDDEN' | 'LOCKED' | 'DELETED';
+  if(problem.isDeleted) status = 'DELETED';
+  else */ status = problem.status;
+  switch(status) {
+    case 'ACTIVE':
+      return { icon: faEye, color: 'green' };
+    case 'HIDDEN':
+      return { icon: faEyeSlash, color: 'red' };
+    case 'LOCKED':
+      return { icon: faLock, color: 'yellow' };
+  }
 }
 
 export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
@@ -154,6 +172,14 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
             <thead>
               <tr className="border-b bg-gray-800 dark:bg-white">
                 <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 first:rounded-tl-md">
+                      <FontAwesomeIcon
+                        icon={faEyeDropper}
+                        aria-label="Visibility"
+                        className={`w-4 h-4`}
+                        title="Visibility"
+                      />
+                </th>
+                <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 first:rounded-tl-md">
                   ID
                 </th>
                 <th className="h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300">
@@ -200,8 +226,16 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                 currentProblems.map((problem) => (
                   <tr
                     key={problem.code}
-                    className="border-b transition-colors hover:bg-muted/50"
+                    className={`border-b transition-colors ${problem.isDeleted ? 'bg-muted/100 opacity-50 pointer-events-none' : 'hover:bg-muted/50'}`}
                   >
+                    <td className="p-4 align-middle border-r border-border">
+                      <FontAwesomeIcon
+                        icon={getStatusIcon(problem).icon}
+                        aria-label={problem.status}
+                        className={`w-4 h-4 text-${getStatusIcon(problem).color}-600 dark:text-${getStatusIcon(problem).color}-400`}
+                        title={problem.status}
+                      />
+                    </td>
                     <td className="p-4 align-middle border-r border-border">
                       <Link
                         href={`/problem/${problem.code}`}
@@ -214,17 +248,17 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                       <Link
                         href={`/problem/${problem.code}`}
                         className="text-primary hover:underline font-medium break-words"
-                      >
+                      > 
                         {problem.name}
                       </Link>
                     </td>
-                    <td className="p-4 align-top text-sm min-w-[200px] border-r border-border">
+                    <td className="p-4 align-middle text-sm min-w-[200px] border-r border-border">
                       <span className="text-foreground break-words whitespace-normal">
                         {problem.category}
                       </span>
                     </td>
                     {showTypes && (
-                      <td className="p-4 align-top text-sm min-w-[150px] border-r border-border">
+                      <td className="p-4 align-middle text-sm min-w-[150px] border-r border-border">
                         <span className="text-foreground break-words whitespace-normal">
                           {getTypeDisplay(problem.type)}
                         </span>

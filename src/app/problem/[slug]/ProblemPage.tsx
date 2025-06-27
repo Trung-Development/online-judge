@@ -26,11 +26,11 @@ import {
   faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { IProblemData } from "@/types";
+import { IProblemPageData } from "@/types";
 import { languages } from "@/constants";
 
 interface ProblemPageProps {
-  problem: IProblemData;
+  problem: IProblemPageData;
   slug: string;
 }
 

@@ -9,11 +9,13 @@ export interface IProblemData {
   type: string[];
   points: number;
   solution: boolean;
+  status: 'ACTIVE' | 'HIDDEN' | 'LOCKED';
 
   stats: {
     submissions: number;
     ACSubmissions: number;
   }
+  isDeleted: boolean
 }
 
 // Server action to fetch all problems with caching
