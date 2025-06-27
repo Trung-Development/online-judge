@@ -15,6 +15,7 @@ import {
   faSort,
   faSortUp,
   faSortDown,
+  faLockOpen,
 } from "@fortawesome/free-solid-svg-icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import Loading from "../loading";
-import { IProblemData } from "@/lib/server-actions/problems";
+import { IProblemData, ProblemStatus } from "@/lib/server-actions/problems";
 import { useSession } from "next-auth/react";
 
 const PROBLEMS_PER_PAGE = 50;
@@ -40,18 +41,17 @@ interface ProblemsPageProps {
   initialProblems: IProblemData[];
 }
 
-function getStatusIcon(problem: IProblemData) {
-  const /*status: 'ACTIVE' | 'HIDDEN' | 'LOCKED' | 'DELETED';
-  if(problem.isDeleted) status = 'DELETED';
-  else */ status = problem.status;
-  switch(status) {
-    case 'ACTIVE':
-      return { icon: faEye, color: 'green' };
-    case 'HIDDEN':
-      return { icon: faEyeSlash, color: 'red' };
-    case 'LOCKED':
-      return { icon: faLock, color: 'yellow' };
-  }
+function getStatusIcon(status?: ProblemStatus) {
+  // handle color
+  const result = {icon: faEyeSlash, color: 'red'};
+  if(!status) return { icon: faEye, color: 'red' };
+  if(status.solved == true) result.color = 'green';
+  else if(status.attempted == true) result.color = 'yellow';
+  // handle icon
+  if(status.isLocked && status.isPublic) result.icon = faLockOpen;
+  else if(status.isLocked) result.icon = faLock;
+  else if(status.isPublic) result.icon = faEye;
+  return result;
 }
 
 export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
@@ -282,9 +282,9 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                     <span className="flex items-center justify-center h-full">
                       <FontAwesomeIcon
                         icon={faEyeDropper}
-                        aria-label="Visibility"
+                        aria-label="Status"
                         className="w-4 h-4"
-                        title="Visibility"
+                        title="Status"
                       />
                     </span>
                   </th>
@@ -360,7 +360,7 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                 <tr>
                   <td
                     colSpan={
-                      (isAuthenticated ? 1 : 0) + // visibility column
+                      (isAuthenticated ? 1 : 0) + // status column
                       6 + // ID, Problem, Category, Points, %AC, Editorial
                       (showTypes ? 1 : 0) // types column
                     }
@@ -384,10 +384,8 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                       >
                         <span className="flex items-center justify-center h-full w-full">
                           <FontAwesomeIcon
-                            icon={getStatusIcon(problem).icon}
-                            aria-label={problem.status}
-                            className={`w-4 h-4 text-${getStatusIcon(problem).color}-600 dark:text-${getStatusIcon(problem).color}-400`}
-                            title={problem.status}
+                            icon={getStatusIcon(problem.status).icon}
+                            className={`w-4 h-4 text-${getStatusIcon(problem.status).color}-600 dark:text-${getStatusIcon(problem.status).color}-400`}
                           />
                         </span>
                       </td>

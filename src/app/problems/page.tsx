@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import ProblemsPage from "./ProblemsPage";
 import { Config } from "@/config";
-import { getProblems } from "@/lib/server-actions/problems";
+import { getProblems, getProblemStatus } from "@/lib/server-actions/problems";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 
@@ -15,6 +15,13 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const session = await getServerSession(authOptions);
-  const problems = await getProblems(session?.sessionToken);
+  let problems = await getProblems(session?.sessionToken);
+  const statuses = await getProblemStatus(session?.sessionToken);
+  problems = problems.map((v) => {
+    return {
+      ...v,
+      status: statuses.find(x => x.slug == v.code)
+    }
+  })
   return <ProblemsPage initialProblems={problems} />;
 }

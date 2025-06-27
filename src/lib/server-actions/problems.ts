@@ -1,15 +1,24 @@
+export interface ProblemStatus {
+  slug: string;
+  isLocked: boolean;
+  isPublic: boolean;
+  solved: boolean;
+  attempted: boolean;
+}
+
 export interface IProblemData {
   // Basic information
   code: string; // Unique identifier for the problem
   name: string;
   org: string[];
+
+  status?: ProblemStatus;
   
   // Metadata
   category: string;
   type: string[];
   points: number;
   solution: boolean;
-  status: 'ACTIVE' | 'HIDDEN' | 'LOCKED';
 
   stats: {
     submissions: number;
@@ -70,5 +79,31 @@ export async function getProblem(slug: string, token?: string) {
     return json;
   } catch (error) {
     throw error;
+  }
+}
+
+export async function getProblemStatus(token?: string): Promise<ProblemStatus[]> {
+  if(!token) return [];
+  try {
+    const baseUrl = process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const url = new URL(`/client/problems/all/status`, baseUrl);
+
+    const headers = new Headers()
+    headers.append('Authorization', `Bearer ${token}`);
+
+    const response = await fetch(url.toString(), {
+      headers
+    });
+    
+    const json = await response.json();
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch problems status: ${json?.message || response.status}`);
+    }
+
+    return json;
+  } catch (error) {
+    console.error('Error fetching problems status: ', error);
+    return [];
   }
 }
