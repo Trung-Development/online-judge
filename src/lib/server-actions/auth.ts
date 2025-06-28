@@ -30,6 +30,8 @@ function parseSignupError(status: number, errorData: SignupErrorData): string {
         return "Email is already in use";
       case "USERNAME_UNAVAILABLE":
         return "Username is already in use";
+      case "INVALID_CAPTCHA":
+        return "Invalid captcha. Please try again.";
       default:
         return errorData.message;
     }
