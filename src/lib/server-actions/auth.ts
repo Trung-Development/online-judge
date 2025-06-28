@@ -17,8 +17,13 @@ interface SignupResult {
   error?: string;
 }
 
+type SignupErrorData = {
+  message?: string;
+  [key: string]: unknown;
+};
+
 // Helper to classify signup error codes/messages
-function parseSignupError(status: number, errorData: any): string {
+function parseSignupError(status: number, errorData: SignupErrorData): string {
   if (typeof errorData?.message === "string") {
     switch (errorData.message) {
       case "EMAIL_IN_USE":
