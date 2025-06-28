@@ -1,6 +1,5 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
-import "@dotenvx/dotenvx/config";
 
 const nextConfig: NextConfig = {
   experimental: {
