@@ -48,7 +48,6 @@ export async function getProblems(token?: string): Promise<IProblemData[]> {
 
         const response = await fetch(url.toString(), {
           headers,
-          cache: "no-store", // Fuck the browser, no cache please
         });
 
         if (!response.ok) {
