@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 export interface ProblemStatus {
   slug: string;
   isLocked: boolean;
@@ -27,30 +29,46 @@ export interface IProblemData {
   isDeleted: boolean;
 }
 
-// Server action to fetch all problems with caching
+
 export async function getProblems(token?: string): Promise<IProblemData[]> {
-  try {
-    const baseUrl =
-      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
-    const url = new URL("/client/problems/all", baseUrl);
+  // Create a cache key based on the token (or lack thereof)
+  const tokenHash = token ? `auth-${token.slice(-8)}` : 'anonymous';
+  
+  // Use Next.js unstable_cache to cache the result
+  return unstable_cache(
+    async () => {
+      try {
+        const baseUrl =
+          process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+        const url = new URL("/client/problems/all", baseUrl);
 
-    const headers = new Headers();
-    if (token && token.length > 0)
-      headers.append("Authorization", `Bearer ${token}`);
+        const headers = new Headers();
+        if (token && token.length > 0)
+          headers.append("Authorization", `Bearer ${token}`);
 
-    const response = await fetch(url.toString(), {
-      headers,
-    });
+        const response = await fetch(url.toString(), {
+          headers,
+          cache: "no-store", // Fuck the browser, no cache please
+        });
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch problems: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch problems: ${response.status}`);
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error("Error fetching problems:", error);
+        return [];
+      }
+    },
+    // Cache key - includes the function name and token hash
+    ["problems-list", tokenHash],
+    {
+      revalidate: 300, // Revalidate after 5 minutes (300 seconds)
+      // Tags for manual invalidation
+      tags: ["problems", `user-${tokenHash}`],
     }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching problems:", error);
-    return [];
-  }
+  )();
 }
 
 // Server action to fetch a single problem
