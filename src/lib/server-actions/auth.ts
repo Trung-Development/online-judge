@@ -17,6 +17,22 @@ interface SignupResult {
   error?: string;
 }
 
+// Helper to classify signup error codes/messages
+function parseSignupError(status: number, errorData: any): string {
+  if (typeof errorData?.message === "string") {
+    switch (errorData.message) {
+      case "EMAIL_IN_USE":
+        return "Email is already in use";
+      case "USERNAME_UNAVAILABLE":
+        return "Username is already in use";
+      default:
+        return errorData.message;
+    }
+  }
+  
+  return "An error occurred during signup";
+}
+
 // Get client IP from headers
 export async function getClientIP(): Promise<string> {
   const headersList = await headers();
@@ -83,7 +99,7 @@ export async function registerUser(data: SignupData): Promise<SignupResult> {
       const errorData = await response.json().catch(() => ({}));
       return {
         success: false,
-        error: errorData.message || "An error occurred during signup",
+        error: parseSignupError(response.status, errorData),
       };
     }
 
