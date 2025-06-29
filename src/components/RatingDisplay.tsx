@@ -47,10 +47,10 @@ export default function RatingDisplay({
     <span className={`rate-group ${className}`} title={ratingTitle}>
       {showIcon && (
         <>
-          {ratingClass === 'rate-target' ? (
+          {rating >= 3000 ? (
             <svg className="rate-box rate-target" viewBox="0 0 16 16">
-              <circle cx="8" cy="8" r="7"></circle>
-              <circle cx="8" cy="8" r="3"></circle>
+              <circle cx="8" cy="8" r="7" fill="white" stroke="#e74c3c" strokeWidth="1"></circle>
+              <circle cx="8" cy="8" r="3" fill="#e74c3c"></circle>
             </svg>
           ) : (
             <svg className={`rate-box ${ratingClass}`} viewBox="0 0 16 16">
@@ -68,7 +68,7 @@ export default function RatingDisplay({
           )}
         </>
       )}
-      <span className={`rating ${ratingClass}`}>
+      <span className={`rating ${rating >= 3000 ? '' : ratingClass}`} style={rating >= 3000 ? { color: '#e74c3c' } : {}}>
         {rating}
       </span>
     </span>

@@ -22,8 +22,9 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { IUsersListData } from "@/lib/server-actions/users";
-import { getRatingClass, getRatingTitle } from "@/lib/rating";
+import { getRatingTitle } from "@/lib/rating";
 import RatingDisplay from "@/components/RatingDisplay";
+import UsernameDisplay from "@/components/UsernameDisplay";
 import "@/styles/rating.css";
 import "@/styles/table.css";
 
@@ -286,10 +287,13 @@ export default function UsersPage({ initialUsers }: UsersPageProps) {
                     <td className="data-table-body-cell">
                       <Link
                         href={`/user/${user.username}`}
-                        className={`username-link ${user.rating === 0 ? 'rate-none' : getRatingClass(user.rating)}`}
+                        className="username-link"
                         title={getRatingTitle(user.rating)}
                       >
-                        {user.username}
+                        <UsernameDisplay 
+                          username={user.username}
+                          rating={user.rating}
+                        />
                       </Link>
                     </td>
                     <td className="data-table-body-cell center">
