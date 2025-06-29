@@ -59,6 +59,20 @@ export type TAllowedLang =
   | "ZIG"
   | "CPP20";
 
+export type TProblemStatus =
+  | "AC" // Accepted
+  | "WA" // Wrong Answer
+  | "TLE" // Time Limit Exceeded
+  | "RE" // Runtime Error
+  | "CE" // Compilation Error
+  | "MLE" // Memory Limit Exceeded
+  | "PE" // Presentation Error
+  | "IE" // Internal Error
+  | "QU" // Queued
+  | "OLE" // Output Limit Exceeded
+  | "AB" // Aborted
+  | "IR"; // Invalid Return
+
 export interface IProblemPageData {
   // Basic information
   code: string; // Unique identifier for the problem
