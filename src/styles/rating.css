@@ -33,6 +33,10 @@
   color: #e00;
 }
 
+.rate-admin, .rate-admin a {
+  color: #e00;
+}
+
 .rate-target a::first-letter {
   color: #700;
 }

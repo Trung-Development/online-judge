@@ -68,7 +68,7 @@ export default function RatingDisplay({
           )}
         </>
       )}
-      <span className={`rating ${rating >= 3000 ? '' : ratingClass}`} style={rating >= 3000 ? { color: '#e74c3c' } : {}}>
+      <span className={`rating ${ratingClass}`}>
         {rating}
       </span>
     </span>
