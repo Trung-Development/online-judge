@@ -70,6 +70,7 @@ export interface IProblemPageData {
   timeLimit: number; // in seconds
   memoryLimit: number; // in MB
   allowedLanguages: TAllowedLang[];
+  problemSource?: string;
 
   // I/O
   input: string;

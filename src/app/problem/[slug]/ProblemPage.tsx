@@ -36,6 +36,7 @@ interface ProblemPageProps {
 
 export default function ProblemPage({ problem, slug }: ProblemPageProps) {
   const [typeExpanded, setTypeExpanded] = useState(false);
+  const [sourceExpanded, setSourceExpanded] = useState(true);
   const [langExpanded, setLangExpanded] = useState(true); // default open
 
   // Extract unique common names from allowed languages
@@ -235,16 +236,12 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                         {problem.author.map((username: string, idx: number) => {
                           return (
                             <React.Fragment key={username}>
-                              {username.startsWith("@") ? (
-                                <Link
-                                  href={`/user/${username.split("@")[1]}`}
+                              <Link
+                                  href={`/user/${username}`}
                                   className="text-foreground underline"
-                                >
-                                  {username.split("@")[1]}
-                                </Link>
-                              ) : (
-                                username
-                              )}
+                              >
+                                  {username}
+                              </Link>
                               {idx < problem.author.length - 1 && ", "}
                             </React.Fragment>
                           );
@@ -277,6 +274,31 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                       </div>
                     </div>
                   </div>
+                  {problem.problemSource ? <div>
+                    <button
+                      onClick={() => setSourceExpanded(!sourceExpanded)}
+                      className="flex items-center gap-2 w-full text-left hover:opacity-70 transition-opacity"
+                    >
+                      <FontAwesomeIcon
+                        icon={sourceExpanded ? faChevronDown : faChevronRight}
+                        className="text-primary w-3 transition-transform duration-200"
+                      />
+                      <span className="font-bold text-foreground">
+                        Problem source
+                      </span>
+                    </button>
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        sourceExpanded
+                          ? "max-h-32 opacity-100 mt-2"
+                          : "max-h-0 opacity-0"
+                      }`}
+                    >
+                      <div className="text-foreground ml-5">
+                        {problem.problemSource}
+                      </div>
+                    </div>
+                  </div> : <></>}
                   <div>
                     <button
                       onClick={() => setLangExpanded(!langExpanded)}
