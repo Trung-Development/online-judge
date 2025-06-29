@@ -180,3 +180,7 @@ body::-webkit-scrollbar-thumb:hover {
 hr {
   @apply border-t border-gray-300 -mt-1 mb-6;
 }
+
+/* Import rating styles */
+@import "../styles/rating.css";
+@import "../styles/table.css";
