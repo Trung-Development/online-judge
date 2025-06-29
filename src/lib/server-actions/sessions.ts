@@ -41,8 +41,9 @@ export async function getCurrentSession(
   try {
     const apiBase =
       process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+
     if (!apiBase) {
-      return null;
+      throw new Error("API base URL is not defined");
     }
 
     const response = await fetch(
@@ -70,7 +71,7 @@ export async function logoutAllSessions(
     const apiBase =
       process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
     if (!apiBase) {
-      return false;
+      throw new Error("API base URL is not defined");
     }
 
     const response = await fetch(
@@ -96,7 +97,7 @@ export async function getActiveSessions(
     const apiBase =
       process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
     if (!apiBase) {
-      return [];
+      throw new Error("API base URL is not defined");
     }
 
     const response = await fetch(
