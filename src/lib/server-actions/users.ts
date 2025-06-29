@@ -14,6 +14,7 @@ export interface IUserData {
   totalPoints: number;
   rankByPoints: number;
   submissions: ISubmissionsData[];
+  bio: string;
 }
 
 export async function getUsers() {
