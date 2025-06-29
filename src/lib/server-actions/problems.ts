@@ -61,7 +61,7 @@ export async function getProblem(slug: string, token?: string) {
   try {
     const baseUrl =
       process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
-    const url = new URL(`/client/problems/${slug}`, baseUrl);
+    const url = new URL(`/client/problems/details/${slug}`, baseUrl);
 
     const headers = new Headers();
     if (token && token.length > 0)
