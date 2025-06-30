@@ -1,13 +1,13 @@
 import { TAllowedLang, TProblemStatus } from "@/types";
 
 export interface ISubmissionsData {
-  timestamp: number;
+  timestamp: number; // UNIX timestamp in milliseconds
   problemCode: string;
   problemName: string;
   problemCategory: string;
   points: number;
   status: TProblemStatus;
-  language: TAllowedLang[];
+  language: TAllowedLang;
 }
 
 export interface IUserData {
