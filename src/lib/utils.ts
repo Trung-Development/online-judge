@@ -8,5 +8,5 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getGravatarURL(email: string, size = 32) {
   const hash = md5(email.trim().toLowerCase());
-  return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=identicon`;
+  return `https://gravatar.com/avatar/${hash}?s=${size}&d=identicon`;
 }
