@@ -27,6 +27,7 @@ import RatingDisplay from "@/components/RatingDisplay";
 import UsernameDisplay from "@/components/UsernameDisplay";
 import "@/styles/rating.css";
 import "@/styles/table.css";
+import Loading from "../loading";
 
 const USERS_PER_PAGE = 50;
 
@@ -43,6 +44,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState<SortField>("points");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -132,6 +134,16 @@ export default function UsersPage({ initialUsers }: UsersPageProps) {
   const endIndex = startIndex + USERS_PER_PAGE;
   const currentUsers = filteredUsers.slice(startIndex, endIndex);
 
+  // Set loaded state after component mounts to prevent FOUC
+  useEffect(() => {
+    // Small delay to ensure CSS is loaded
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     let filtered = initialUsers;
 
@@ -151,12 +163,26 @@ export default function UsersPage({ initialUsers }: UsersPageProps) {
 
   return (
     <main className="max-w-7xl mx-auto py-8 px-4">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-4">
-          <FontAwesomeIcon icon={faTrophy} className="mr-2" />
-          Leaderboard
-        </h1>
-        <hr className="mb-6" />
+      {/* Simple loading indicator */}
+      {!isLoaded && (
+        <Loading />
+      )}
+      
+      {/* Main content with loading overlay to prevent FOUC */}
+      <div 
+        className={`users-page-container ${
+          isLoaded ? 'loaded' : 'loading'
+        }`}
+      >
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-4 flex items-center">
+            <FontAwesomeIcon 
+              icon={faTrophy} 
+              className="mr-2 trophy-icon" 
+            />
+            Leaderboard
+          </h1>
+          <hr className="mb-6" />
         
         {/* Search Box */}
         <div className="search-controls">
@@ -407,6 +433,7 @@ export default function UsersPage({ initialUsers }: UsersPageProps) {
           </p>
         </div>
       )}
+      </div>
     </main>
   );
 }

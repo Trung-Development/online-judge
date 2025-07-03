@@ -103,8 +103,11 @@
   top: 50%;
   transform: translateY(-50%);
   color: rgb(156 163 175);
-  width: 1rem;
-  height: 1rem;
+  width: 1rem !important;
+  height: 1rem !important;
+  max-width: 1rem !important;
+  max-height: 1rem !important;
+  display: inline-block;
 }
 
 .filter-controls {
@@ -141,4 +144,55 @@
 
 .table-scroll {
   overflow-x: auto;
+}
+
+/* Prevent FontAwesome icons from being oversized during load */
+.fa, .fas, .far, .fal, .fab, svg[data-icon] {
+  max-width: 2rem !important;
+  max-height: 2rem !important;
+  display: inline-block;
+  box-sizing: border-box;
+}
+
+/* Global icon size reset to prevent flash */
+svg {
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+/* Specific size control for trophy icon */
+.trophy-icon {
+  width: 2rem !important;
+  height: 2rem !important;
+  max-width: 2rem !important;
+  max-height: 2rem !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+}
+
+/* Sort icons in table headers */
+.data-table-header-cell .fa,
+.data-table-header-cell .fas,
+.data-table-header-cell svg[data-icon] {
+  width: 0.75rem !important;
+  height: 0.75rem !important;
+  max-width: 0.75rem !important;
+  max-height: 0.75rem !important;
+  flex-shrink: 0 !important;
+}
+
+/* Prevent layout shift during loading */
+.users-page-container {
+  min-height: 50vh;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.users-page-container.loading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.users-page-container.loaded {
+  opacity: 1;
+  pointer-events: auto;
 }

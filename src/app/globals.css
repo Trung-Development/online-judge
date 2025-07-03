@@ -181,6 +181,13 @@ hr {
   @apply border-t border-gray-300 -mt-1 mb-6;
 }
 
+/* Prevent FontAwesome icon flash globally */
+svg {
+  max-width: 100%;
+  max-height: 100%;
+  display: inline-block;
+}
+
 /* Import rating styles */
 @import "../styles/rating.css";
 @import "../styles/table.css";
