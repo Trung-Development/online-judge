@@ -3,8 +3,7 @@ import { Metadata } from "next";
 import { Config } from "../../../config";
 import { forbidden, notFound } from "next/navigation";
 import { getProblem } from "@/lib/server-actions/problems";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getAuthSession } from "@/lib/auth";
 
 // Use Node.js runtime for server actions compatibility
 export const runtime = "nodejs";
@@ -16,7 +15,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     const problem = await getProblem(slug, session?.sessionToken);
     if (!problem) {
       return {
@@ -42,7 +41,7 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const session = await getServerSession(authOptions);
+  const session = await getAuthSession();
   const problem = await getProblem(slug, session?.sessionToken);
 
   if (!problem || problem == 404) notFound();

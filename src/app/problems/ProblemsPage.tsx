@@ -29,7 +29,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { IProblemData, ProblemStatus } from "@/lib/server-actions/problems";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/AuthProvider";
 
 const PROBLEMS_PER_PAGE = 50;
 
@@ -54,7 +54,7 @@ function getStatusIcon(status?: ProblemStatus) {
 }
 
 export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
-  const { data: clientSession } = useSession();
+  const { sessionToken } = useAuth();
   const [filteredProblems, setFilteredProblems] =
     useState<IProblemData[]>(initialProblems);
   const [searchTerm, setSearchTerm] = useState("");
@@ -66,7 +66,7 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
 
   // Use client session after hydration to avoid SSR mismatch
-  const isAuthenticated = isHydrated ? !!clientSession?.sessionToken : false;
+  const isAuthenticated = isHydrated ? !!sessionToken : false;
 
   useEffect(() => {
     setIsHydrated(true);

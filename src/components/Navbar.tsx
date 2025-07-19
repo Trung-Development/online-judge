@@ -11,7 +11,7 @@ import {
   faRightFromBracket,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/AuthProvider";
 import { useSessionValidation } from "@/hooks/use-session-validation";
 
 import {
@@ -68,9 +68,8 @@ function ListItem({
 }
 
 export function Navbar() {
-  const { data: session, status } = useSession();
+  const { user, isLoading } = useAuth();
   const { logout } = useSessionValidation();
-  const user = session?.user;
   const avatarUrl = user?.email ? getGravatarURL(user.email) : undefined;
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 
@@ -200,7 +199,7 @@ export function Navbar() {
 
         {/* Auth Buttons or User Dropdown */}
         <div className="flex items-center gap-1 sm:gap-2 lg:gap-4 px-2 sm:px-3 lg:px-6">
-          {status === "loading" ? (
+          {isLoading ? (
             // Optional: show skeleton or loading spinner
             <div className="h-6 w-24 bg-zinc-700 rounded animate-pulse" />
           ) : !user ? (

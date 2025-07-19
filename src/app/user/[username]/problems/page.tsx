@@ -1,8 +1,7 @@
 import { Config } from "@/config";
 import { getUser } from "@/lib/server-actions/users";
 import { notFound } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getAuthSession } from "@/lib/auth";
 import UserProblemsPage from "./UserProblemsPage";
 import { Metadata } from "next";
 
@@ -24,7 +23,7 @@ export default async function Page({
 }) {
   // Get the current session to check if the user is viewing their own profile
   const { username } = await params;
-  const session = await getServerSession(authOptions);
+  const session = await getAuthSession();
   const userData = await getUser(username);
   if (!userData) notFound();
 

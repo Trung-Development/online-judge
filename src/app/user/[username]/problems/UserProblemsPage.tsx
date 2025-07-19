@@ -6,7 +6,7 @@ import { getRatingClass, getRatingTitle } from "@/lib/rating";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import UserTabs from "../UserTabs";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/AuthProvider";
 import Link from "next/link";
 
 interface UserProblemsPageProps {
@@ -22,8 +22,8 @@ interface UserProblemsPageProps {
 
 export default function UserProblemsPage({ userData, username, serverUser }: UserProblemsPageProps) {
     // For client-side session
-    const { data: clientSession } = useSession();
-    const currentUser = serverUser || clientSession?.user;
+    const { user: clientUser } = useAuth();
+    const currentUser = serverUser || clientUser;
     
     const ratingValue = userData.totalPoints ? Math.floor(userData.totalPoints / 10) + 1200 : 1200;
     

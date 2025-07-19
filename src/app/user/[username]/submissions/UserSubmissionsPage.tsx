@@ -6,7 +6,7 @@ import { getRatingClass, getRatingTitle } from "@/lib/rating";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import UserTabs from "../UserTabs";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/AuthProvider";
 import Link from "next/link";
 
 interface UserSubmissionsPageProps {
@@ -22,8 +22,8 @@ interface UserSubmissionsPageProps {
 
 export default function UserSubmissionsPage({ userData, username, serverUser }: UserSubmissionsPageProps) {
     // For client-side session
-    const { data: clientSession } = useSession();
-    const currentUser = serverUser || clientSession?.user;
+    const { user: clientUser } = useAuth();
+    const currentUser = serverUser || clientUser;
     
     const ratingValue = userData.totalPoints ? Math.floor(userData.totalPoints / 10) + 1200 : 1200;
     const solvedProblems = userData.submissions.filter(s => s.status === 'AC').length;

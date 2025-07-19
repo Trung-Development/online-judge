@@ -17,7 +17,7 @@ import { MagicCard } from "@/components/magicui/magic-card";
 import { useTheme } from "next-themes";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/AuthProvider";
 import { languages } from "@/constants";
 import * as React from "react";
 import { ChevronDownIcon, ChevronsUpDown, Check } from "lucide-react";
@@ -56,7 +56,7 @@ const Turnstile = dynamic(() => import("next-turnstile").then(mod => mod.Turnsti
 export default function SignupPage() {
   const { theme } = useTheme();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { user, isLoading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     username: "",
@@ -79,18 +79,18 @@ export default function SignupPage() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (status === "authenticated" && session) {
+    if (user && !authLoading) {
       router.push("/");
     }
-  }, [status, session, router]);
+  }, [user, authLoading, router]);
 
   // Show loading while checking authentication
-  if (status === "loading") {
+  if (authLoading) {
     return <Loading />;
   }
 
   // Don't render the form if user is authenticated
-  if (status === "authenticated") {
+  if (user) {
     return null;
   }
 

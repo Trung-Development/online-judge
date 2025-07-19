@@ -17,7 +17,7 @@ import { MagicCard } from "@/components/magicui/magic-card";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { signIn, useSession } from "next-auth/react";
+import { useAuth } from "@/components/AuthProvider";
 import dynamic from "next/dynamic";
 import Loading from "@/app/loading";
 import { AlertCircle } from "lucide-react";
@@ -29,7 +29,7 @@ const Turnstile = dynamic(() => import("next-turnstile").then(mod => mod.Turnsti
 export default function LoginPage() {
   const { theme } = useTheme();
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { user, login, isLoading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -50,18 +50,18 @@ export default function LoginPage() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (status === "authenticated" && session) {
+    if (user && !authLoading) {
       router.push("/");
     }
-  }, [status, session, router]);
+  }, [user, authLoading, router]);
 
   // Show loading while checking authentication
-  if (status === "loading") {
+  if (authLoading) {
     return <Loading />;
   }
 
   // Don't render the form if user is authenticated
-  if (status === "authenticated") {
+  if (user) {
     return null;
   }
 
@@ -93,21 +93,36 @@ export default function LoginPage() {
     const formDataObj = new FormData(formRef.current);
     const token = formDataObj.get("cf-turnstile-response") as string;
 
-    const result = await signIn("credentials", {
-      redirect: false,
-      email: formData.email,
-      password: formData.password,
-      userAgent: navigator.userAgent,
-      captchaToken: token,
-    });
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          captchaToken: token,
+        }),
+      });
 
-    if (result?.error) {
-      setError(result.error);
-      // Reset turnstile status
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.error || "Login failed");
+        // Reset turnstile status
+        setTurnstileStatus("required");
+      } else if (result.success) {
+        // Login successful, update auth context
+        login(result.sessionToken, result.user);
+        router.push("/");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("An unexpected error occurred. Please try again.");
       setTurnstileStatus("required");
-    } else if (result?.ok) {
-      router.push("/");
     }
+
     setIsLoading(false);
   };
 

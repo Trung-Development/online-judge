@@ -1,7 +1,5 @@
 "use client";
 
-import { getSession, signOut } from "next-auth/react";
-
 export interface ApiCallOptions {
   method?: string;
   headers?: Record<string, string>;
@@ -15,16 +13,17 @@ export async function publicFetchWithAuthentication(
 ): Promise<Response> {
   const { method = "GET", headers = {}, body, autoLogout = true } = options;
 
-  // Get the current session
-  const session = await getSession();
-  const isLoggedIn = !!session?.sessionToken;
+  // Get current session
+  const sessionResponse = await fetch("/api/auth/session");
+  const sessionData = sessionResponse.ok ? await sessionResponse.json() : null;
+  const isLoggedIn = !!sessionData?.sessionToken;
 
-  // Add authorization header and User Agent
+  // Add authorization header and User Agent if logged in
   const authHeaders: Record<string, string> = {
     ...headers,
     "X-User-Agent": navigator.userAgent, // Send the original browser User Agent
   };
-  if (isLoggedIn) authHeaders.Authorization = `Bearer ${session.sessionToken}`;
+  if (isLoggedIn) authHeaders.Authorization = `Bearer ${sessionData.sessionToken}`;
 
   // Add content-type for POST/PUT requests with body
   if (body && !headers["Content-Type"]) {
@@ -41,10 +40,12 @@ export async function publicFetchWithAuthentication(
       : undefined,
   });
 
-  // Handle 401 Unauthorized responses
+  // Handle 401 Unauthorized responses only if the user is logged in
   if (isLoggedIn && response.status === 401 && autoLogout) {
     console.log("Session expired during API call, signing out");
-    await signOut({ callbackUrl: "/accounts/login" });
+    // Clear the session by calling logout endpoint
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/accounts/login";
     throw new Error("Session expired");
   }
 
@@ -58,16 +59,20 @@ export async function authenticatedFetch(
   const { method = "GET", headers = {}, body, autoLogout = true } = options;
 
   // Get the current session
-  const session = await getSession();
+  const sessionResponse = await fetch("/api/auth/session");
+  if (!sessionResponse.ok) {
+    throw new Error("No valid session found");
+  }
 
-  if (!session?.sessionToken) {
+  const sessionData = await sessionResponse.json();
+  if (!sessionData?.sessionToken) {
     throw new Error("No valid session found");
   }
 
   // Add authorization header and User Agent
   const authHeaders: Record<string, string> = {
     ...headers,
-    Authorization: `Bearer ${session.sessionToken}`,
+    Authorization: `Bearer ${sessionData.sessionToken}`,
     "X-User-Agent": navigator.userAgent, // Send the original browser User Agent
   };
 
@@ -89,7 +94,8 @@ export async function authenticatedFetch(
   // Handle 401 Unauthorized responses
   if (response.status === 401 && autoLogout) {
     console.log("Session expired during API call, signing out");
-    await signOut({ callbackUrl: "/accounts/login" });
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/accounts/login";
     throw new Error("Session expired");
   }
 

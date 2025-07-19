@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User } from "next-auth";
+import { User } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 interface UserTabsProps {

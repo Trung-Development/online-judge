@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import {
@@ -21,19 +21,19 @@ import {
 import SessionManager from "@/components/SessionManager";
 
 export default function SecurityPage() {
-  const { data: session, status } = useSession();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "loading") return; // Still loading
-    if (!session) {
+    if (isLoading) return; // Still loading
+    if (!user) {
       router.push("/accounts/login?callbackUrl=/accounts/security");
       return;
     }
-  }, [session, status, router]);
+  }, [user, isLoading, router]);
 
   // Show loading while checking authentication
-  if (status === "loading") {
+  if (isLoading) {
     return (
       <div className="container mx-auto py-8 px-4 max-w-6xl">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -47,7 +47,7 @@ export default function SecurityPage() {
   }
 
   // Don't render anything if not authenticated (will redirect)
-  if (!session) {
+  if (!user) {
     return null;
   }
   return (

@@ -3,7 +3,7 @@ import "./globals.css";
 
 import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import NextAuthProvider from "@/components/NextAuthProvider";
+import { AuthProvider } from "@/components/AuthProvider";
 import SessionValidator from "@/components/SessionValidator";
 
 const geistSans = Geist({
@@ -26,7 +26,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NextAuthProvider>
+        <AuthProvider>
           <SessionValidator>
             <ThemeProvider
               attribute="class"
@@ -38,7 +38,7 @@ export default function RootLayout({
               {children}
             </ThemeProvider>
           </SessionValidator>
-        </NextAuthProvider>
+        </AuthProvider>
       </body>
     </html>
   );

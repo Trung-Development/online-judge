@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { useAuth } from "@/components/AuthProvider";
 import { useEffect, useCallback } from "react";
 import {
   validateUserSession,
@@ -10,25 +10,20 @@ import {
 } from "@/lib/server-actions/sessions";
 
 export function useSessionValidation() {
-  const { data: session, status } = useSession();
+  const { sessionToken, logout, isAuthenticated } = useAuth();
 
   const validateSession = useCallback(async () => {
     // Only validate if we have a session and session token
-    if (status !== "authenticated" || !session?.sessionToken) {
-      return false;
-    }
-
-    // Check if there's a session expired error
-    if ("error" in session && session.error === "SessionExpired") {
+    if (!isAuthenticated || !sessionToken) {
       return false;
     }
 
     try {
-      const isValid = await validateUserSession(session.sessionToken);
+      const isValid = await validateUserSession(sessionToken);
 
       // If the session is invalid, sign out
       if (!isValid) {
-        await signOut({ callbackUrl: "/accounts/login" });
+        await logout();
         return false;
       }
 
@@ -38,51 +33,45 @@ export function useSessionValidation() {
       // but log the error for debugging
       return true;
     }
-  }, [session, status]);
-
-  const logout = useCallback(async () => {
-    // For manual logout, we want to delete the session on the backend
-    // The NextAuth signOut event handler will handle the DELETE call
-    await signOut({ callbackUrl: "/accounts/login" });
-  }, []);
+  }, [sessionToken, isAuthenticated, logout]);
 
   const logoutAllSessions = useCallback(async () => {
     // Logout from all sessions
-    if (session?.sessionToken) {
+    if (sessionToken) {
       try {
-        await serverLogoutAllSessions(session.sessionToken);
+        await serverLogoutAllSessions(sessionToken);
       } catch (error) {
         console.error("Failed to logout all sessions:", error);
       }
     }
-    await signOut({ callbackUrl: "/accounts/login" });
-  }, [session]);
+    await logout();
+  }, [sessionToken, logout]);
 
   const getCurrentSessionData = useCallback(async () => {
-    if (!session?.sessionToken) {
+    if (!sessionToken) {
       return null;
     }
 
     try {
-      return await getCurrentSession(session.sessionToken);
+      return await getCurrentSession(sessionToken);
     } catch (error) {
       console.error("Error fetching current session:", error);
       return null;
     }
-  }, [session]);
+  }, [sessionToken]);
 
   const getActiveSessionsData = useCallback(async () => {
-    if (!session?.sessionToken) {
+    if (!sessionToken) {
       return [];
     }
 
     try {
-      return await serverGetActiveSessions(session.sessionToken);
+      return await serverGetActiveSessions(sessionToken);
     } catch (error) {
       console.error("Error fetching active sessions:", error);
       return [];
     }
-  }, [session]);
+  }, [sessionToken]);
 
   return {
     validateSession,
@@ -90,14 +79,18 @@ export function useSessionValidation() {
     logoutAllSessions,
     getCurrentSession: getCurrentSessionData,
     getActiveSessions: getActiveSessionsData,
-    isAuthenticated: status === "authenticated" && !!session?.sessionToken,
+    isAuthenticated,
   };
 }
 
 export function usePeriodicSessionValidation(intervalMs: number = 60000) {
-  const { validateSession } = useSessionValidation();
+  const { validateSession, isAuthenticated } = useSessionValidation();
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
     // Set up periodic validation
     const interval = setInterval(validateSession, intervalMs);
 
@@ -110,5 +103,5 @@ export function usePeriodicSessionValidation(intervalMs: number = 60000) {
       clearTimeout(timer);
       clearInterval(interval);
     };
-  }, [validateSession, intervalMs]);
+  }, [validateSession, intervalMs, isAuthenticated]);
 }

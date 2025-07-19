@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/components/AuthProvider";
 import {
   ActivityIcon,
   Menu,
@@ -81,13 +81,13 @@ const aboutItems = [
 
 export function MobileSidebar() {
   const [open, setOpen] = React.useState(false);
-  const { data: session } = useSession();
+  const { user } = useAuth();
 
   // Filter navigation items based on authentication
   const filteredNavigationItems = navigationItems.filter((item) => {
     // Show Security link only for authenticated users
     if (item.title === "Security") {
-      return !!session;
+      return !!user;
     }
     return true;
   });
