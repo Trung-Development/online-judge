@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
     inlineCss: true,
     cssChunking: true,
     authInterrupts: true,
+    optimizePackageImports: [],
+    optimizeCss: true,
   },
   async rewrites() {
     return [
