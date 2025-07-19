@@ -5,7 +5,7 @@ import { getProblems, getProblemStatus } from "@/lib/server-actions/problems";
 import { getAuthSession } from "@/lib/auth";
 
 // Use Node.js runtime for server actions compatibility
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export const metadata: Metadata = {
   title: `Problem - ${Config.siteDescription}`,

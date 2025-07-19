@@ -5,6 +5,8 @@ import { getAuthSession } from "@/lib/auth";
 import UserSubmissionsPage from "./UserSubmissionsPage";
 import { Metadata } from "next";
 
+export const runtime = "edge";
+
 export async function generateMetadata({
   params,
 }: {

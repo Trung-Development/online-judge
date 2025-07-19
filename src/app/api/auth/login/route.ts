@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { setAuthSession } from "@/lib/auth";
 
+export const runtime = "edge";
+
 interface LoginCredentials {
   email: string;
   password: string;

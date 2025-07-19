@@ -6,7 +6,7 @@ import { getProblem } from "@/lib/server-actions/problems";
 import { getAuthSession } from "@/lib/auth";
 
 // Use Node.js runtime for server actions compatibility
-export const runtime = "nodejs";
+export const runtime = "edge";
 
 export async function generateMetadata({
   params,

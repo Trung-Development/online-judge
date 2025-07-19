@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import UserPage from "./UserPage";
 import { getAuthSession } from "@/lib/auth";
 
+export const runtime = "edge";
+
 export async function generateMetadata({
   params,
 }: {

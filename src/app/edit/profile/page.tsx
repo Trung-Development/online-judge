@@ -3,6 +3,8 @@ import { Config } from "@/config";
 import { requireAuth } from "@/lib/auth";
 import EditProfilePage from "./EditProfilePage";
 
+export const runtime = "edge";
+
 export const metadata: Metadata = {
   title: `Edit Profile - ${Config.siteDescription}`,
 };
