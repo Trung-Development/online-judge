@@ -69,9 +69,14 @@ export default function SubmissionsPage() {
     WA: "bg-red-100 text-red-800 border-red-300",
     TLE: "bg-yellow-100 text-yellow-800 border-yellow-300",
     MLE: "bg-purple-100 text-purple-800 border-purple-300",
-    RE: "bg-orange-100 text-orange-800 border-orange-300",
+    RTE: "bg-orange-100 text-orange-800 border-orange-300",
+    CE: "bg-pink-100 text-pink-800 border-pink-300",
     QU: "bg-blue-100 text-blue-800 border-blue-300",
-    JU: "bg-gray-100 text-gray-800 border-gray-300",
+    RN: "bg-blue-100 text-blue-800 border-blue-300",
+    AB: "bg-gray-100 text-gray-800 border-gray-300",
+    IR: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    OLE: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    ISE: "bg-red-100 text-red-800 border-red-300",
     SK: "bg-gray-100 text-gray-600 border-gray-300",
   };
 
@@ -80,9 +85,14 @@ export default function SubmissionsPage() {
     WA: "Wrong Answer",
     TLE: "Time Limit Exceeded",
     MLE: "Memory Limit Exceeded",
-    RE: "Runtime Error",
+    RTE: "Runtime Error",
+    CE: "Compilation Error",
     QU: "Queued",
-    JU: "Judging",
+    RN: "Running",
+    AB: "Aborted",
+    IR: "Invalid Return",
+    OLE: "Output Limit Exceeded",
+    ISE: "Internal Server Error",
     SK: "Skipped",
   };
 

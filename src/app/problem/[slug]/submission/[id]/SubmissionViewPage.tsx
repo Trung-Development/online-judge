@@ -110,6 +110,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
       OLE: "Output Limit Exceeded",
       AB: "Aborted",
       IR: "Invalid Return",
+      ISE: "Internal Server Error",
       SK: "Skipped",
     };
     return verdictMap[verdict] || verdict;
