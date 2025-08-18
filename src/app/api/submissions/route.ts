@@ -102,16 +102,36 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const page = searchParams.get("page") || "1";
-    const limit = searchParams.get("limit") || "20";
+    const pageStr = searchParams.get("page") || "1";
+    const limitStr = searchParams.get("limit") || "20";
     const problemCode = searchParams.get("problemCode");
     const author = searchParams.get("author");
+    const verdict = searchParams.get("verdict");
+
+    // Validate that page and limit are valid integers
+    const page = parseInt(pageStr, 10);
+    const limit = parseInt(limitStr, 10);
+    
+    if (isNaN(page) || page < 1) {
+      return NextResponse.json(
+        { error: "Invalid page parameter" },
+        { status: 400 }
+      );
+    }
+    
+    if (isNaN(limit) || limit < 1 || limit > 100) {
+      return NextResponse.json(
+        { error: "Invalid limit parameter (must be 1-100)" },
+        { status: 400 }
+      );
+    }
 
     const params = new URLSearchParams({
-      page,
-      limit,
+      page: page.toString(),
+      limit: limit.toString(),
       ...(problemCode && { problemCode }),
       ...(author && { author }),
+      ...(verdict && { verdict }),
     });
 
     const response = await fetch(
