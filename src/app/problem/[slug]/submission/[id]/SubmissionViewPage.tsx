@@ -409,12 +409,16 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
               <div className="flex items-center gap-2">
                 <FontAwesomeIcon icon={faUser} className="text-muted-foreground w-4" />
                 <span className="font-medium">Author:</span>
-                <Link 
-                  href={`/user/${submission.author.username}`}
-                  className="text-primary hover:underline"
-                >
-                  {submission.author.username}
-                </Link>
+                {submission.author ? (
+                  <Link 
+                    href={`/user/${submission.author.username}`}
+                    className="text-primary hover:underline"
+                  >
+                    {submission.author.username}
+                  </Link>
+                ) : (
+                  <span className="text-muted-foreground">Unknown</span>
+                )}
               </div>
               
               <div className="flex items-center gap-2">
