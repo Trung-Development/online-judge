@@ -1,62 +1,59 @@
-import { useState, useEffect } from 'react';
-
-interface JudgeCapabilities {
-  judges: { [key: string]: { problems: string[]; executors: { [key: string]: unknown } } };
-  summary: {
-    connectedJudges: number;
-    totalProblems: number;
-    totalExecutors: number;
-  };
-}
+import { useState, useEffect, useCallback } from 'react';
 
 interface JudgeStatus {
-  connected: number;
-  judges: string[];
+  connected: boolean;
+  judgeCount: number;
 }
 
-export function useJudgeCapabilities() {
-  const [capabilities, setCapabilities] = useState<JudgeCapabilities | null>(null);
-  const [status, setStatus] = useState<JudgeStatus | null>(null);
-  const [availableProblems, setAvailableProblems] = useState<string[]>([]);
-  const [availableExecutors, setAvailableExecutors] = useState<string[]>([]);
+interface JudgeCapabilities {
+  status: JudgeStatus;
+  problems: string[];
+  executors: string[];
+}
+
+export const useJudgeCapabilities = () => {
+  const [capabilities, setCapabilities] = useState<JudgeCapabilities>({
+    status: { connected: false, judgeCount: 0 },
+    problems: [],
+    executors: []
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCapabilities = async () => {
+  const fetchCapabilities = useCallback(async () => {
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_ENDPOINT || "http://localhost:3001";
-      
-      // Fetch all data in parallel
-      const [capRes, statusRes, problemsRes, executorsRes] = await Promise.all([
-        fetch(`${apiBase}/client/judge/capabilities`),
-        fetch(`${apiBase}/client/judge/status`),
-        fetch(`${apiBase}/client/judge/problems`),
-        fetch(`${apiBase}/client/judge/executors`),
-      ]);
-
-      if (!capRes.ok || !statusRes.ok || !problemsRes.ok || !executorsRes.ok) {
-        throw new Error('Failed to fetch judge data');
-      }
-
-      const [capData, statusData, problemsData, executorsData] = await Promise.all([
-        capRes.json(),
-        statusRes.json(),
-        problemsRes.json(),
-        executorsRes.json(),
-      ]);
-
-      setCapabilities(capData);
-      setStatus(statusData);
-      setAvailableProblems(problemsData.problems || []);
-      setAvailableExecutors(executorsData.executors || []);
       setError(null);
+      
+      // Fetch all endpoints in parallel using Next.js API routes
+      const [statusRes, problemsRes, executorsRes] = await Promise.all([
+        fetch('/api/judge/status'),
+        fetch('/api/judge/problems'),
+        fetch('/api/judge/executors')
+      ]);
+
+      const [status, problems, executors] = await Promise.all([
+        statusRes.ok ? statusRes.json() : { connected: false, judgeCount: 0 },
+        problemsRes.ok ? problemsRes.json() : [],
+        executorsRes.ok ? executorsRes.json() : []
+      ]);
+
+      setCapabilities({
+        status,
+        problems,
+        executors
+      });
     } catch (err) {
       console.error('Error fetching judge capabilities:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError('Failed to fetch judge capabilities');
+      setCapabilities({
+        status: { connected: false, judgeCount: 0 },
+        problems: [],
+        executors: []
+      });
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchCapabilities();
@@ -65,30 +62,30 @@ export function useJudgeCapabilities() {
     const interval = setInterval(fetchCapabilities, 30000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchCapabilities]);
 
-  const isProblemAvailable = (problemCode: string): boolean => {
-    return availableProblems.includes(problemCode);
-  };
+  const isProblemAvailable = useCallback((problemCode: string): boolean => {
+    return capabilities.problems.includes(problemCode);
+  }, [capabilities.problems]);
 
-  const isExecutorAvailable = (executor: string): boolean => {
-    return availableExecutors.includes(executor);
-  };
+  const isExecutorAvailable = useCallback((executor: string): boolean => {
+    return capabilities.executors.includes(executor);
+  }, [capabilities.executors]);
 
-  const refreshCapabilities = () => {
+  const refreshCapabilities = useCallback(() => {
     setLoading(true);
     fetchCapabilities();
-  };
+  }, [fetchCapabilities]);
 
   return {
     capabilities,
-    status,
-    availableProblems,
-    availableExecutors,
+    status: capabilities.status,
+    availableProblems: capabilities.problems,
+    availableExecutors: capabilities.executors,
     loading,
     error,
     isProblemAvailable,
     isExecutorAvailable,
     refreshCapabilities,
   };
-}
+};

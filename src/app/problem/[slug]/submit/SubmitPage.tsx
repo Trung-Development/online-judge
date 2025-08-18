@@ -172,7 +172,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
     }
 
     // Check judge availability
-    if (!judgeStatus || judgeStatus.connected === 0) {
+    if (!judgeStatus || !judgeStatus.connected || judgeStatus.judgeCount === 0) {
       setError("No judges are currently connected. Please try again later.");
       return;
     }
@@ -431,7 +431,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                 )}
 
                 {/* Judge Status Warnings */}
-                {judgeStatus && judgeStatus.connected === 0 && (
+                {judgeStatus && (!judgeStatus.connected || judgeStatus.judgeCount === 0) && (
                   <Alert variant="destructive">
                     <FontAwesomeIcon icon={faServer} className="h-4 w-4" />
                     <AlertDescription>
@@ -440,7 +440,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                   </Alert>
                 )}
 
-                {judgeStatus && judgeStatus.connected > 0 && !isProblemAvailable(slug) && (
+                {judgeStatus && judgeStatus.connected && judgeStatus.judgeCount > 0 && !isProblemAvailable(slug) && (
                   <Alert variant="destructive">
                     <FontAwesomeIcon icon={faExclamationTriangle} className="h-4 w-4" />
                     <AlertDescription>
@@ -562,11 +562,11 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                 <span className="text-sm font-medium">Connected Judges:</span>
                 <div className="flex items-center gap-2">
                   <FontAwesomeIcon 
-                    icon={judgeStatus && judgeStatus.connected > 0 ? faCheck : faTimes} 
-                    className={`w-3 h-3 ${judgeStatus && judgeStatus.connected > 0 ? 'text-green-600' : 'text-red-600'}`} 
+                    icon={judgeStatus && judgeStatus.connected && judgeStatus.judgeCount > 0 ? faCheck : faTimes} 
+                    className={`w-3 h-3 ${judgeStatus && judgeStatus.connected && judgeStatus.judgeCount > 0 ? 'text-green-600' : 'text-red-600'}`} 
                   />
                   <span className="text-sm">
-                    {judgeLoading ? "Loading..." : judgeStatus?.connected || 0}
+                    {judgeLoading ? "Loading..." : judgeStatus?.judgeCount || 0}
                   </span>
                 </div>
               </div>

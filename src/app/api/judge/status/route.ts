@@ -1,0 +1,29 @@
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  try {
+    const apiEndpoint = process.env.API_ENDPOINT || 'http://localhost:50829';
+    const response = await fetch(`${apiEndpoint}/client/judge/status`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      return NextResponse.json({ 
+        connected: false, 
+        judgeCount: 0 
+      }, { status: 200 });
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error fetching judge status:', error);
+    return NextResponse.json({ 
+      connected: false, 
+      judgeCount: 0 
+    }, { status: 200 });
+  }
+}
