@@ -15,6 +15,8 @@ export async function GET() {
     }
 
     const data = await response.json();
+    
+    // Backend now returns array directly
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error fetching judge executors:', error);

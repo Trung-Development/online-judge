@@ -18,7 +18,12 @@ export async function GET() {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    
+    // Transform backend response to match frontend interface
+    return NextResponse.json({
+      connected: data.connected > 0,
+      judgeCount: data.connected
+    });
   } catch (error) {
     console.error('Error fetching judge status:', error);
     return NextResponse.json({ 
