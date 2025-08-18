@@ -141,6 +141,16 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                   <Button asChild className="w-full">
                     <Link href={`/problem/${slug}/submit`}>Submit</Link>
                   </Button>
+                  <Button variant="outline" asChild className="w-full">
+                    <Link href={`/submissions?problemCode=${slug}`}>
+                      All Submissions
+                    </Link>
+                  </Button>
+                  <Button variant="outline" asChild className="w-full">
+                    <Link href={`/submissions?problemCode=${slug}&author=me`}>
+                      My Submissions
+                    </Link>
+                  </Button>
                   {problem.solution && (
                     <Button variant="outline" asChild className="w-full">
                       <Link href={`/problem/${slug}/solution`}>

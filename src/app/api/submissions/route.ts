@@ -83,7 +83,12 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await response.json();
-    return NextResponse.json(result);
+    
+    // Backend returns { success: true, data: submission }
+    // Frontend expects just the submission data
+    const submissionData = result.data || result;
+    
+    return NextResponse.json(submissionData);
 
   } catch (error) {
     console.error("Submission API error:", error);
