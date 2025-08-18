@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth";
+import { env } from "@/lib/env";
 
 export const runtime = "edge";
 
@@ -23,17 +24,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Proxy to backend API
-    const apiBase = process.env.API_ENDPOINT;
-    if (!apiBase) {
-      return NextResponse.json(
-        { error: "Backend API not configured" },
-        { status: 500 }
-      );
-    }
-
     // First, get the problem details to get the ID
-    const problemResponse = await fetch(new URL(`/client/problems/details/${problemCode}`, apiBase).toString(), {
+    const problemResponse = await fetch(new URL(`/client/problems/details/${problemCode}`, env.API_ENDPOINT).toString(), {
       headers: {
         Authorization: `Bearer ${session.sessionToken}`,
       },
@@ -60,7 +52,7 @@ export async function POST(request: NextRequest) {
     console.log('Submission payload:', submissionPayload);
     console.log('Problem ID type after parseInt:', typeof submissionPayload.problemId);
 
-    const response = await fetch(new URL("/client/submissions", apiBase).toString(), {
+    const response = await fetch(new URL("/client/submissions", env.API_ENDPOINT).toString(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -115,15 +107,6 @@ export async function GET(request: NextRequest) {
     const problemCode = searchParams.get("problemCode");
     const author = searchParams.get("author");
 
-    // Proxy to backend API
-    const apiBase = process.env.API_ENDPOINT;
-    if (!apiBase) {
-      return NextResponse.json(
-        { error: "Backend API not configured" },
-        { status: 500 }
-      );
-    }
-
     const params = new URLSearchParams({
       page,
       limit,
@@ -132,7 +115,7 @@ export async function GET(request: NextRequest) {
     });
 
     const response = await fetch(
-      new URL(`/client/submissions?${params}`, apiBase).toString(),
+      new URL(`/client/submissions?${params}`, env.API_ENDPOINT).toString(),
       {
         method: "GET",
         headers: {

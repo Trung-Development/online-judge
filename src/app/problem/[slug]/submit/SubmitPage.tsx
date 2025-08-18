@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Editor from "@monaco-editor/react";
-import { io } from "socket.io-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -50,7 +49,7 @@ interface SubmissionResponse {
 }
 
 export default function SubmitPage({ problem, slug }: SubmitPageProps) {
-  const { isAuthenticated, sessionToken } = useAuth();
+  const { isAuthenticated } = useAuth();
   const router = useRouter();
   
   // Judge capabilities for availability checking
@@ -77,37 +76,37 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
     isExecutorAvailable(lang.value)
   );
 
-  // WebSocket connection for live updates
+  // Polling for submission updates (instead of WebSocket to avoid CORS issues)
   useEffect(() => {
-    if (!submissionId || !sessionToken) return;
+    if (!submissionId) return;
 
-    const apiBase = process.env.NEXT_PUBLIC_API_ENDPOINT || "http://localhost:3001";
+    const pollSubmission = async () => {
+      try {
+        const response = await fetch(`/api/submissions/${submissionId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setSubmissionStatus(data);
+          
+          // Stop polling if submission is complete
+          if (data.verdict && data.verdict !== 'QU' && data.verdict !== 'P') {
+            setIsSubmitting(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error polling submission:', error);
+      }
+    };
+
+    // Poll every 2 seconds
+    const pollInterval = setInterval(pollSubmission, 2000);
     
-    const newSocket = io(apiBase, {
-      auth: {
-        token: sessionToken,
-      },
-    });
-
-    newSocket.emit('subscribe_submission', submissionId);
-
-    newSocket.on('submission_update', (data: SubmissionResponse) => {
-      if (data.id === submissionId) {
-        setSubmissionStatus(data);
-      }
-    });
-
-    newSocket.on('submission_complete', (data: SubmissionResponse) => {
-      if (data.id === submissionId) {
-        setSubmissionStatus(data);
-        setIsSubmitting(false);
-      }
-    });
+    // Initial fetch
+    pollSubmission();
 
     return () => {
-      newSocket.disconnect();
+      clearInterval(pollInterval);
     };
-  }, [submissionId, sessionToken]);
+  }, [submissionId]);
 
   // Set default language template when language changes
   useEffect(() => {

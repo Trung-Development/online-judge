@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth";
+import { env } from "@/lib/env";
 
 export const runtime = "edge";
 
@@ -25,17 +26,8 @@ export async function GET(
       );
     }
 
-    // Proxy to backend API
-    const apiBase = process.env.API_ENDPOINT;
-    if (!apiBase) {
-      return NextResponse.json(
-        { error: "Backend API not configured" },
-        { status: 500 }
-      );
-    }
-
     const response = await fetch(
-      new URL(`/client/submissions/${id}`, apiBase).toString(),
+      new URL(`/client/submissions/${id}`, env.API_ENDPOINT).toString(),
       {
         method: "GET",
         headers: {

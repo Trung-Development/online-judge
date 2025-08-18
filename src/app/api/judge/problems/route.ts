@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
+import { env } from '@/lib/env';
 
 export async function GET() {
   try {
-    const apiEndpoint = process.env.API_ENDPOINT || 'http://localhost:50829';
-    const response = await fetch(`${apiEndpoint}/client/judge/problems`, {
+    const response = await fetch(new URL('/client/judge/problems', env.API_ENDPOINT).toString(), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
