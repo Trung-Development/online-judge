@@ -102,9 +102,9 @@ export default function SubmissionsPage() {
       }
 
       const data: SubmissionsResponse = await response.json();
-      setSubmissions(data.submissions);
-      setTotalPages(data.totalPages);
-      setCurrentPage(data.currentPage);
+      setSubmissions(data.submissions || []);
+      setTotalPages(data.totalPages || 0);
+      setCurrentPage(data.currentPage || 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -248,7 +248,7 @@ export default function SubmissionsPage() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                 <p className="mt-4">Loading submissions...</p>
               </div>
-            ) : submissions.length === 0 ? (
+            ) : !submissions || submissions.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
                 No submissions found
               </div>
@@ -269,7 +269,7 @@ export default function SubmissionsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {submissions.map((submission) => (
+                    {submissions && submissions.map((submission) => (
                       <tr key={submission.id} className="border-b hover:bg-muted/50">
                         <td className="p-4">
                           <Link

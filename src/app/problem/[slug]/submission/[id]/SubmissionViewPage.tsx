@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { io } from "socket.io-client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -161,34 +160,36 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
     loadSubmission();
   }, [submissionId]);
 
-  // WebSocket connection for live updates
+  // Polling for submission updates (instead of WebSocket to avoid CORS issues)
   useEffect(() => {
     if (!submission || !sessionToken) return;
 
-    const apiBase = process.env.NEXT_PUBLIC_API_ENDPOINT || "http://localhost:3001";
+    const pollSubmission = async () => {
+      try {
+        const response = await fetch(`/api/submissions/${submissionId}`, {
+          headers: {
+            'Authorization': `Bearer ${sessionToken}`,
+          },
+        });
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            setSubmission(result.data);
+          }
+        }
+      } catch (error) {
+        console.error('Error polling submission:', error);
+      }
+    };
+
+    // Poll every 2 seconds
+    const pollInterval = setInterval(pollSubmission, 2000);
     
-    const newSocket = io(apiBase, {
-      auth: {
-        token: sessionToken,
-      },
-    });
-
-    newSocket.emit('subscribe_submission', submissionId);
-
-    newSocket.on('submission_update', (data: Partial<SubmissionDetail>) => {
-      if (data.id === submissionId) {
-        setSubmission(prev => prev ? { ...prev, ...data } : null);
-      }
-    });
-
-    newSocket.on('submission_complete', (data: Partial<SubmissionDetail>) => {
-      if (data.id === submissionId) {
-        setSubmission(prev => prev ? { ...prev, ...data } : null);
-      }
-    });
+    // Initial fetch
+    pollSubmission();
 
     return () => {
-      newSocket.disconnect();
+      clearInterval(pollInterval);
     };
   }, [submission, submissionId, sessionToken]);
 
