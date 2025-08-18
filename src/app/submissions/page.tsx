@@ -35,10 +35,14 @@ interface Submission {
 }
 
 interface SubmissionsResponse {
-  submissions: Submission[];
-  totalCount: number;
-  totalPages: number;
-  currentPage: number;
+  success: boolean;
+  data: Submission[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export default function SubmissionsPage() {
@@ -101,10 +105,10 @@ export default function SubmissionsPage() {
         throw new Error("Failed to fetch submissions");
       }
 
-      const data: SubmissionsResponse = await response.json();
-      setSubmissions(data.submissions || []);
-      setTotalPages(data.totalPages || 0);
-      setCurrentPage(data.currentPage || 1);
+      const result: SubmissionsResponse = await response.json();
+      setSubmissions(result.data || []);
+      setTotalPages(result.pagination?.totalPages || 0);
+      setCurrentPage(result.pagination?.page || 1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {

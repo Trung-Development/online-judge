@@ -283,7 +283,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                   </div>
                 </div>
                 
-                {submission.maxTime !== undefined && (
+                {submission.maxTime !== undefined && submission.maxTime !== null && (
                   <div>
                     <span className="font-medium text-muted-foreground">Max Time:</span>
                     <div className="text-lg font-bold">
@@ -292,7 +292,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                   </div>
                 )}
                 
-                {submission.maxMemory !== undefined && (
+                {submission.maxMemory !== undefined && submission.maxMemory !== null && (
                   <div>
                     <span className="font-medium text-muted-foreground">Max Memory:</span>
                     <div className="text-lg font-bold">
@@ -301,7 +301,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                   </div>
                 )}
                 
-                {submission.compileTime !== undefined && (
+                {submission.compileTime !== undefined && submission.compileTime !== null && (
                   <div>
                     <span className="font-medium text-muted-foreground">Compile Time:</span>
                     <div className="text-lg font-bold">
@@ -350,10 +350,10 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                       
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <span className="font-medium">Time:</span> {testCase.time.toFixed(3)}s
+                          <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
                         </div>
                         <div>
-                          <span className="font-medium">Memory:</span> {testCase.memory.toFixed(1)}MB
+                          <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? testCase.memory.toFixed(1) : '0.0'}MB
                         </div>
                       </div>
                       

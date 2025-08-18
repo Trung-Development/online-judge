@@ -377,14 +377,14 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                           </div>
                         )}
                         
-                        {submissionStatus.maxTime !== undefined && (
+                        {submissionStatus.maxTime !== undefined && submissionStatus.maxTime !== null && (
                           <div className="flex justify-between">
                             <span className="font-medium">Max Time:</span>
                             <span>{submissionStatus.maxTime.toFixed(3)}s</span>
                           </div>
                         )}
                         
-                        {submissionStatus.maxMemory !== undefined && (
+                        {submissionStatus.maxMemory !== undefined && submissionStatus.maxMemory !== null && (
                           <div className="flex justify-between">
                             <span className="font-medium">Max Memory:</span>
                             <span>{(submissionStatus.maxMemory / 1024).toFixed(1)}MB</span>
@@ -408,7 +408,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                                     {getVerdictText(testCase.verdict)}
                                   </span>
                                   <span className="text-muted-foreground">
-                                    ({testCase.time.toFixed(3)}s, {testCase.memory.toFixed(1)}MB)
+                                    ({testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s, {testCase.memory && typeof testCase.memory === 'number' ? testCase.memory.toFixed(1) : '0.0'}MB)
                                   </span>
                                 </div>
                               </div>
