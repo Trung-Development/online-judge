@@ -32,6 +32,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // First, get the problem details to get the ID
+    const problemResponse = await fetch(new URL(`/client/problems/details/${problemCode}`, apiBase).toString(), {
+      headers: {
+        Authorization: `Bearer ${session.sessionToken}`,
+      },
+    });
+
+    if (!problemResponse.ok) {
+      return NextResponse.json(
+        { error: "Problem not found" },
+        { status: 404 }
+      );
+    }
+
+    const problemData = await problemResponse.json();
+
     const response = await fetch(new URL("/client/submissions", apiBase).toString(), {
       method: "POST",
       headers: {
@@ -39,7 +55,7 @@ export async function POST(request: NextRequest) {
         Authorization: `Bearer ${session.sessionToken}`,
       },
       body: JSON.stringify({
-        problemCode,
+        problemId: problemData.id,
         language,
         code: sourceCode,
       }),
