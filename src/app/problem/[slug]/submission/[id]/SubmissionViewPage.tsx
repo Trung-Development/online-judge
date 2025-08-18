@@ -36,7 +36,7 @@ interface SubmissionDetail {
   id: number;
   verdict: string;
   language: string;
-  sourceCode: string;
+  code: string;
   points: number;
   maxTime?: number;
   maxMemory?: number;
@@ -110,6 +110,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
       OLE: "Output Limit Exceeded",
       AB: "Aborted",
       IR: "Invalid Return",
+      SK: "Skipped",
     };
     return verdictMap[verdict] || verdict;
   };
@@ -403,7 +404,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
             <CardContent>
               <div className="bg-muted rounded-md overflow-hidden">
                 <pre className="p-4 text-sm overflow-x-auto">
-                  <code>{submission.sourceCode}</code>
+                  <code>{submission.code}</code>
                 </pre>
               </div>
             </CardContent>

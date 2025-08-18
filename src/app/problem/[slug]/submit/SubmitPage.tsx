@@ -158,6 +158,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
       OLE: "Output Limit Exceeded",
       AB: "Aborted",
       IR: "Invalid Return",
+      SK: "Skipped",
     };
     return verdictMap[verdict] || verdict;
   };

@@ -72,6 +72,7 @@ export default function SubmissionsPage() {
     RE: "bg-orange-100 text-orange-800 border-orange-300",
     QU: "bg-blue-100 text-blue-800 border-blue-300",
     JU: "bg-gray-100 text-gray-800 border-gray-300",
+    SK: "bg-gray-100 text-gray-600 border-gray-300",
   };
 
   const verdictNames: { [key: string]: string } = {
@@ -82,6 +83,7 @@ export default function SubmissionsPage() {
     RE: "Runtime Error",
     QU: "Queued",
     JU: "Judging",
+    SK: "Skipped",
   };
 
   const fetchSubmissions = React.useCallback(async (page: number = 1) => {
