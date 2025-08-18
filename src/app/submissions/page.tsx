@@ -288,12 +288,16 @@ export default function SubmissionsPage() {
                           </Link>
                         </td>
                         <td className="p-4">
-                          <Link
-                            href={`/user/${submission.author.username}`}
-                            className="text-primary hover:underline"
-                          >
-                            {submission.author.username}
-                          </Link>
+                          {submission.author ? (
+                            <Link
+                              href={`/user/${submission.author.username}`}
+                              className="text-primary hover:underline"
+                            >
+                              {submission.author.username}
+                            </Link>
+                          ) : (
+                            <span className="text-muted-foreground">Unknown</span>
+                          )}
                         </td>
                         <td className="p-4 font-mono text-sm">{submission.language}</td>
                         <td className="p-4">
