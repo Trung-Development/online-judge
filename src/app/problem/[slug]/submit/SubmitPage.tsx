@@ -227,14 +227,19 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
     }
   };
 
-  // Helper to format memory limit
+    // Helper to format memory limit
   function formatMemoryLimit(memoryLimit: number) {
     if (memoryLimit >= 1024) {
       const gb = memoryLimit / 1024;
-      return gb % 1 === 0 ? `${gb}GB` : `${parseFloat(gb.toFixed(1))}GB`;
+      return `${gb.toFixed(1)}GB`;
     }
     return `${memoryLimit}MB`;
   }
+
+  // Helper to format memory from KB to MB
+  const formatMemory = (kb: number): string => {
+    return `${(kb / 1024).toFixed(1)}MB`;
+  };
 
   if (!isAuthenticated) {
     return (
@@ -410,7 +415,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                                     {getVerdictText(testCase.verdict)}
                                   </span>
                                   <span className="text-muted-foreground">
-                                    ({testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s, {testCase.memory && typeof testCase.memory === 'number' ? testCase.memory.toFixed(1) : '0.0'}MB)
+                                    ({testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s, {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'})
                                   </span>
                                 </div>
                               </div>

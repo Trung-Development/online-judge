@@ -96,6 +96,10 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
     }
   };
 
+  const formatMemory = (kb: number): string => {
+    return `${(kb / 1024).toFixed(1)}MB`;
+  };
+
   const getVerdictText = (verdict: string) => {
     const verdictMap: { [key: string]: string } = {
       AC: "Accepted",
@@ -309,7 +313,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                   <div>
                     <span className="font-medium text-muted-foreground">Max Memory:</span>
                     <div className="text-lg font-bold">
-                      {submission.maxMemory.toFixed(1)}MB
+                      {formatMemory(submission.maxMemory)}
                     </div>
                   </div>
                 )}
@@ -366,7 +370,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                           <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
                         </div>
                         <div>
-                          <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? testCase.memory.toFixed(1) : '0.0'}MB
+                          <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'}
                         </div>
                       </div>
                       
