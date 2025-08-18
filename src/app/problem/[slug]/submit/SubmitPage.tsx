@@ -280,7 +280,9 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                       <SelectValue placeholder="Select a programming language" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableLanguages.map((lang) => (
+                      {availableLanguages
+                        .filter((lang) => lang.value && lang.value.trim() !== "")
+                        .map((lang) => (
                         <SelectItem key={lang.value} value={lang.value}>
                           {lang.label}
                         </SelectItem>
@@ -530,7 +532,9 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
             <CardContent>
               <div className="space-y-1">
                 {availableLanguages.length > 0 ? (
-                  availableLanguages.map((lang) => (
+                  availableLanguages
+                    .filter((lang) => lang.value && lang.value.trim() !== "")
+                    .map((lang) => (
                     <div key={lang.value} className="text-sm flex items-center gap-2">
                       <FontAwesomeIcon 
                         icon={isExecutorAvailable(lang.value) ? faCheck : faTimes} 

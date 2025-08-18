@@ -94,7 +94,7 @@ export default function SubmissionsPage() {
       } else if (authorFilter) {
         params.append("author", authorFilter);
       }
-      if (verdictFilter) params.append("verdict", verdictFilter);
+      if (verdictFilter && verdictFilter !== "all") params.append("verdict", verdictFilter);
 
       const response = await fetch(`/api/submissions?${params}`);
       if (!response.ok) {
@@ -221,7 +221,7 @@ export default function SubmissionsPage() {
                     <SelectValue placeholder="All verdicts" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All verdicts</SelectItem>
+                    <SelectItem value="all">All verdicts</SelectItem>
                     <SelectItem value="AC">Accepted</SelectItem>
                     <SelectItem value="WA">Wrong Answer</SelectItem>
                     <SelectItem value="TLE">Time Limit Exceeded</SelectItem>
