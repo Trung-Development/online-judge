@@ -133,6 +133,17 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
     }
   };
 
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return "Invalid Date";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "Invalid Date";
+      return date.toLocaleString();
+    } catch {
+      return "Invalid Date";
+    }
+  };
+
   // Load submission data
   useEffect(() => {
     const loadSubmission = async () => {
@@ -426,7 +437,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                 <FontAwesomeIcon icon={faCalendar} className="text-muted-foreground w-4" />
                 <span className="font-medium">Submitted:</span>
                 <span className="text-sm">
-                  {new Date(submission.createdAt).toLocaleString()}
+                  {formatDate(submission.createdAt)}
                 </span>
               </div>
               
@@ -435,7 +446,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                   <FontAwesomeIcon icon={faPlay} className="text-muted-foreground w-4" />
                   <span className="font-medium">Started:</span>
                   <span className="text-sm">
-                    {new Date(submission.judgingStartedAt).toLocaleString()}
+                    {formatDate(submission.judgingStartedAt)}
                   </span>
                 </div>
               )}
@@ -445,7 +456,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                   <FontAwesomeIcon icon={faStop} className="text-muted-foreground w-4" />
                   <span className="font-medium">Completed:</span>
                   <span className="text-sm">
-                    {new Date(submission.judgingEndedAt).toLocaleString()}
+                    {formatDate(submission.judgingEndedAt)}
                   </span>
                 </div>
               )}

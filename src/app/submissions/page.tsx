@@ -22,7 +22,7 @@ interface Submission {
   score: number;
   time: number;
   memory: number;
-  submittedAt: string;
+  createdAt: string;
   author: {
     username: string;
     fullname: string;
@@ -139,12 +139,20 @@ export default function SubmissionsPage() {
     return `${(ms / 1000).toFixed(2)}s`;
   };
 
-  const formatMemory = (kb: number) => {
-    if (kb < 1024) return `${kb}KB`;
+  const formatMemory = (kb: number): string => {
     return `${(kb / 1024).toFixed(1)}MB`;
   };
 
-  const getPageTitle = () => {
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return "Invalid Date";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "Invalid Date";
+      return date.toLocaleString();
+    } catch {
+      return "Invalid Date";
+    }
+  };  const getPageTitle = () => {
     if (problemCode && isMySubmissions) {
       return `My Submissions for Problem ${problemCode}`;
     } else if (problemCode) {
@@ -320,7 +328,7 @@ export default function SubmissionsPage() {
                           {submission.memory ? formatMemory(submission.memory) : "-"}
                         </td>
                         <td className="p-4 text-sm text-muted-foreground">
-                          {new Date(submission.submittedAt).toLocaleString()}
+                          {formatDate(submission.createdAt)}
                         </td>
                       </tr>
                     ))}
