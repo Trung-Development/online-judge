@@ -47,6 +47,18 @@ export async function POST(request: NextRequest) {
     }
 
     const problemData = await problemResponse.json();
+    
+    console.log('Problem data received:', problemData);
+    console.log('Problem ID type:', typeof problemData.id, 'Value:', problemData.id);
+
+    const submissionPayload = {
+      problemId: parseInt(problemData.id, 10), // Ensure it's a number
+      language,
+      code: sourceCode,
+    };
+    
+    console.log('Submission payload:', submissionPayload);
+    console.log('Problem ID type after parseInt:', typeof submissionPayload.problemId);
 
     const response = await fetch(new URL("/client/submissions", apiBase).toString(), {
       method: "POST",
@@ -54,15 +66,16 @@ export async function POST(request: NextRequest) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.sessionToken}`,
       },
-      body: JSON.stringify({
-        problemId: problemData.id,
-        language,
-        code: sourceCode,
-      }),
+      body: JSON.stringify(submissionPayload),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error('Backend submission error:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData
+      });
       return NextResponse.json(
         { error: errorData.message || "Failed to submit solution" },
         { status: response.status }
