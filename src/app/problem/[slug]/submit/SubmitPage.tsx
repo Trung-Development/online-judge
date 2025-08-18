@@ -25,6 +25,7 @@ import {
 import { useAuth } from "@/components/AuthProvider";
 import { IProblemPageData, TAllowedLang } from "@/types";
 import { languages } from "@/constants";
+import { useJudgeCapabilities } from "@/hooks/use-judge-capabilities";
 
 interface SubmitPageProps {
   problem: IProblemPageData;
@@ -52,6 +53,16 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
   const { isAuthenticated, sessionToken } = useAuth();
   const router = useRouter();
   
+  // Judge capabilities for availability checking
+  const {
+    status: judgeStatus,
+    isProblemAvailable,
+    isExecutorAvailable,
+    loading: judgeLoading,
+    error: judgeError,
+    refreshCapabilities,
+  } = useJudgeCapabilities();
+  
   const [selectedLanguage, setSelectedLanguage] = useState<string>("");
   const [code, setCode] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,9 +71,10 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
   const [submissionId, setSubmissionId] = useState<number | null>(null);
   const [submissionStatus, setSubmissionStatus] = useState<SubmissionResponse | null>(null);
 
-  // Filter available languages based on problem settings
+  // Filter available languages based on problem settings AND judge availability
   const availableLanguages = languages.filter(lang => 
-    problem.allowedLanguages.includes(lang.value as TAllowedLang)
+    problem.allowedLanguages.includes(lang.value as TAllowedLang) &&
+    isExecutorAvailable(lang.value)
   );
 
   // WebSocket connection for live updates
@@ -156,6 +168,22 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
     
     if (!selectedLanguage || !code.trim()) {
       setError("Please select a language and provide your code.");
+      return;
+    }
+
+    // Check judge availability
+    if (!judgeStatus || judgeStatus.connected === 0) {
+      setError("No judges are currently connected. Please try again later.");
+      return;
+    }
+
+    if (!isProblemAvailable(slug)) {
+      setError("This problem is not available on any connected judge. Please try again later.");
+      return;
+    }
+
+    if (!isExecutorAvailable(selectedLanguage)) {
+      setError(`The selected language (${selectedLanguage}) is not available on any connected judge. Please select a different language.`);
       return;
     }
 
@@ -402,16 +430,60 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                   </Card>
                 )}
 
+                {/* Judge Status Warnings */}
+                {judgeStatus && judgeStatus.connected === 0 && (
+                  <Alert variant="destructive">
+                    <FontAwesomeIcon icon={faServer} className="h-4 w-4" />
+                    <AlertDescription>
+                      No judges are currently connected. Submissions cannot be processed.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {judgeStatus && judgeStatus.connected > 0 && !isProblemAvailable(slug) && (
+                  <Alert variant="destructive">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="h-4 w-4" />
+                    <AlertDescription>
+                      This problem is not available on any connected judge. Please try again later.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {selectedLanguage && !isExecutorAvailable(selectedLanguage) && (
+                  <Alert variant="destructive">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="h-4 w-4" />
+                    <AlertDescription>
+                      The selected language ({selectedLanguage}) is not available on any connected judge.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 {/* Submit Button */}
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={isSubmitting || !selectedLanguage || !code.trim()}
+                  disabled={
+                    isSubmitting || 
+                    !selectedLanguage || 
+                    !code.trim() || 
+                    !isProblemAvailable(slug) || 
+                    (selectedLanguage ? !isExecutorAvailable(selectedLanguage) : false)
+                  }
                 >
                   {isSubmitting ? (
                     <>
                       <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 mr-2 animate-spin" />
                       Submitting...
+                    </>
+                  ) : !isProblemAvailable(slug) ? (
+                    <>
+                      <FontAwesomeIcon icon={faExclamationTriangle} className="w-4 h-4 mr-2" />
+                      Problem Not Available
+                    </>
+                  ) : selectedLanguage && !isExecutorAvailable(selectedLanguage) ? (
+                    <>
+                      <FontAwesomeIcon icon={faExclamationTriangle} className="w-4 h-4 mr-2" />
+                      Language Not Available
                     </>
                   ) : (
                     <>
@@ -458,12 +530,85 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-1">
-                {availableLanguages.map((lang) => (
-                  <div key={lang.value} className="text-sm">
-                    {lang.label}
+                {availableLanguages.length > 0 ? (
+                  availableLanguages.map((lang) => (
+                    <div key={lang.value} className="text-sm flex items-center gap-2">
+                      <FontAwesomeIcon 
+                        icon={isExecutorAvailable(lang.value) ? faCheck : faTimes} 
+                        className={`w-3 h-3 ${isExecutorAvailable(lang.value) ? 'text-green-600' : 'text-red-600'}`} 
+                      />
+                      {lang.label}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    No languages available on connected judges
                   </div>
-                ))}
+                )}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Judge Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FontAwesomeIcon icon={faServer} className="w-4 h-4" />
+                Judge Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Connected Judges:</span>
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon 
+                    icon={judgeStatus && judgeStatus.connected > 0 ? faCheck : faTimes} 
+                    className={`w-3 h-3 ${judgeStatus && judgeStatus.connected > 0 ? 'text-green-600' : 'text-red-600'}`} 
+                  />
+                  <span className="text-sm">
+                    {judgeLoading ? "Loading..." : judgeStatus?.connected || 0}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Problem Available:</span>
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon 
+                    icon={isProblemAvailable(slug) ? faCheck : faTimes} 
+                    className={`w-3 h-3 ${isProblemAvailable(slug) ? 'text-green-600' : 'text-red-600'}`} 
+                  />
+                  <span className="text-sm">
+                    {isProblemAvailable(slug) ? "Yes" : "No"}
+                  </span>
+                </div>
+              </div>
+
+              {judgeError && (
+                <div className="text-xs text-red-600">
+                  Error: {judgeError}
+                </div>
+              )}
+
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={refreshCapabilities}
+                disabled={judgeLoading}
+                className="w-full"
+              >
+                {judgeLoading ? (
+                  <>
+                    <FontAwesomeIcon icon={faSpinner} className="w-3 h-3 mr-2 animate-spin" />
+                    Checking...
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faServer} className="w-3 h-3 mr-2" />
+                    Refresh Status
+                  </>
+                )}
+              </Button>
             </CardContent>
           </Card>
 
