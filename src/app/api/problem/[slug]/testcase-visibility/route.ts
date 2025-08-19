@@ -6,7 +6,7 @@ export const runtime = "edge";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const session = await getAuthSession();
@@ -18,6 +18,7 @@ export async function PATCH(
       );
     }
 
+    const { slug } = await params;
     const { visibility } = await request.json();
     
     if (!visibility || !['AUTHOR_ONLY', 'EVERYONE'].includes(visibility)) {
@@ -29,7 +30,7 @@ export async function PATCH(
 
     // Make request to backend server to update test case visibility
     const backendResponse = await fetch(
-      new URL(`/client/problem/${params.slug}/testcase-visibility`, env.API_ENDPOINT).toString(),
+      new URL(`/client/problem/${slug}/testcase-visibility`, env.API_ENDPOINT).toString(),
       {
         method: 'PATCH',
         headers: {
