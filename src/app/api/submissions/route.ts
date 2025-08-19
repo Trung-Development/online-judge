@@ -24,35 +24,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // First, get the problem details to get the ID
-    const problemResponse = await fetch(new URL(`/client/problems/details/${problemCode}`, env.API_ENDPOINT).toString(), {
-      headers: {
-        Authorization: `Bearer ${session.sessionToken}`,
-      },
-    });
-
-    if (!problemResponse.ok) {
-      return NextResponse.json(
-        { error: "Problem not found" },
-        { status: 404 }
-      );
-    }
-
-    const problemData = await problemResponse.json();
-    
-    console.log('Problem data received:', problemData);
-    console.log('Problem ID type:', typeof problemData.id, 'Value:', problemData.id);
-
     const submissionPayload = {
-      problemId: parseInt(problemData.id, 10), // Ensure it's a number
+      problemSlug: problemCode, // Backend now expects problemSlug instead of problemId
       language,
       code: sourceCode,
-    };
-    
-    console.log('Submission payload:', submissionPayload);
-    console.log('Problem ID type after parseInt:', typeof submissionPayload.problemId);
-
-    const response = await fetch(new URL("/client/submissions", env.API_ENDPOINT).toString(), {
+    };    const response = await fetch(new URL("/client/submissions", env.API_ENDPOINT).toString(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -63,11 +39,6 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('Backend submission error:', {
-        status: response.status,
-        statusText: response.statusText,
-        errorData
-      });
       return NextResponse.json(
         { error: errorData.message || "Failed to submit solution" },
         { status: response.status }

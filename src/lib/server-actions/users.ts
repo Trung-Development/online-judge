@@ -12,7 +12,7 @@ export interface ISubmissionsData {
 
 export interface IUserData {
   totalPoints: number;
-  rankByPoints: number;
+  rankByPoints?: number; // Made optional since backend no longer calculates this for performance
   submissions: ISubmissionsData[];
   bio: string;
   avatarURL: string;

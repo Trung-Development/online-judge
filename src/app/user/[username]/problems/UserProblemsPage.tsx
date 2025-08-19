@@ -84,9 +84,11 @@ export default function UserProblemsPage({ userData, username, serverUser }: Use
                         <div>
                             <span className="font-medium">Problems solved:</span> {processedProblemCodes.size}
                         </div>
-                        <div>
-                            <span className="font-medium">Rank by points:</span> #{userData.rankByPoints}
-                        </div>
+                        {userData.rankByPoints && (
+                            <div>
+                                <span className="font-medium">Rank by points:</span> #{userData.rankByPoints}
+                            </div>
+                        )}
                         <div>
                             <span className="font-medium">Total points:</span> {userData.totalPoints.toLocaleString()}
                         </div>

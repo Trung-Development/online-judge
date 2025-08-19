@@ -60,9 +60,11 @@ export default function UserPage({ userData, username, serverUser }: UserPagePro
                         <div>
                             <span className="font-medium">Problems solved:</span> {solvedProblems}
                         </div>
-                        <div>
-                            <span className="font-medium">Rank by points:</span> #{userData.rankByPoints}
-                        </div>
+                        {userData.rankByPoints && (
+                            <div>
+                                <span className="font-medium">Rank by points:</span> #{userData.rankByPoints}
+                            </div>
+                        )}
                         <div>
                             <span className="font-medium">Total points:</span> {userData.totalPoints.toLocaleString()}
                         </div>
