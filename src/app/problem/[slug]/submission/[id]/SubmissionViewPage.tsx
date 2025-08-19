@@ -54,7 +54,7 @@ interface SubmissionDetail {
     memory: number;
     position: number;
     outputPreview?: string;
-    errorMessage?: string;
+    feedback?: string;
   }>;
   author: {
     id: string;
@@ -383,11 +383,11 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                         </div>
                       )}
                       
-                      {testCase.errorMessage && (
+                      {testCase.feedback && (
                         <div className="mt-3">
                           <div className="text-sm font-medium mb-1">Feedback:</div>
                           <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
-                            {testCase.errorMessage}
+                            {testCase.feedback}
                           </pre>
                         </div>
                       )}
