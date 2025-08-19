@@ -19,12 +19,13 @@ async function getProblemData(slug: string): Promise<IProblemPageData | null> {
   }
 }
 
-export default async function TestcasePage({ params }: { params: { slug: string } }) {
-  const problem = await getProblemData(params.slug);
+export default async function TestcasePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const problem = await getProblemData(slug);
   
   if (!problem) {
     notFound();
   }
   
-  return <TestcaseManagerPage problem={problem} slug={params.slug} />;
+  return <TestcaseManagerPage problem={problem} slug={slug} />;
 }
