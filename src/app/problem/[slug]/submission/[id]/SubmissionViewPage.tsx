@@ -366,57 +366,68 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {canUserSeeTestcaseData ? (
-                  <div className="space-y-3">
-                    {submission.testCases.map((testCase) => (
-                      <div key={testCase.id} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            {getVerdictIcon(testCase.verdict)}
-                            <span className="font-medium">Test Case {testCase.position}</span>
-                            <Badge className={getVerdictColor(testCase.verdict)}>
-                              {getVerdictText(testCase.verdict)}
-                            </Badge>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {testCase.points}/{problem.points}pts
-                          </div>
+                <div className="space-y-3">
+                  {submission.testCases.map((testCase) => (
+                    <div key={testCase.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          {getVerdictIcon(testCase.verdict)}
+                          <span className="font-medium">Test Case {testCase.position}</span>
+                          <Badge className={getVerdictColor(testCase.verdict)}>
+                            {getVerdictText(testCase.verdict)}
+                          </Badge>
                         </div>
-                        
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
-                          </div>
-                          <div>
-                            <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'}
-                          </div>
+                        <div className="text-sm text-muted-foreground">
+                          {testCase.points}/{problem.points}pts
                         </div>
-                        
-                        {testCase.outputPreview && (
-                          <div className="mt-3">
-                            <div className="text-sm font-medium mb-1">Output Preview:</div>
-                            <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
-                              {testCase.outputPreview}
-                            </pre>
-                          </div>
-                        )}
-                        
-                        {testCase.feedback && (
-                          <div className="mt-3">
-                            <div className="text-sm font-medium mb-1">Feedback:</div>
-                            <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
-                              {testCase.feedback}
-                            </pre>
-                          </div>
-                        )}
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <FontAwesomeIcon icon={faLock} className="w-8 h-8 mb-2" />
-                    <p>Test case details are only visible to problem authors, curators, and testers.</p>
-                    <p className="text-sm mt-1">You can see the overall verdict and score above.</p>
+                      
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
+                        </div>
+                        <div>
+                          <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'}
+                        </div>
+                      </div>
+                      
+                      {/* Only show detailed I/O data if user has permission, but always show feedback */}
+                      {canUserSeeTestcaseData ? (
+                        <>
+                          {testCase.outputPreview && (
+                            <div className="mt-3">
+                              <div className="text-sm font-medium mb-1">Output Preview:</div>
+                              <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
+                                {testCase.outputPreview}
+                              </pre>
+                            </div>
+                          )}
+                        </>
+                      ) : null}
+                      
+                      {/* Always show feedback regardless of visibility settings */}
+                      {testCase.feedback && (
+                        <div className="mt-3">
+                          <div className="text-sm font-medium mb-1">Feedback:</div>
+                          <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
+                            {testCase.feedback}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                
+                {!canUserSeeTestcaseData && (
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center gap-2 text-blue-800 text-sm">
+                      <FontAwesomeIcon icon={faLock} className="w-4 h-4" />
+                      <span className="font-medium">Limited visibility:</span>
+                    </div>
+                    <p className="text-blue-700 text-sm mt-1">
+                      Test case input/output details are only visible to problem authors, curators, and testers.
+                      You can see verdicts, timing, memory usage, and scores above.
+                    </p>
                   </div>
                 )}
               </CardContent>
