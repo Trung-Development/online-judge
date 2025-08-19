@@ -26,6 +26,8 @@ import {
   faPlay,
   faStop,
   faLock,
+  faChevronDown,
+  faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface SubmissionViewPageProps {
@@ -55,7 +57,7 @@ interface SubmissionDetail {
     time: number;
     memory: number;
     position: number;
-    outputPreview?: string;
+    output?: string;
     feedback?: string;
     input?: string;
     expected?: string;
@@ -73,6 +75,9 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // State for collapsible test case sections
+  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
 
   // Check if current user can see test case data
   const canUserSeeTestcaseData = user && canSeeTestcaseData(
@@ -83,6 +88,69 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
     problem.tester || [],
     user.id
   );
+
+  // Helper function to truncate text with option to expand
+  const truncateText = (text: string, maxLength: number = 200) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
+
+  // Helper function to toggle expanded sections
+  const toggleSection = (testCaseId: number, sectionType: string) => {
+    const key = `${testCaseId}-${sectionType}`;
+    setExpandedSections(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  // Check if a section is expanded
+  const isSectionExpanded = (testCaseId: number, sectionType: string) => {
+    const key = `${testCaseId}-${sectionType}`;
+    return expandedSections[key] || false;
+  };
+
+  // Component for collapsible text display
+  const CollapsibleText = ({ 
+    title, 
+    content, 
+    testCaseId, 
+    sectionType 
+  }: { 
+    title: string; 
+    content: string; 
+    testCaseId: number; 
+    sectionType: string; 
+  }) => {
+    const isExpanded = isSectionExpanded(testCaseId, sectionType);
+    const shouldTruncate = content.length > 200;
+    const displayContent = shouldTruncate && !isExpanded 
+      ? truncateText(content, 200) 
+      : content;
+
+    return (
+      <div className="mt-3">
+        <div className="flex items-center justify-between mb-1">
+          <div className="text-sm font-medium">{title}:</div>
+          {shouldTruncate && (
+            <button
+              onClick={() => toggleSection(testCaseId, sectionType)}
+              className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+            >
+              <FontAwesomeIcon 
+                icon={isExpanded ? faChevronDown : faChevronRight} 
+                className="w-3 h-3" 
+              />
+              {isExpanded ? 'Collapse' : 'Expand'}
+            </button>
+          )}
+        </div>
+        <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap">
+          {displayContent}
+        </pre>
+      </div>
+    );
+  };
 
   // Get language display name
   const getLanguageLabel = (langValue: string) => {
@@ -397,30 +465,30 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                       {canUserSeeTestcaseData ? (
                         <>
                           {testCase.input && (
-                            <div className="mt-3">
-                              <div className="text-sm font-medium mb-1">Input:</div>
-                              <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap">
-                                {testCase.input}
-                              </pre>
-                            </div>
+                            <CollapsibleText
+                              title="Input"
+                              content={testCase.input}
+                              testCaseId={testCase.id}
+                              sectionType="input"
+                            />
                           )}
                           
                           {testCase.expected && (
-                            <div className="mt-3">
-                              <div className="text-sm font-medium mb-1">Expected Output:</div>
-                              <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap">
-                                {testCase.expected}
-                              </pre>
-                            </div>
+                            <CollapsibleText
+                              title="Expected Output"
+                              content={testCase.expected}
+                              testCaseId={testCase.id}
+                              sectionType="expected"
+                            />
                           )}
                           
-                          {testCase.outputPreview && (
-                            <div className="mt-3">
-                              <div className="text-sm font-medium mb-1">Your Output:</div>
-                              <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap">
-                                {testCase.outputPreview}
-                              </pre>
-                            </div>
+                          {testCase.output && (
+                            <CollapsibleText
+                              title="Your Output"
+                              content={testCase.output}
+                              testCaseId={testCase.id}
+                              sectionType="output"
+                            />
                           )}
                         </>
                       ) : null}
