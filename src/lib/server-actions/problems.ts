@@ -1,3 +1,5 @@
+import { env } from "../env";
+
 export interface ProblemStatus {
   slug: string;
   isLocked: boolean;
@@ -27,11 +29,9 @@ export interface IProblemData {
   isDeleted: boolean;
 }
 
-
 export async function getProblems(token?: string): Promise<IProblemData[]> {
   try {
-    const baseUrl =
-      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const baseUrl = env.API_ENDPOINT;
     const url = new URL("/client/problems/all", baseUrl);
 
     const headers = new Headers();
@@ -40,9 +40,9 @@ export async function getProblems(token?: string): Promise<IProblemData[]> {
 
     const response = await fetch(url.toString(), {
       headers,
-      next: { 
-        revalidate: 300 // Revalidate after 5 minutes
-      }
+      next: {
+        revalidate: 300, // Revalidate after 5 minutes
+      },
     });
 
     if (!response.ok) {
@@ -59,8 +59,8 @@ export async function getProblems(token?: string): Promise<IProblemData[]> {
 // Server action to fetch a single problem
 export async function getProblem(slug: string, token?: string) {
   try {
-    const baseUrl =
-      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const baseUrl = env.API_ENDPOINT;
+
     const url = new URL(`/client/problems/details/${slug}`, baseUrl);
 
     const headers = new Headers();
@@ -80,7 +80,7 @@ export async function getProblem(slug: string, token?: string) {
         return 403;
       }
       throw new Error(
-        `Failed to fetch problem: ${json?.message || response.status}`,
+        `Failed to fetch problem: ${json?.message || response.status}`
       );
     }
 
@@ -91,12 +91,12 @@ export async function getProblem(slug: string, token?: string) {
 }
 
 export async function getProblemStatus(
-  token?: string,
+  token?: string
 ): Promise<ProblemStatus[]> {
   if (!token) return [];
   try {
-    const baseUrl =
-      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const baseUrl = env.API_ENDPOINT;
+
     const url = new URL(`/client/problems/all/status`, baseUrl);
 
     const headers = new Headers();
@@ -110,7 +110,7 @@ export async function getProblemStatus(
 
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch problems status: ${json?.message || response.status}`,
+        `Failed to fetch problems status: ${json?.message || response.status}`
       );
     }
 
