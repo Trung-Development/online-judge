@@ -89,12 +89,6 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
     user.id
   );
 
-  // Helper function to truncate text with option to expand
-  const truncateText = (text: string, maxLength: number = 200) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + "...";
-  };
-
   // Helper function to toggle expanded sections
   const toggleSection = (testCaseId: number, sectionType: string) => {
     const key = `${testCaseId}-${sectionType}`;
@@ -108,48 +102,6 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
   const isSectionExpanded = (testCaseId: number, sectionType: string) => {
     const key = `${testCaseId}-${sectionType}`;
     return expandedSections[key] || false;
-  };
-
-  // Component for collapsible text display
-  const CollapsibleText = ({ 
-    title, 
-    content, 
-    testCaseId, 
-    sectionType 
-  }: { 
-    title: string; 
-    content: string; 
-    testCaseId: number; 
-    sectionType: string; 
-  }) => {
-    const isExpanded = isSectionExpanded(testCaseId, sectionType);
-    const shouldTruncate = content.length > 200;
-    const displayContent = shouldTruncate && !isExpanded 
-      ? truncateText(content, 200) 
-      : content;
-
-    return (
-      <div className="mt-3">
-        <div className="flex items-center justify-between mb-1">
-          <div className="text-sm font-medium">{title}:</div>
-          {shouldTruncate && (
-            <button
-              onClick={() => toggleSection(testCaseId, sectionType)}
-              className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
-            >
-              <FontAwesomeIcon 
-                icon={isExpanded ? faChevronDown : faChevronRight} 
-                className="w-3 h-3" 
-              />
-              {isExpanded ? 'Collapse' : 'Expand'}
-            </button>
-          )}
-        </div>
-        <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap">
-          {displayContent}
-        </pre>
-      </div>
-    );
   };
 
   // Get language display name
@@ -439,7 +391,11 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                 <div className="space-y-3">
                   {submission.testCases.map((testCase) => (
                     <div key={testCase.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
+                      {/* Test case header with expand/collapse button */}
+                      <div 
+                        className="flex items-center justify-between cursor-pointer"
+                        onClick={() => toggleSection(testCase.id, 'details')}
+                      >
                         <div className="flex items-center gap-2">
                           {getVerdictIcon(testCase.verdict)}
                           <span className="font-medium">Test Case {testCase.position}</span>
@@ -447,12 +403,19 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                             {getVerdictText(testCase.verdict)}
                           </Badge>
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {testCase.points}/{problem.points}pts
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm text-muted-foreground">
+                            {testCase.points}/{problem.points}pts
+                          </div>
+                          <FontAwesomeIcon 
+                            icon={isSectionExpanded(testCase.id, 'details') ? faChevronDown : faChevronRight} 
+                            className="w-4 h-4 text-muted-foreground" 
+                          />
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                      {/* Basic timing and memory info (always visible) */}
+                      <div className="grid grid-cols-2 gap-4 text-sm mt-2">
                         <div>
                           <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
                         </div>
@@ -460,46 +423,61 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                           <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'}
                         </div>
                       </div>
-                      
-                      {/* Only show detailed I/O data if user has permission, but always show feedback */}
-                      {canUserSeeTestcaseData ? (
-                        <>
-                          {testCase.input && (
-                            <CollapsibleText
-                              title="Input"
-                              content={testCase.input}
-                              testCaseId={testCase.id}
-                              sectionType="input"
-                            />
+
+                      {/* Collapsible detailed section */}
+                      {isSectionExpanded(testCase.id, 'details') && (
+                        <div className="mt-4 pt-3 border-t">
+                          {/* Only show detailed I/O data if user has permission */}
+                          {canUserSeeTestcaseData ? (
+                            <div className="space-y-3">
+                              {testCase.input && (
+                                <div>
+                                  <div className="text-sm font-medium mb-1">Input:</div>
+                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                    {testCase.input.length > 1000 ? testCase.input.substring(0, 1000) + '\n... [truncated]' : testCase.input}
+                                  </pre>
+                                </div>
+                              )}
+                              
+                              {testCase.expected && (
+                                <div>
+                                  <div className="text-sm font-medium mb-1">Expected Output:</div>
+                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                    {testCase.expected.length > 1000 ? testCase.expected.substring(0, 1000) + '\n... [truncated]' : testCase.expected}
+                                  </pre>
+                                </div>
+                              )}
+                              
+                              {testCase.output && (
+                                <div>
+                                  <div className="text-sm font-medium mb-1">Your Output:</div>
+                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                    {testCase.output.length > 1000 ? testCase.output.substring(0, 1000) + '\n... [truncated]' : testCase.output}
+                                  </pre>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                              <div className="flex items-center gap-2 text-blue-800 text-sm">
+                                <FontAwesomeIcon icon={faLock} className="w-4 h-4" />
+                                <span className="font-medium">Limited visibility:</span>
+                              </div>
+                              <p className="text-blue-700 text-sm mt-1">
+                                Test case input/output details are only visible to problem authors, curators, and testers.
+                              </p>
+                            </div>
                           )}
                           
-                          {testCase.expected && (
-                            <CollapsibleText
-                              title="Expected Output"
-                              content={testCase.expected}
-                              testCaseId={testCase.id}
-                              sectionType="expected"
-                            />
+                          {/* Always show feedback regardless of visibility settings */}
+                          {testCase.feedback && (
+                            <div className="mt-3">
+                              <div className="text-sm font-medium mb-1">Feedback:</div>
+                              <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
+                                {testCase.feedback}
+                              </pre>
+                            </div>
                           )}
-                          
-                          {testCase.output && (
-                            <CollapsibleText
-                              title="Your Output"
-                              content={testCase.output}
-                              testCaseId={testCase.id}
-                              sectionType="output"
-                            />
-                          )}
-                        </>
-                      ) : null}
-                      
-                      {/* Always show feedback regardless of visibility settings */}
-                      {testCase.feedback && (
-                        <div className="mt-3">
-                          <div className="text-sm font-medium mb-1">Feedback:</div>
-                          <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
-                            {testCase.feedback}
-                          </pre>
                         </div>
                       )}
                     </div>
