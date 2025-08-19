@@ -7,14 +7,12 @@ interface JudgeStatus {
 
 interface JudgeCapabilities {
   status: JudgeStatus;
-  problems: string[];
   executors: string[];
 }
 
 export const useJudgeCapabilities = () => {
   const [capabilities, setCapabilities] = useState<JudgeCapabilities>({
     status: { connected: false, judgeCount: 0 },
-    problems: [],
     executors: []
   });
   const [loading, setLoading] = useState(true);
@@ -24,22 +22,19 @@ export const useJudgeCapabilities = () => {
     try {
       setError(null);
       
-      // Fetch all endpoints in parallel using Next.js API routes
-      const [statusRes, problemsRes, executorsRes] = await Promise.all([
+      // Fetch status and executors only (problems removed for privacy)
+      const [statusRes, executorsRes] = await Promise.all([
         fetch('/api/judge/status'),
-        fetch('/api/judge/problems'),
         fetch('/api/judge/executors')
       ]);
 
-      const [status, problems, executors] = await Promise.all([
+      const [status, executors] = await Promise.all([
         statusRes.ok ? statusRes.json() : { connected: false, judgeCount: 0 },
-        problemsRes.ok ? problemsRes.json() : [],
         executorsRes.ok ? executorsRes.json() : []
       ]);
 
       setCapabilities({
         status,
-        problems,
         executors
       });
     } catch (err) {
@@ -47,7 +42,6 @@ export const useJudgeCapabilities = () => {
       setError('Failed to fetch judge capabilities');
       setCapabilities({
         status: { connected: false, judgeCount: 0 },
-        problems: [],
         executors: []
       });
     } finally {
@@ -64,10 +58,6 @@ export const useJudgeCapabilities = () => {
     return () => clearInterval(interval);
   }, [fetchCapabilities]);
 
-  const isProblemAvailable = useCallback((problemCode: string): boolean => {
-    return capabilities.problems.includes(problemCode);
-  }, [capabilities.problems]);
-
   const isExecutorAvailable = useCallback((executor: string): boolean => {
     return capabilities.executors.includes(executor);
   }, [capabilities.executors]);
@@ -80,11 +70,9 @@ export const useJudgeCapabilities = () => {
   return {
     capabilities,
     status: capabilities.status,
-    availableProblems: capabilities.problems,
     availableExecutors: capabilities.executors,
     loading,
     error,
-    isProblemAvailable,
     isExecutorAvailable,
     refreshCapabilities,
   };

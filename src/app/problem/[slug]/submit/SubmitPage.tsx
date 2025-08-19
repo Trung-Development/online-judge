@@ -25,6 +25,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { IProblemPageData, TAllowedLang } from "@/types";
 import { languages } from "@/constants";
 import { useJudgeCapabilities } from "@/hooks/use-judge-capabilities";
+import { useProblemAvailability } from "@/hooks/use-problem-availability";
 
 interface SubmitPageProps {
   problem: IProblemPageData;
@@ -55,12 +56,15 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
   // Judge capabilities for availability checking
   const {
     status: judgeStatus,
-    isProblemAvailable,
     isExecutorAvailable,
     loading: judgeLoading,
     error: judgeError,
     refreshCapabilities,
   } = useJudgeCapabilities();
+
+  // Problem availability checking
+  const { checkProblemAvailability } = useProblemAvailability();
+  const [isProblemAvailable, setIsProblemAvailable] = useState<boolean>(true); // Default to true
   
   const [selectedLanguage, setSelectedLanguage] = useState<string>("");
   const [code, setCode] = useState<string>("");
@@ -69,6 +73,15 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
   const [success, setSuccess] = useState<boolean>(false);
   const [submissionId, setSubmissionId] = useState<number | null>(null);
   const [submissionStatus, setSubmissionStatus] = useState<SubmissionResponse | null>(null);
+
+  // Check problem availability when judges status changes
+  useEffect(() => {
+    if (judgeStatus && judgeStatus.connected && judgeStatus.judgeCount > 0) {
+      checkProblemAvailability(slug).then(setIsProblemAvailable);
+    } else {
+      setIsProblemAvailable(false);
+    }
+  }, [judgeStatus, checkProblemAvailability, slug]);
 
   // Filter available languages based on problem settings AND judge availability
   const availableLanguages = languages.filter(lang => 
@@ -178,7 +191,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
       return;
     }
 
-    if (!isProblemAvailable(slug)) {
+    if (!isProblemAvailable) {
       setError("This problem is not available on any connected judge. Please try again later.");
       return;
     }
@@ -448,7 +461,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                   </Alert>
                 )}
 
-                {judgeStatus && judgeStatus.connected && judgeStatus.judgeCount > 0 && !isProblemAvailable(slug) && (
+                {judgeStatus && judgeStatus.connected && judgeStatus.judgeCount > 0 && !isProblemAvailable && (
                   <Alert variant="destructive">
                     <FontAwesomeIcon icon={faExclamationTriangle} className="h-4 w-4" />
                     <AlertDescription>
@@ -474,7 +487,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                     isSubmitting || 
                     !selectedLanguage || 
                     !code.trim() || 
-                    !isProblemAvailable(slug) || 
+                    !isProblemAvailable || 
                     (selectedLanguage ? !isExecutorAvailable(selectedLanguage) : false)
                   }
                 >
@@ -483,7 +496,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                       <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 mr-2 animate-spin" />
                       Submitting...
                     </>
-                  ) : !isProblemAvailable(slug) ? (
+                  ) : !isProblemAvailable ? (
                     <>
                       <FontAwesomeIcon icon={faExclamationTriangle} className="w-4 h-4 mr-2" />
                       Problem Not Available
@@ -585,11 +598,11 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                 <span className="text-sm font-medium">Problem Available:</span>
                 <div className="flex items-center gap-2">
                   <FontAwesomeIcon 
-                    icon={isProblemAvailable(slug) ? faCheck : faTimes} 
-                    className={`w-3 h-3 ${isProblemAvailable(slug) ? 'text-green-600' : 'text-red-600'}`} 
+                    icon={isProblemAvailable ? faCheck : faTimes} 
+                    className={`w-3 h-3 ${isProblemAvailable ? 'text-green-600' : 'text-red-600'}`} 
                   />
                   <span className="text-sm">
-                    {isProblemAvailable(slug) ? "Yes" : "No"}
+                    {isProblemAvailable ? "Yes" : "No"}
                   </span>
                 </div>
               </div>
