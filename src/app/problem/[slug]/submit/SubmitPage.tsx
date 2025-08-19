@@ -46,6 +46,10 @@ interface SubmissionResponse {
     time: number;
     memory: number;
     position: number;
+    input?: string;
+    expected?: string;
+    output?: string;
+    feedback?: string;
   }>;
 }
 

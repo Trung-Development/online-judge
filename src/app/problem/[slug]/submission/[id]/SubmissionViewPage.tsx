@@ -57,6 +57,8 @@ interface SubmissionDetail {
     position: number;
     outputPreview?: string;
     feedback?: string;
+    input?: string;
+    expected?: string;
   }>;
   author: {
     id: string;
@@ -394,10 +396,28 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                       {/* Only show detailed I/O data if user has permission, but always show feedback */}
                       {canUserSeeTestcaseData ? (
                         <>
+                          {testCase.input && (
+                            <div className="mt-3">
+                              <div className="text-sm font-medium mb-1">Input:</div>
+                              <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap">
+                                {testCase.input}
+                              </pre>
+                            </div>
+                          )}
+                          
+                          {testCase.expected && (
+                            <div className="mt-3">
+                              <div className="text-sm font-medium mb-1">Expected Output:</div>
+                              <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap">
+                                {testCase.expected}
+                              </pre>
+                            </div>
+                          )}
+                          
                           {testCase.outputPreview && (
                             <div className="mt-3">
-                              <div className="text-sm font-medium mb-1">Output Preview:</div>
-                              <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
+                              <div className="text-sm font-medium mb-1">Your Output:</div>
+                              <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap">
                                 {testCase.outputPreview}
                               </pre>
                             </div>
