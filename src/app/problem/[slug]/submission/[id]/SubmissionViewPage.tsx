@@ -385,7 +385,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                       
                       {testCase.errorMessage && (
                         <div className="mt-3">
-                          <div className="text-sm font-medium mb-1">Error:</div>
+                          <div className="text-sm font-medium mb-1">Feedback:</div>
                           <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
                             {testCase.errorMessage}
                           </pre>
