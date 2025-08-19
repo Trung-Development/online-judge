@@ -8,6 +8,7 @@ export interface User {
   email: string;
   username: string;
   fullname: string;
+  perms?: string; // Permission bits as string (from backend)
 }
 
 export interface AuthSession {

@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/components/AuthProvider";
 import { IProblemPageData } from "@/types";
 import { languages } from "@/constants";
+import { canSeeTestcaseData } from "@/lib/permissions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
@@ -24,6 +25,7 @@ import {
   faEye,
   faPlay,
   faStop,
+  faLock,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface SubmissionViewPageProps {
@@ -63,12 +65,22 @@ interface SubmissionDetail {
 }
 
 export default function SubmissionViewPage({ problem, slug, submissionId }: SubmissionViewPageProps) {
-  const { isAuthenticated, sessionToken } = useAuth();
+  const { isAuthenticated, sessionToken, user } = useAuth();
   const router = useRouter();
   
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if current user can see test case data
+  const canUserSeeTestcaseData = user && canSeeTestcaseData(
+    problem.testcaseDataVisibility || 'AUTHOR_ONLY',
+    user.perms,
+    problem.author,
+    problem.curator,
+    problem.tester || [],
+    user.id
+  );
 
   // Get language display name
   const getLanguageLabel = (langValue: string) => {
@@ -346,54 +358,67 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
           {submission.testCases && submission.testCases.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Test Cases</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  Test Cases
+                  {!canUserSeeTestcaseData && (
+                    <FontAwesomeIcon icon={faLock} className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {submission.testCases.map((testCase) => (
-                    <div key={testCase.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          {getVerdictIcon(testCase.verdict)}
-                          <span className="font-medium">Test Case {testCase.position}</span>
-                          <Badge className={getVerdictColor(testCase.verdict)}>
-                            {getVerdictText(testCase.verdict)}
-                          </Badge>
+                {canUserSeeTestcaseData ? (
+                  <div className="space-y-3">
+                    {submission.testCases.map((testCase) => (
+                      <div key={testCase.id} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            {getVerdictIcon(testCase.verdict)}
+                            <span className="font-medium">Test Case {testCase.position}</span>
+                            <Badge className={getVerdictColor(testCase.verdict)}>
+                              {getVerdictText(testCase.verdict)}
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {testCase.points}/{problem.points}pts
+                          </div>
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {testCase.points}/{problem.points}pts
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
+                          </div>
+                          <div>
+                            <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'}
+                          </div>
                         </div>
+                        
+                        {testCase.outputPreview && (
+                          <div className="mt-3">
+                            <div className="text-sm font-medium mb-1">Output Preview:</div>
+                            <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
+                              {testCase.outputPreview}
+                            </pre>
+                          </div>
+                        )}
+                        
+                        {testCase.feedback && (
+                          <div className="mt-3">
+                            <div className="text-sm font-medium mb-1">Feedback:</div>
+                            <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
+                              {testCase.feedback}
+                            </pre>
+                          </div>
+                        )}
                       </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
-                        </div>
-                        <div>
-                          <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'}
-                        </div>
-                      </div>
-                      
-                      {testCase.outputPreview && (
-                        <div className="mt-3">
-                          <div className="text-sm font-medium mb-1">Output Preview:</div>
-                          <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
-                            {testCase.outputPreview}
-                          </pre>
-                        </div>
-                      )}
-                      
-                      {testCase.feedback && (
-                        <div className="mt-3">
-                          <div className="text-sm font-medium mb-1">Feedback:</div>
-                          <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
-                            {testCase.feedback}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FontAwesomeIcon icon={faLock} className="w-8 h-8 mb-2" />
+                    <p>Test case details are only visible to problem authors, curators, and testers.</p>
+                    <p className="text-sm mt-1">You can see the overall verdict and score above.</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

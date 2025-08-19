@@ -100,6 +100,9 @@ export interface IProblemPageData {
   pdf?: string; // PDF Statement name.
   solution?: string;
 
+  // Test case visibility control
+  testcaseDataVisibility?: 'AUTHOR_ONLY' | 'EVERYONE';
+
   stats: {
     submissions: number;
     ACSubmissions: number;

@@ -12,6 +12,8 @@ import remarkHeadingSeparator from "@/lib/remarkHeadingSeparator";
 import "katex/dist/katex.min.css";
 
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/AuthProvider";
+import { canEditProblemTestcases } from "@/lib/permissions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheck,
@@ -24,6 +26,7 @@ import {
   faPrint,
   faChevronRight,
   faChevronDown,
+  faCog,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { IProblemPageData } from "@/types";
@@ -35,9 +38,19 @@ interface ProblemPageProps {
 }
 
 export default function ProblemPage({ problem, slug }: ProblemPageProps) {
+  const { user } = useAuth();
   const [typeExpanded, setTypeExpanded] = useState(false);
   const [sourceExpanded, setSourceExpanded] = useState(true);
   const [langExpanded, setLangExpanded] = useState(true); // default open
+
+  // Check if current user can edit test cases
+  const canUserEditTestcases = user && canEditProblemTestcases(
+    user.perms,
+    problem.author,
+    problem.curator,
+    problem.tester || [],
+    user.id
+  );
 
   // Extract unique common names from allowed languages
   const allowedLanguageNames = Array.from(
@@ -155,6 +168,14 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                     <Button variant="outline" asChild className="w-full">
                       <Link href={`/problem/${slug}/solution`}>
                         Read editorial
+                      </Link>
+                    </Button>
+                  )}
+                  {canUserEditTestcases && (
+                    <Button variant="outline" asChild className="w-full">
+                      <Link href={`/problem/${slug}/testcases`}>
+                        <FontAwesomeIcon icon={faCog} className="w-4 h-4 mr-2" />
+                        Edit Test Cases
                       </Link>
                     </Button>
                   )}
