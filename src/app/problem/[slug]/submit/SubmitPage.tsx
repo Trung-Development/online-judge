@@ -216,7 +216,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          problemCode: slug,
+          problemSlug: slug,
           language: selectedLanguage,
           sourceCode: code,
         }),

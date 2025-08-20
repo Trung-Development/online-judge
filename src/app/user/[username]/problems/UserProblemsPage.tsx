@@ -32,12 +32,12 @@ export default function UserProblemsPage({ userData, username, serverUser }: Use
     const pointsByCategory: {[key: string]: number} = {};
     
     // Only count AC submissions and unique problems
-    const processedProblemCodes = new Set<string>();
+    const processedproblemSlugs = new Set<string>();
     
     userData.submissions
-        .filter(s => s.status === 'AC' && !processedProblemCodes.has(s.problemCode))
+        .filter(s => s.status === 'AC' && !processedproblemSlugs.has(s.problemSlug))
         .forEach(submission => {
-            processedProblemCodes.add(submission.problemCode);
+            processedproblemSlugs.add(submission.problemSlug);
             
             if (!problemsByCategory[submission.problemCategory]) {
                 problemsByCategory[submission.problemCategory] = [];
@@ -45,7 +45,7 @@ export default function UserProblemsPage({ userData, username, serverUser }: Use
             }
             
             problemsByCategory[submission.problemCategory].push({
-                code: submission.problemCode,
+                code: submission.problemSlug,
                 name: submission.problemName,
                 points: submission.points
             });
@@ -82,7 +82,7 @@ export default function UserProblemsPage({ userData, username, serverUser }: Use
                     
                     <div className="space-y-3 bg-card border rounded-lg p-4 mb-4">
                         <div>
-                            <span className="font-medium">Problems solved:</span> {processedProblemCodes.size}
+                            <span className="font-medium">Problems solved:</span> {processedproblemSlugs.size}
                         </div>
                         {userData.rankByPoints && (
                             <div>

@@ -55,11 +55,11 @@ export default function SubmissionsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   
   // Filter states
-  const [problemFilter, setProblemFilter] = useState(searchParams.get("problemCode") || "");
+  const [problemFilter, setProblemFilter] = useState(searchParams.get("problemSlug") || "");
   const [authorFilter, setAuthorFilter] = useState("");
   const [verdictFilter, setVerdictFilter] = useState("");
 
-  const problemCode = searchParams.get("problemCode");
+  const problemSlug = searchParams.get("problemSlug");
   const authorParam = searchParams.get("author");
   const isMySubmissions = authorParam === "me";
 
@@ -103,7 +103,7 @@ export default function SubmissionsPage() {
         limit: "20",
       });
 
-      if (problemFilter) params.append("problemCode", problemFilter);
+      if (problemFilter) params.append("problemSlug", problemFilter);
       if (isMySubmissions && user?.username) {
         params.append("author", user.username);
       } else if (authorFilter) {
@@ -135,19 +135,18 @@ export default function SubmissionsPage() {
     }
     
     // Set initial filters from URL params
-    if (problemCode) setProblemFilter(problemCode);
+    if (problemSlug) setProblemFilter(problemSlug);
     if (isMySubmissions) setAuthorFilter("");
     
     fetchSubmissions(1);
-  }, [problemCode, isMySubmissions, isAuthenticated, user, fetchSubmissions]);
+  }, [problemSlug, isMySubmissions, isAuthenticated, user, fetchSubmissions]);
 
   const handleSearch = () => {
     fetchSubmissions(1);
   };
 
-  const formatTime = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
+  const formatTime = (s: number) => {
+    return `${s.toFixed(2)}s`;
   };
 
   const formatMemory = (kb: number): string => {
@@ -164,10 +163,10 @@ export default function SubmissionsPage() {
       return "Invalid Date";
     }
   };  const getPageTitle = () => {
-    if (problemCode && isMySubmissions) {
-      return `My Submissions for Problem ${problemCode}`;
-    } else if (problemCode) {
-      return `All Submissions for Problem ${problemCode}`;
+    if (problemSlug && isMySubmissions) {
+      return `My Submissions for Problem ${problemSlug}`;
+    } else if (problemSlug) {
+      return `All Submissions for Problem ${problemSlug}`;
     } else if (isMySubmissions) {
       return "My Submissions";
     }
@@ -196,9 +195,9 @@ export default function SubmissionsPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          {problemCode && (
+          {problemSlug && (
             <Button variant="ghost" size="sm" asChild>
-              <Link href={`/problem/${problemCode}`}>
+              <Link href={`/problem/${problemSlug}`}>
                 <FontAwesomeIcon icon={faArrowLeft} className="w-4 h-4 mr-2" />
                 Back to Problem
               </Link>
@@ -221,7 +220,7 @@ export default function SubmissionsPage() {
                 <Label htmlFor="problem">Problem</Label>
                 <Input
                   id="problem"
-                  placeholder="Problem code"
+                  placeholder="Problem slug"
                   value={problemFilter}
                   onChange={(e) => setProblemFilter(e.target.value)}
                 />

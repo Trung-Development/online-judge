@@ -15,17 +15,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { problemCode, language, sourceCode } = body;
+    const { problemSlug, language, sourceCode } = body;
 
-    if (!problemCode || !language || !sourceCode) {
+    if (!problemSlug || !language || !sourceCode) {
       return NextResponse.json(
-        { error: "Problem code, language, and source code are required" },
+        { error: "Problem slug, language, and source code are required" },
         { status: 400 }
       );
     }
 
     const submissionPayload = {
-      problemSlug: problemCode, // Backend now expects problemSlug instead of problemId
+      problemSlug: problemSlug, // Backend now expects problemSlug instead of problemId
       language,
       code: sourceCode,
     };    const response = await fetch(new URL("/client/submissions", env.API_ENDPOINT).toString(), {
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const pageStr = searchParams.get("page") || "1";
     const limitStr = searchParams.get("limit") || "20";
-    const problemCode = searchParams.get("problemCode");
+    const problemSlug = searchParams.get("problemSlug");
     const author = searchParams.get("author");
     const verdict = searchParams.get("verdict");
 
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
-      ...(problemCode && { problemCode }),
+      ...(problemSlug && { problemSlug }),
       ...(author && { author }),
       ...(verdict && { verdict }),
     });

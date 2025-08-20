@@ -103,11 +103,11 @@ export default function UserSubmissionsPage({ userData, username, serverUser }: 
                                                 <tr key={index} className="border-b hover:bg-muted/50">
                                                     <td className="py-3 px-4">
                                                         <div>
-                                                            <Link href={`/problem/${submission.problemCode}`} className="font-medium hover:text-primary">
+                                                            <Link href={`/problem/${submission.problemSlug}`} className="font-medium hover:text-primary">
                                                                 {submission.problemName}
                                                             </Link>
                                                             <div className="text-sm text-muted-foreground">
-                                                                {submission.problemCode} • {submission.problemCategory}
+                                                                {submission.problemSlug} • {submission.problemCategory}
                                                             </div>
                                                         </div>
                                                     </td>

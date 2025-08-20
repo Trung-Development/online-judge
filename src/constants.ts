@@ -299,7 +299,7 @@ export const languages = [
     value: "SCALA",
     label: "Scala",
     template:
-      "// Must be the same name as the problem code\r\nobject problemcode extends App {\r\n    \r\n}",
+      "// Must be the same name as the Problem slug\r\nobject problemSlug extends App {\r\n    \r\n}",
     extension: "scala",
     commonName: "Scala",
   },

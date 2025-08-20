@@ -3,13 +3,13 @@ import { env } from '@/lib/env';
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ problemCode: string }> }
+  context: { params: Promise<{ problemSlug: string }> }
 ) {
   try {
-    const { problemCode } = await context.params;
+    const { problemSlug } = await context.params;
     
     const response = await fetch(
-      new URL(`/client/judge/problems/${problemCode}/available`, env.API_ENDPOINT).toString(),
+      new URL(`/client/judge/problems/${problemSlug}/available`, env.API_ENDPOINT).toString(),
       {
         method: 'GET',
         headers: {
@@ -19,14 +19,14 @@ export async function GET(
     );
 
     if (!response.ok) {
-      return NextResponse.json({ problemCode, available: false });
+      return NextResponse.json({ problemSlug, available: false });
     }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
     console.error('Error checking problem availability:', error);
-    const { problemCode } = await context.params;
-    return NextResponse.json({ problemCode, available: false });
+    const { problemSlug } = await context.params;
+    return NextResponse.json({ problemSlug, available: false });
   }
 }
