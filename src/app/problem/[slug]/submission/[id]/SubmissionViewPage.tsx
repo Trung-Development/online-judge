@@ -403,86 +403,95 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {submission.testCases.map((testCase) => (
-                    <div key={testCase.id} className="border rounded-lg p-4">
-                      {/* Test case header with expand/collapse button */}
-                      <div 
-                        className="flex items-center justify-between cursor-pointer"
-                        onClick={() => toggleSection(testCase.id, 'details')}
-                      >
-                        <div className="flex items-center gap-2">
-                          {getVerdictIcon(testCase.verdict)}
-                          <span className="font-medium">Test Case {testCase.position}</span>
-                          <Badge className={getVerdictColor(testCase.verdict)}>
-                            {getVerdictText(testCase.verdict)}
-                          </Badge>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="text-sm text-muted-foreground">
-                            {testCase.points}/{problem.points}pts
-                          </div>
-                          <FontAwesomeIcon 
-                            icon={isSectionExpanded(testCase.id, 'details') ? faChevronDown : faChevronRight} 
-                            className="w-4 h-4 text-muted-foreground" 
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* Basic timing and memory info (always visible) */}
-                      <div className="grid grid-cols-2 gap-4 text-sm mt-2">
-                        <div>
-                          <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
-                        </div>
-                        <div>
-                          <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'}
-                        </div>
-                      </div>
+                  {submission.testCases.map((testCase) => {
+                    // Check if there's any detailed data to show
+                    const hasDetailedData = (testCase.input && testCase.input.trim()) || 
+                                          (testCase.expected && testCase.expected.trim()) || 
+                                          (testCase.output && testCase.output.trim()) || 
+                                          (testCase.feedback && testCase.feedback.trim());
 
-                      {/* Collapsible detailed section */}
-                      {isSectionExpanded(testCase.id, 'details') && (
-                        <div className="mt-4 pt-3 border-t">
-                          <div className="space-y-3">
-                            {testCase.input && (
-                              <div>
-                                <div className="text-sm font-medium mb-1">Input:</div>
-                                <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                  {testCase.input.length > 1000 ? testCase.input.substring(0, 1000) + '\n... [truncated]' : testCase.input}
-                                </pre>
-                              </div>
+                    return (
+                      <div key={testCase.id} className="border rounded-lg p-4">
+                        {/* Test case header with conditional expand/collapse button */}
+                        <div 
+                          className={`flex items-center justify-between ${hasDetailedData ? 'cursor-pointer' : ''}`}
+                          onClick={hasDetailedData ? () => toggleSection(testCase.id, 'details') : undefined}
+                        >
+                          <div className="flex items-center gap-2">
+                            {getVerdictIcon(testCase.verdict)}
+                            <span className="font-medium">Test Case {testCase.position}</span>
+                            <Badge className={getVerdictColor(testCase.verdict)}>
+                              {getVerdictText(testCase.verdict)}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm text-muted-foreground">
+                              {testCase.points}/{problem.points}pts
+                            </div>
+                            {hasDetailedData && (
+                              <FontAwesomeIcon 
+                                icon={isSectionExpanded(testCase.id, 'details') ? faChevronDown : faChevronRight} 
+                                className="w-4 h-4 text-muted-foreground" 
+                              />
                             )}
+                          </div>
+                        </div>
+                        {/* Basic timing and memory info (always visible) */}
+                        <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+                          <div>
+                            <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
+                          </div>
+                          <div>
+                            <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'}
+                          </div>
+                        </div>
+
+                        {/* Collapsible detailed section - only show if there's data */}
+                        {hasDetailedData && isSectionExpanded(testCase.id, 'details') && (
+                          <div className="mt-4 pt-3 border-t">
+                            <div className="space-y-3">
+                              {testCase.input && testCase.input.trim() && (
+                                <div>
+                                  <div className="text-sm font-medium mb-1">Input:</div>
+                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                    {testCase.input.length > 1000 ? testCase.input.substring(0, 1000) + '\n... [truncated]' : testCase.input}
+                                  </pre>
+                                </div>
+                              )}
+                              
+                              {testCase.expected && testCase.expected.trim() && (
+                                <div>
+                                  <div className="text-sm font-medium mb-1">Expected Output:</div>
+                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                    {testCase.expected.length > 1000 ? testCase.expected.substring(0, 1000) + '\n... [truncated]' : testCase.expected}
+                                  </pre>
+                                </div>
+                              )}
+                              
+                              {testCase.output && testCase.output.trim() && (
+                                <div>
+                                  <div className="text-sm font-medium mb-1">Your Output:</div>
+                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                    {testCase.output.length > 1000 ? testCase.output.substring(0, 1000) + '\n... [truncated]' : testCase.output}
+                                  </pre>
+                                </div>
+                              )}
+                            </div>
                             
-                            {testCase.expected && (
-                              <div>
-                                <div className="text-sm font-medium mb-1">Expected Output:</div>
-                                <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                  {testCase.expected.length > 1000 ? testCase.expected.substring(0, 1000) + '\n... [truncated]' : testCase.expected}
-                                </pre>
-                              </div>
-                            )}
-                            
-                            {testCase.output && (
-                              <div>
-                                <div className="text-sm font-medium mb-1">Your Output:</div>
-                                <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                  {testCase.output.length > 1000 ? testCase.output.substring(0, 1000) + '\n... [truncated]' : testCase.output}
+                            {/* Show feedback */}
+                            {testCase.feedback && testCase.feedback.trim() && (
+                              <div className="mt-3">
+                                <div className="text-sm font-medium mb-1">Feedback:</div>
+                                <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
+                                  {testCase.feedback}
                                 </pre>
                               </div>
                             )}
                           </div>
-                          
-                          {/* Show feedback */}
-                          {testCase.feedback && (
-                            <div className="mt-3">
-                              <div className="text-sm font-medium mb-1">Feedback:</div>
-                              <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
-                                {testCase.feedback}
-                              </pre>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
