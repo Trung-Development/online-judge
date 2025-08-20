@@ -211,11 +211,22 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
     loadSubmission();
   }, [submissionId]);
 
-  // Polling for submission updates (instead of WebSocket to avoid CORS issues)
+  // Helper function to check if submission has final verdict
+  const hasFinalVerdict = (verdict: string) => {
+    // Final verdicts are those that won't change anymore
+    const finalVerdicts = ['AC', 'WA', 'TLE', 'MLE', 'RTE', 'CE', 'PE', 'OLE', 'AB', 'IR', 'ISE'];
+    return finalVerdicts.includes(verdict);
+  };
+
+  // Polling for submission updates (only when needed)
   useEffect(() => {
-    if (!submission || !sessionToken) return;
+    if (!sessionToken) return;
+    
+    let isActive = true;
 
     const pollSubmission = async () => {
+      if (!isActive) return;
+      
       try {
         const response = await fetch(`/api/submissions/${submissionId}`, {
           headers: {
@@ -224,25 +235,42 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
         });
         if (response.ok) {
           const result = await response.json();
-          if (result.success && result.data) {
+          if (result.success && result.data && isActive) {
             setSubmission(result.data);
+            
+            // Continue polling if verdict is not final
+            if (!hasFinalVerdict(result.data.verdict)) {
+              scheduleNextPoll();
+            }
           }
         }
       } catch (error) {
         console.error('Error polling submission:', error);
+        if (isActive) {
+          scheduleNextPoll(); // Retry on error
+        }
       }
     };
 
-    // Poll every 2 seconds
-    const pollInterval = setInterval(pollSubmission, 2000);
-    
+    const scheduleNextPoll = () => {
+      if (!isActive) return;
+      
+      // Poll every 0.5 seconds (500ms)
+      setTimeout(() => {
+        if (isActive) {
+          pollSubmission();
+        }
+      }, 500);
+    };
+
     // Initial fetch
     pollSubmission();
 
+    // Cleanup function
     return () => {
-      clearInterval(pollInterval);
+      isActive = false;
     };
-  }, [submission, submissionId, sessionToken]);
+  }, [submissionId, sessionToken]); // Simplified dependencies
 
   // Redirect if not authenticated
   useEffect(() => {
