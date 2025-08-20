@@ -41,29 +41,26 @@ export function CodeHighlight({
       try {
         setIsLoading(true);
         const shikiLang = getShikiLanguage(language);
+        console.log('Highlighting code with language:', language, '→', shikiLang);
         
         const html = await codeToHtml(code, {
           lang: shikiLang,
-          themes: {
-            light: 'github-light',
-            dark: 'github-dark'
-          },
-          defaultColor: false,
+          theme: 'github-dark',
           transformers: [{
             pre(node) {
-              // Add custom classes to the pre element
-              this.addClassToHast(node, 'overflow-x-auto');
-              this.addClassToHast(node, 'text-sm');
-              this.addClassToHast(node, 'leading-relaxed');
+              // Remove default background and add custom classes
+              node.properties = node.properties || {};
+              node.properties.style = '';
+              node.properties.class = 'overflow-x-auto text-sm leading-relaxed p-0 m-0 bg-transparent';
             }
           }]
         });
         
         setHighlightedCode(html);
       } catch (error) {
-        console.error('Failed to highlight code:', error);
+        console.error('Failed to highlight code:', error, 'Language:', language);
         // Fallback to plain pre/code
-        setHighlightedCode(`<pre class="overflow-x-auto text-sm leading-relaxed bg-muted p-4 rounded border"><code>${code}</code></pre>`);
+        setHighlightedCode(`<pre class="overflow-x-auto text-sm leading-relaxed p-0 m-0 bg-transparent"><code>${code}</code></pre>`);
       } finally {
         setIsLoading(false);
       }
@@ -99,11 +96,11 @@ export function CodeHighlight({
   }
 
   return (
-    <div className={`bg-muted rounded-md border overflow-hidden ${className}`}>
+    <div className={`bg-gray-900 rounded-md border overflow-hidden ${className}`}>
       {(showLanguage || showCopyButton) && (
-        <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/50">
+        <div className="flex items-center justify-between px-4 py-2 border-b bg-gray-800">
           {showLanguage && (
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-gray-300">
               {getLanguageDisplayName(language)}
             </span>
           )}
@@ -112,18 +109,18 @@ export function CodeHighlight({
               variant="ghost" 
               size="sm" 
               onClick={handleCopy}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 hover:bg-gray-700"
             >
               <FontAwesomeIcon 
                 icon={copied ? faCheck : faCopy} 
-                className={`w-3 h-3 ${copied ? 'text-green-600' : ''}`}
+                className={`w-3 h-3 ${copied ? 'text-green-400' : 'text-gray-300'}`}
               />
             </Button>
           )}
         </div>
       )}
       <div 
-        className="p-4"
+        className="p-4 bg-gray-900 text-white [&_pre]:bg-transparent [&_pre]:p-0 [&_pre]:m-0"
         dangerouslySetInnerHTML={{ __html: highlightedCode }}
       />
     </div>
