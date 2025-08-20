@@ -12,6 +12,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { IProblemPageData } from "@/types";
 import { languages } from "@/constants";
 import { canSeeTestcaseData } from "@/lib/permissions";
+import { CodeHighlight } from "@/components/ui/code-highlight";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
@@ -538,11 +539,10 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-muted rounded-md overflow-hidden">
-                  <pre className="p-4 text-sm overflow-x-auto">
-                    <code>{submission.code}</code>
-                  </pre>
-                </div>
+                <CodeHighlight 
+                  code={submission.code}
+                  language={submission.language}
+                />
               </CardContent>
             </Card>
           )}
