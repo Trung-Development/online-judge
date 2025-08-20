@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faSearch, faFilter } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faSearch, faFilter, faPlay, faPause } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "@/components/AuthProvider";
 
 interface Submission {
@@ -58,6 +58,7 @@ export default function SubmissionsPage() {
   const [problemFilter, setProblemFilter] = useState(searchParams.get("problemSlug") || "");
   const [authorFilter, setAuthorFilter] = useState("");
   const [verdictFilter, setVerdictFilter] = useState("");
+  const [isPolling, setIsPolling] = useState(true);
 
   const problemSlug = searchParams.get("problemSlug");
   const authorParam = searchParams.get("author");
@@ -95,9 +96,9 @@ export default function SubmissionsPage() {
     SK: "Skipped",
   };
 
-  const fetchSubmissions = React.useCallback(async (page: number = 1) => {
+  const fetchSubmissions = React.useCallback(async (page: number = 1, silent: boolean = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const params = new URLSearchParams({
         page: page.toString(),
         limit: "20",
@@ -121,9 +122,9 @@ export default function SubmissionsPage() {
       setTotalPages(result.pagination?.totalPages || 0);
       setCurrentPage(result.pagination?.page || 1);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      if (!silent) setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [problemFilter, authorFilter, verdictFilter, isMySubmissions, user?.username]);
 
@@ -140,6 +141,17 @@ export default function SubmissionsPage() {
     
     fetchSubmissions(1);
   }, [problemSlug, isMySubmissions, isAuthenticated, user, fetchSubmissions]);
+
+  // Polling effect - refresh submissions every second
+  useEffect(() => {
+    if (!isPolling) return;
+
+    const interval = setInterval(() => {
+      fetchSubmissions(currentPage, true); // Silent update during polling
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isPolling, currentPage, fetchSubmissions]);
 
   const handleSearch = () => {
     fetchSubmissions(1);
@@ -194,16 +206,32 @@ export default function SubmissionsPage() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          {problemSlug && (
-            <Button variant="ghost" size="sm" asChild>
-              <Link href={`/problem/${problemSlug}`}>
-                <FontAwesomeIcon icon={faArrowLeft} className="w-4 h-4 mr-2" />
-                Back to Problem
-              </Link>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            {problemSlug && (
+              <Button variant="ghost" size="sm" asChild>
+                <Link href={`/problem/${problemSlug}`}>
+                  <FontAwesomeIcon icon={faArrowLeft} className="w-4 h-4 mr-2" />
+                  Back to Problem
+                </Link>
+              </Button>
+            )}
+            <h1 className="text-3xl font-bold">{getPageTitle()}</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsPolling(!isPolling)}
+              className={isPolling ? "bg-green-50 border-green-300" : ""}
+            >
+              <FontAwesomeIcon icon={isPolling ? faPause : faPlay} className="w-4 h-4 mr-2" />
+              {isPolling ? "Pause Auto-refresh" : "Start Auto-refresh"}
             </Button>
-          )}
-          <h1 className="text-3xl font-bold">{getPageTitle()}</h1>
+            <span className="text-sm text-muted-foreground">
+              {isPolling ? "Refreshing every 1s" : "Auto-refresh paused"}
+            </span>
+          </div>
         </div>
 
         {/* Filters */}
