@@ -501,21 +501,23 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
           )}
 
           {/* Source Code */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FontAwesomeIcon icon={faCode} />
-                Source Code
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-muted rounded-md overflow-hidden">
-                <pre className="p-4 text-sm overflow-x-auto">
-                  <code>{submission.code}</code>
-                </pre>
-              </div>
-            </CardContent>
-          </Card>
+          {submission.code && submission.code.trim() !== "" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={faCode} />
+                  Source Code
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-muted rounded-md overflow-hidden">
+                  <pre className="p-4 text-sm overflow-x-auto">
+                    <code>{submission.code}</code>
+                  </pre>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}
