@@ -100,6 +100,9 @@ export interface IProblemPageData {
   pdf?: string; // PDF Statement name.
   solution?: string;
 
+  isLocked?: boolean;
+  isDeleted?: boolean;
+
   // Test case visibility control
   testcaseDataVisibility?: 'AUTHOR_ONLY' | 'EVERYONE';
 

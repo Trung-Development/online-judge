@@ -20,6 +20,7 @@ import {
   faExclamationTriangle,
   faTimes,
   faPlay,
+  faExclamationCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "@/components/AuthProvider";
 import { IProblemPageData, TAllowedLang } from "@/types";
@@ -75,8 +76,10 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
+  const [warning, setWarning] = useState<string | null>(null);
   const [submissionId, setSubmissionId] = useState<number | null>(null);
   const [submissionStatus, setSubmissionStatus] = useState<SubmissionResponse | null>(null);
+
 
   // Check problem availability when judges status changes
   useEffect(() => {
@@ -141,6 +144,13 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
       router.push(`/accounts/login?callbackUrl=/problem/${slug}/submit`);
     }
   }, [isAuthenticated, router, slug]);
+
+  useEffect(() => {
+    if(problem.isLocked) {
+      console.log("OK");
+      setWarning("Modifications to this problem are restricted. Please contact an administrator for further assistance.");
+    }
+  }, [problem.isLocked])
 
   const getVerdictIcon = (verdict: string) => {
     switch (verdict) {
@@ -362,6 +372,14 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                   </Alert>
                 )}
 
+                {/* Warning Alert */}
+                {warning && (
+                  <Alert variant="warning">
+                    <FontAwesomeIcon icon={faExclamationCircle} className="h-4 w-4" />
+                    <AlertDescription>{warning}</AlertDescription>
+                  </Alert>
+                )}
+
                 {/* Success Alert */}
                 {success && (
                   <Alert>
@@ -492,7 +510,8 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                     !selectedLanguage || 
                     !code.trim() || 
                     !isProblemAvailable || 
-                    (selectedLanguage ? !isExecutorAvailable(selectedLanguage) : false)
+                    (selectedLanguage ? !isExecutorAvailable(selectedLanguage) : false) ||
+                    problem.isLocked
                   }
                 >
                   {isSubmitting ? (
@@ -509,6 +528,11 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                     <>
                       <FontAwesomeIcon icon={faExclamationTriangle} className="w-4 h-4 mr-2" />
                       Language Not Available
+                    </>
+                  ) : problem.isLocked ? (
+                    <>
+                      <FontAwesomeIcon icon={faExclamationTriangle} className="w-4 h-4 mr-2" />
+                      Problem locked
                     </>
                   ) : (
                     <>

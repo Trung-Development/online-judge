@@ -44,13 +44,15 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
   const [langExpanded, setLangExpanded] = useState(true); // default open
 
   // Check if current user can edit test cases
-  const canUserEditTestcases = user && canEditProblemTestcases(
+  const canUserEditTestcases = !problem.isLocked && user && canEditProblemTestcases(
     user.perms,
     problem.author,
     problem.curator,
     problem.tester || [],
     user.id
   );
+
+  const problemLocked = problem.isLocked;
 
   // Extract unique common names from allowed languages
   const allowedLanguageNames = Array.from(
@@ -149,11 +151,13 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
             {/* Mobile: Show as card, Desktop: Show as sidebar */}
             <div className="lg:space-y-4">
               {/* Buttons */}
-              <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 text-lg">
+              <div aria-disabled className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 text-lg">
                 <div className="flex flex-col gap-2">
-                  <Button asChild className="w-full">
+                  {problemLocked ? (<Button disabled className="w-full">
+                    Problem locked
+                  </Button>) : <Button asChild className="w-full">
                     <Link href={`/problem/${slug}/submit`}>Submit</Link>
-                  </Button>
+                  </Button>}
                   <Button variant="outline" asChild className="w-full">
                     <Link href={`/submissions?problemSlug=${slug}`}>
                       All Submissions
