@@ -16,12 +16,11 @@ import { useAuth } from "@/components/AuthProvider";
 interface Submission {
   id: number;
   authorId: number;
-  problemId: number;
   language: string;
   verdict: string;
-  score: number;
-  time: number;
-  memory: number;
+  points: number;
+  maxTime: number;
+  maxMemory: number;
   createdAt: string;
   author: {
     username: string;
@@ -332,12 +331,12 @@ export default function SubmissionsPage() {
                             {verdictNames[submission.verdict] || submission.verdict}
                           </Badge>
                         </td>
-                        <td className="p-4">{submission.score}/{submission.problem.points}</td>
+                        <td className="p-4">{submission.points}/{submission.problem.points}</td>
                         <td className="p-4 font-mono text-sm">
-                          {submission.time ? formatTime(submission.time) : "-"}
+                          {submission.maxTime ? formatTime(submission.maxTime) : "-"}
                         </td>
                         <td className="p-4 font-mono text-sm">
-                          {submission.memory ? formatMemory(submission.memory) : "-"}
+                          {submission.maxMemory ? formatMemory(submission.maxMemory) : "-"}
                         </td>
                         <td className="p-4 text-sm text-muted-foreground">
                           {formatDate(submission.createdAt)}
