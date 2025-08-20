@@ -11,7 +11,6 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/components/AuthProvider";
 import { IProblemPageData } from "@/types";
 import { languages } from "@/constants";
-import { canSeeTestcaseData } from "@/lib/permissions";
 import { CodeHighlight } from "@/components/ui/code-highlight";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -26,7 +25,6 @@ import {
   faEye,
   faPlay,
   faStop,
-  faLock,
   faChevronDown,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
@@ -70,7 +68,7 @@ interface SubmissionDetail {
 }
 
 export default function SubmissionViewPage({ problem, slug, submissionId }: SubmissionViewPageProps) {
-  const { isAuthenticated, sessionToken, user } = useAuth();
+  const { isAuthenticated, sessionToken } = useAuth();
   const router = useRouter();
   
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
@@ -79,16 +77,6 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
   
   // State for collapsible test case sections
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
-
-  // Check if current user can see test case data
-  const canUserSeeTestcaseData = user && canSeeTestcaseData(
-    problem.testcaseDataVisibility || 'AUTHOR_ONLY',
-    user.perms,
-    problem.author,
-    problem.curator,
-    problem.tester || [],
-    user.id
-  );
 
   // Helper function to toggle expanded sections
   const toggleSection = (testCaseId: number, sectionType: string) => {
@@ -411,9 +399,6 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   Test Cases
-                  {!canUserSeeTestcaseData && (
-                    <FontAwesomeIcon icon={faLock} className="w-4 h-4 text-muted-foreground" />
-                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -456,49 +441,36 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                       {/* Collapsible detailed section */}
                       {isSectionExpanded(testCase.id, 'details') && (
                         <div className="mt-4 pt-3 border-t">
-                          {/* Only show detailed I/O data if user has permission */}
-                          {canUserSeeTestcaseData ? (
-                            <div className="space-y-3">
-                              {testCase.input && (
-                                <div>
-                                  <div className="text-sm font-medium mb-1">Input:</div>
-                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                    {testCase.input.length > 1000 ? testCase.input.substring(0, 1000) + '\n... [truncated]' : testCase.input}
-                                  </pre>
-                                </div>
-                              )}
-                              
-                              {testCase.expected && (
-                                <div>
-                                  <div className="text-sm font-medium mb-1">Expected Output:</div>
-                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                    {testCase.expected.length > 1000 ? testCase.expected.substring(0, 1000) + '\n... [truncated]' : testCase.expected}
-                                  </pre>
-                                </div>
-                              )}
-                              
-                              {testCase.output && (
-                                <div>
-                                  <div className="text-sm font-medium mb-1">Your Output:</div>
-                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                    {testCase.output.length > 1000 ? testCase.output.substring(0, 1000) + '\n... [truncated]' : testCase.output}
-                                  </pre>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                              <div className="flex items-center gap-2 text-blue-800 text-sm">
-                                <FontAwesomeIcon icon={faLock} className="w-4 h-4" />
-                                <span className="font-medium">Limited visibility:</span>
+                          <div className="space-y-3">
+                            {testCase.input && (
+                              <div>
+                                <div className="text-sm font-medium mb-1">Input:</div>
+                                <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                  {testCase.input.length > 1000 ? testCase.input.substring(0, 1000) + '\n... [truncated]' : testCase.input}
+                                </pre>
                               </div>
-                              <p className="text-blue-700 text-sm mt-1">
-                                Test case input/output details are only visible to problem authors, curators, and testers.
-                              </p>
-                            </div>
-                          )}
+                            )}
+                            
+                            {testCase.expected && (
+                              <div>
+                                <div className="text-sm font-medium mb-1">Expected Output:</div>
+                                <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                  {testCase.expected.length > 1000 ? testCase.expected.substring(0, 1000) + '\n... [truncated]' : testCase.expected}
+                                </pre>
+                              </div>
+                            )}
+                            
+                            {testCase.output && (
+                              <div>
+                                <div className="text-sm font-medium mb-1">Your Output:</div>
+                                <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                  {testCase.output.length > 1000 ? testCase.output.substring(0, 1000) + '\n... [truncated]' : testCase.output}
+                                </pre>
+                              </div>
+                            )}
+                          </div>
                           
-                          {/* Always show feedback regardless of visibility settings */}
+                          {/* Show feedback */}
                           {testCase.feedback && (
                             <div className="mt-3">
                               <div className="text-sm font-medium mb-1">Feedback:</div>
@@ -512,19 +484,6 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                     </div>
                   ))}
                 </div>
-                
-                {!canUserSeeTestcaseData && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-center gap-2 text-blue-800 text-sm">
-                      <FontAwesomeIcon icon={faLock} className="w-4 h-4" />
-                      <span className="font-medium">Limited visibility:</span>
-                    </div>
-                    <p className="text-blue-700 text-sm mt-1">
-                      Test case input/output details are only visible to problem authors, curators, and testers.
-                      You can see verdicts, timing, memory usage, and scores above.
-                    </p>
-                  </div>
-                )}
               </CardContent>
             </Card>
           )}

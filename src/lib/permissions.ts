@@ -67,30 +67,3 @@ export function canEditProblemTestcases(
     problemTesters.includes(userId)
   );
 }
-
-/**
- * Check if user can see test case data
- * @param testcaseVisibility - Problem testcase visibility setting
- * @param userPerms - User permissions
- * @param problemAuthors - Array of problem author IDs
- * @param problemCurators - Array of problem curator IDs  
- * @param problemTesters - Array of problem tester IDs
- * @param userId - Current user ID
- * @returns true if user can see test case data
- */
-export function canSeeTestcaseData(
-  testcaseVisibility: 'AUTHOR_ONLY' | 'EVERYONE',
-  userPerms: string | undefined,
-  problemAuthors: string[],
-  problemCurators: string[],
-  problemTesters: string[],
-  userId: string | undefined
-): boolean {
-  // Everyone can see if visibility is set to EVERYONE
-  if (testcaseVisibility === 'EVERYONE') {
-    return true;
-  }
-  
-  // For AUTHOR_ONLY, check if user has edit permissions
-  return canEditProblemTestcases(userPerms, problemAuthors, problemCurators, problemTesters, userId);
-}
