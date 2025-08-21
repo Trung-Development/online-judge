@@ -79,6 +79,7 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
         const errorData = await response.json();
         if(errorData.error === "INSUFFICIENT_PERMISSIONS") throw new Error("You are not authorized to perform this operation. Please try again later.")
         if(errorData.error === "PROBLEM_NOT_FOUND") throw new Error("The problem you are trying to access does not exist. Please check the URL and try again.");
+        if(errorData.error === "PROBLEM_LOCKED") throw new Error("Modifications to this problem are restricted. Please contact an administrator for further assistance.")
         throw new Error(errorData.error || "Failed to update test case visibility");
       } else {
         problem.testcaseDataVisibility = visibility;
