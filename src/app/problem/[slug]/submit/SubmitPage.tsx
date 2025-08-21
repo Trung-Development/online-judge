@@ -147,7 +147,6 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
 
   useEffect(() => {
     if(problem.isLocked) {
-      console.log("OK");
       setWarning("Modifications to this problem are restricted. Please contact an administrator for further assistance.");
     }
   }, [problem.isLocked])
@@ -234,7 +233,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to submit solution");
+        throw new Error(errorData.error || "An error occured while submitting your solution.");
       }
 
       const result = await response.json();
@@ -245,7 +244,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
       // Redirect to submission view page after a short delay
       setTimeout(() => {
         router.push(`/problem/${slug}/submission/${result.id}`);
-      }, 2000);
+      }, 3000);
 
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
@@ -382,10 +381,10 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
 
                 {/* Success Alert */}
                 {success && (
-                  <Alert>
+                  <Alert variant="success">
                     <FontAwesomeIcon icon={faCheck} className="h-4 w-4" />
                     <AlertDescription>
-                      Solution submitted successfully! Redirecting to submission page...
+                      Solution submitted successfully! You will be redirected to the details page shortly.
                     </AlertDescription>
                   </Alert>
                 )}

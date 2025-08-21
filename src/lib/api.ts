@@ -41,7 +41,7 @@ export async function publicFetchWithAuthentication(
   });
 
   // Handle 401 Unauthorized responses only if the user is logged in
-  if (isLoggedIn && response.status === 401 && autoLogout) {
+  if (isLoggedIn && response.status === 401 && autoLogout && (await response.json()).message === "INVALID_TOKEN") {
     console.log("Session expired during API call, signing out");
     // Clear the session by calling logout endpoint
     await fetch("/api/auth/logout", { method: "POST" });

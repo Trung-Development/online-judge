@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -19,6 +18,7 @@ import {
   faCheck,
   faSpinner,
   faExclamationTriangle,
+  faCheckCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface TestcaseManagerPageProps {
@@ -28,7 +28,7 @@ interface TestcaseManagerPageProps {
 
 export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPageProps) {
   const { user, sessionToken } = useAuth();
-  const router = useRouter();
+  // const router = useRouter();
   
   const [visibility, setVisibility] = useState<'AUTHOR_ONLY' | 'AC_ONLY' | 'EVERYONE'>(
     problem.testcaseDataVisibility || 'AUTHOR_ONLY'
@@ -40,18 +40,18 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
   // Check if current user can edit test cases
   const canUserEditTestcases = user && canEditProblemTestcases(
     user.perms,
-    problem.author,
-    problem.curator,
+    problem.author || [],
+    problem.curator || [],
     problem.tester || [],
     user.id
   );
 
   // Redirect if user doesn't have permission
-  useEffect(() => {
-    if (!canUserEditTestcases && !loading) {
-      router.push(`/problem/${slug}`);
-    }
-  }, [canUserEditTestcases, router, slug, loading]);
+  // useEffect(() => {
+  //   if (!canUserEditTestcases) {
+  //     router.push(`/problem/${slug}`);
+  //   }
+  // }, [canUserEditTestcases, router, slug, loading]);
 
   const handleSave = async () => {
     if (!sessionToken) {
@@ -64,7 +64,7 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
     setSuccess(false);
 
     try {
-      const response = await fetch(`/api/problems/${slug}/testcase-visibility`, {
+      const response = await fetch(`/api/problem/${slug}/testcase-visibility`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -77,11 +77,15 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
 
       if (!response.ok) {
         const errorData = await response.json();
+        if(errorData.error === "INSUFFICIENT_PERMISSIONS") throw new Error("You are not authorized to perform this operation. Please try again later.")
+        if(errorData.error === "PROBLEM_NOT_FOUND") throw new Error("The problem you are trying to access does not exist. Please check the URL and try again.");
         throw new Error(errorData.error || "Failed to update test case visibility");
+      } else {
+        problem.testcaseDataVisibility = visibility;
+        setVisibility(visibility);
       }
 
       setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -135,7 +139,7 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
 
       {/* Success Alert */}
       {success && (
-        <Alert className="mb-6">
+        <Alert variant="success" className="mb-6">
           <FontAwesomeIcon icon={faCheck} className="h-4 w-4" />
           <AlertDescription>
             Test case visibility updated successfully!
@@ -171,7 +175,7 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
               <div className="grid gap-1.5 leading-none">
                 <Label htmlFor="author-only" className="flex items-center gap-2 text-base font-medium cursor-pointer">
                   <FontAwesomeIcon icon={faUsers} className="w-4 h-4 text-blue-600" />
-                  Authors, Curators, and Testers Only
+                  Problem Moderators
                 </Label>
                 <p className="text-sm text-muted-foreground">
                   Only problem authors, curators, testers, and users with special permissions can see test case details.
@@ -192,12 +196,11 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
               />
               <div className="grid gap-1.5 leading-none">
                 <Label htmlFor="ac-only" className="flex items-center gap-2 text-base font-medium cursor-pointer">
-                  <FontAwesomeIcon icon={faUsers} className="w-4 h-4 text-yellow-600" />
-                  Users with Accepted Submissions Only
+                  <FontAwesomeIcon icon={faCheckCircle} className="w-4 h-4 text-yellow-600" />
+                  Accepted Users Only
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Only users who have successfully solved the problem (AC) can see test case details.
-                  Other users will only see the overall verdict and score.
+                  Only users who have successfully solved the problem can view test case details, including inputs, outputs, and feedback. Other users will only see the overall verdict and score.
                 </p>
               </div>
             </div>
@@ -251,19 +254,20 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
 
       {/* Info Card */}
       <Card className="mt-6">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
-            <FontAwesomeIcon icon={faExclamationTriangle} className="w-5 h-5 text-yellow-600 mt-0.5" />
-            <div>
-              <h3 className="font-medium mb-1">Important Notes</h3>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• This setting only affects test case data visibility, not the submission results themselves</li>
-                <li>• Authors, curators, and testers can always see test case details regardless of this setting</li>
-                <li>• Changes take effect immediately for all existing and future submissions</li>
-                <li>• Users with special permissions (EDIT_PROBLEM_TESTS) can also see test case details</li>
-              </ul>
-            </div>
-          </div>
+        <CardContent className="flex items-start gap-4">
+          <FontAwesomeIcon
+          icon={faExclamationTriangle}
+          className="w-6 h-6 mt-1 flex-shrink-0"
+        />
+        <div className="space-y-2">
+          <h3 className="font-semibold text-base">Important Notes</h3>
+          <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+            <li>This setting only affects test case data visibility, not the submission results themselves</li>
+            <li>Authors, curators, and testers can always see test case details regardless of this setting</li>
+            <li>Changes take effect immediately for all existing and future submissions</li>
+            <li>Users with edit problem tests permission can also see test case details</li>
+          </ul>
+        </div>
         </CardContent>
       </Card>
     </main>

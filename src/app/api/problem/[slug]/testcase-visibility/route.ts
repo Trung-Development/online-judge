@@ -4,7 +4,7 @@ import { env } from '@/lib/env';
 
 export const runtime = "edge";
 
-export async function PATCH(
+export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
@@ -28,11 +28,12 @@ export async function PATCH(
       );
     }
 
+
     // Make request to backend server to update test case visibility
     const backendResponse = await fetch(
-      new URL(`/client/problem/${slug}/testcase-visibility`, env.API_ENDPOINT).toString(),
+      new URL(`/client/problems/${slug}/testcase-visibility`, env.API_ENDPOINT).toString(),
       {
-        method: 'PATCH',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.sessionToken}`,
