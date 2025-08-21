@@ -67,7 +67,7 @@ interface SubmissionDetail {
 }
 
 export default function SubmissionViewPage({ problem, slug, submissionId }: SubmissionViewPageProps) {
-  const { isAuthenticated, sessionToken } = useAuth();
+  const { sessionToken } = useAuth();
   // const router = useRouter();
   
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
