@@ -41,7 +41,7 @@ export async function getProblems(token?: string): Promise<IProblemData[]> {
     const response = await fetch(url.toString(), {
       headers,
       next: {
-        revalidate: 60, // Revalidate after 1 minute
+        revalidate: 30, // Revalidate after 30 seconds
       },
     });
 
