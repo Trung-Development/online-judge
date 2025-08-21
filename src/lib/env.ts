@@ -1,8 +1,11 @@
 import { z, ZodError } from "zod";
+import "dotenv/config";
 
 const envSchema = z.object({
   API_ENDPOINT: z.url("API_ENDPOINT must be a valid URL"),
-  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().min(1, "NEXT_PUBLIC_TURNSTILE_SITE_KEY is required"),
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z
+    .string()
+    .min(1, "NEXT_PUBLIC_TURNSTILE_SITE_KEY is required"),
 });
 
 // Parse environment variables with helpful error messages
@@ -15,8 +18,12 @@ try {
   });
 } catch (error) {
   if (error instanceof ZodError) {
-    const errorMessages = error.issues.map((err) => `${err.path.join('.')}: ${err.message}`);
-    throw new Error(`Environment validation failed:\n${errorMessages.join('\n')}`);
+    const errorMessages = error.issues.map(
+      (err) => `${err.path.join(".")}: ${err.message}`
+    );
+    throw new Error(
+      `Environment validation failed:\n${errorMessages.join("\n")}`
+    );
   }
   throw error;
 }
