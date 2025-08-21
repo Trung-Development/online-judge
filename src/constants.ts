@@ -418,4 +418,12 @@ export const languages = [
     extension: "cpp",
     commonName: "C++",
   },
+  {
+    value: "CPP23",
+    label: "C++23",
+    template:
+      "#include <bits/stdc++.h>\r\n\r\nusing namespace std;\r\n\r\nint main() {\r\n    return 0;\r\n}",
+    extension: "cpp",
+    commonName: "C++",
+  },
 ].sort((a, b) => a.label.localeCompare(b.label));
