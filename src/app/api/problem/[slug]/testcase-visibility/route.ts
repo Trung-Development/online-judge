@@ -21,7 +21,7 @@ export async function PATCH(
     const { slug } = await params;
     const { visibility } = await request.json();
     
-    if (!visibility || !['AUTHOR_ONLY', 'EVERYONE'].includes(visibility)) {
+    if (!visibility || !['AUTHOR_ONLY', 'AC_ONLY', 'EVERYONE'].includes(visibility)) {
       return NextResponse.json(
         { error: 'Invalid visibility value' },
         { status: 400 }

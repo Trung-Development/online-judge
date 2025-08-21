@@ -142,13 +142,13 @@ export default function SubmissionsPage() {
     fetchSubmissions(1);
   }, [problemSlug, isMySubmissions, isAuthenticated, user, fetchSubmissions]);
 
-  // Polling effect - refresh submissions every second
+  // Polling effect - refresh submissions every 3 second
   useEffect(() => {
     if (!isPolling) return;
 
     const interval = setInterval(() => {
       fetchSubmissions(currentPage, true); // Silent update during polling
-    }, 1000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [isPolling, currentPage, fetchSubmissions]);
@@ -229,7 +229,7 @@ export default function SubmissionsPage() {
               {isPolling ? "Pause Auto-refresh" : "Start Auto-refresh"}
             </Button>
             <span className="text-sm text-muted-foreground">
-              {isPolling ? "Refreshing every 1s" : "Auto-refresh paused"}
+              {isPolling ? "Refreshing every 3 seconds" : "Auto-refresh paused"}
             </span>
           </div>
         </div>

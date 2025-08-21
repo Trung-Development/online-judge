@@ -30,7 +30,7 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
   const { user, sessionToken } = useAuth();
   const router = useRouter();
   
-  const [visibility, setVisibility] = useState<'AUTHOR_ONLY' | 'EVERYONE'>(
+  const [visibility, setVisibility] = useState<'AUTHOR_ONLY' | 'AC_ONLY' | 'EVERYONE'>(
     problem.testcaseDataVisibility || 'AUTHOR_ONLY'
   );
   const [loading, setLoading] = useState(false);
@@ -165,7 +165,7 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
                 value="AUTHOR_ONLY"
                 id="author-only"
                 checked={visibility === 'AUTHOR_ONLY'}
-                onChange={(e) => setVisibility(e.target.value as 'AUTHOR_ONLY' | 'EVERYONE')}
+                onChange={(e) => setVisibility(e.target.value as 'AUTHOR_ONLY' | 'AC_ONLY' | 'EVERYONE')}
                 className="mt-1"
               />
               <div className="grid gap-1.5 leading-none">
@@ -180,6 +180,29 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
               </div>
             </div>
 
+            <div className="space-y-4">
+            <div className="flex items-start space-x-3 space-y-0">
+              <input
+                type="radio"
+                name="visibility"
+                value="AC_ONLY"
+                id="ac-only"
+                checked={visibility === 'AC_ONLY'}
+                onChange={(e) => setVisibility(e.target.value as 'AUTHOR_ONLY' | 'AC_ONLY' | 'EVERYONE')}
+                className="mt-1"
+              />
+              <div className="grid gap-1.5 leading-none">
+                <Label htmlFor="ac-only" className="flex items-center gap-2 text-base font-medium cursor-pointer">
+                  <FontAwesomeIcon icon={faUsers} className="w-4 h-4 text-yellow-600" />
+                  Users with Accepted Submissions Only
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Only users who have successfully solved the problem (AC) can see test case details.
+                  Other users will only see the overall verdict and score.
+                </p>
+              </div>
+            </div>
+
             <div className="flex items-start space-x-3 space-y-0">
               <input
                 type="radio"
@@ -187,7 +210,7 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
                 value="EVERYONE"
                 id="everyone"
                 checked={visibility === 'EVERYONE'}
-                onChange={(e) => setVisibility(e.target.value as 'AUTHOR_ONLY' | 'EVERYONE')}
+                onChange={(e) => setVisibility(e.target.value as 'AUTHOR_ONLY' | 'AC_ONLY' | 'EVERYONE')}
                 className="mt-1"
               />
               <div className="grid gap-1.5 leading-none">

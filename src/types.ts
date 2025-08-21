@@ -104,7 +104,7 @@ export interface IProblemPageData {
   isDeleted?: boolean;
 
   // Test case visibility control
-  testcaseDataVisibility?: 'AUTHOR_ONLY' | 'EVERYONE';
+  testcaseDataVisibility?: 'AUTHOR_ONLY' | 'AC_ONLY' | 'EVERYONE';
 
   stats: {
     submissions: number;

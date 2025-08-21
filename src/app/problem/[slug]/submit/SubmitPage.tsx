@@ -117,8 +117,8 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
       }
     };
 
-    // Poll every 2 seconds
-    const pollInterval = setInterval(pollSubmission, 2000);
+    // Poll every 3 seconds
+    const pollInterval = setInterval(pollSubmission, 3000);
     
     // Initial fetch
     pollSubmission();
