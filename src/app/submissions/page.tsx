@@ -276,7 +276,7 @@ export default function SubmissionsPage() {
                     <SelectItem value="WA">Wrong Answer</SelectItem>
                     <SelectItem value="TLE">Time Limit Exceeded</SelectItem>
                     <SelectItem value="MLE">Memory Limit Exceeded</SelectItem>
-                    <SelectItem value="RE">Runtime Error</SelectItem>
+                    <SelectItem value="RTE">Runtime Error</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

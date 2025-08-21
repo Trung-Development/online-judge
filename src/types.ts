@@ -63,7 +63,7 @@ export type TProblemStatus =
   | "AC" // Accepted
   | "WA" // Wrong Answer
   | "TLE" // Time Limit Exceeded
-  | "RE" // Runtime Error
+  | "RTE" // Runtime Error
   | "CE" // Compilation Error
   | "MLE" // Memory Limit Exceeded
   | "PE" // Presentation Error
