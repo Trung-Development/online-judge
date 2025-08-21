@@ -67,6 +67,18 @@ export async function POST(request: NextRequest) {
           { status: 401 }
         );
       }
+      if(errorBody.message === "ACCOUNT_AWAITING_CONFIRMATION") {
+        return NextResponse.json(
+          { error: "Your account hasn't been confirmed yet. Please check your email or contact an administrator." },
+          { status: 401 }
+        );
+      }
+      if(errorBody.message === "ACCOUNT_BANNED" || errorBody.message === "ACCOUNT_DISABLED") {
+        return NextResponse.json(
+          { error: "Your account isn't active. Please contact an administrator for more information." },
+          { status: 401 }
+        );
+      }
       return NextResponse.json(
         { error: errorBody.message || "An authentication error occurred." },
         { status: sessionRes.status }
