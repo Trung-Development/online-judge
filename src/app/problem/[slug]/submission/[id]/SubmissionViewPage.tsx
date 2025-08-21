@@ -2,14 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/components/AuthProvider";
 import { IProblemPageData } from "@/types";
+import { useAuth } from "@/components/AuthProvider";
 import { languages } from "@/constants";
 import { CodeHighlight } from "@/components/ui/code-highlight";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -69,7 +68,7 @@ interface SubmissionDetail {
 
 export default function SubmissionViewPage({ problem, slug, submissionId }: SubmissionViewPageProps) {
   const { isAuthenticated, sessionToken } = useAuth();
-  const router = useRouter();
+  // const router = useRouter();
   
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -209,7 +208,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
 
   // Polling for submission updates (only when needed)
   useEffect(() => {
-    if (!sessionToken) return;
+    // if (!sessionToken) return;
     
     let isActive = true;
 
@@ -219,7 +218,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
       try {
         const response = await fetch(`/api/submissions/${submissionId}`, {
           headers: {
-            'Authorization': `Bearer ${sessionToken}`,
+            Authorization: sessionToken ? `Bearer ${sessionToken}` : "",
           },
         });
         if (response.ok) {
@@ -261,25 +260,25 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
     };
   }, [submissionId, sessionToken]); // Simplified dependencies
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push(`/accounts/login?callbackUrl=/problem/${slug}/submission/${submissionId}`);
-    }
-  }, [isAuthenticated, router, slug, submissionId]);
+  // // Redirect if not authenticated
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     router.push(`/accounts/login?callbackUrl=/problem/${slug}/submission/${submissionId}`);
+  //   }
+  // }, [isAuthenticated, router, slug, submissionId]);
 
-  if (!isAuthenticated) {
-    return (
-      <div className="max-w-7xl mx-auto py-8 px-4">
-        <Alert variant="warning">
-          <FontAwesomeIcon icon={faExclamationTriangle} />
-          <AlertDescription>
-            Please log in to view submission details.
-          </AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
+  // if (!isAuthenticated) {
+  //   return (
+  //     <div className="max-w-7xl mx-auto py-8 px-4">
+  //       <Alert variant="warning">
+  //         <FontAwesomeIcon icon={faExclamationTriangle} />
+  //         <AlertDescription>
+  //           Please log in to view submission details.
+  //         </AlertDescription>
+  //       </Alert>
+  //     </div>
+  //   );
+  // }
 
   if (loading) {
     return (

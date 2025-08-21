@@ -10,12 +10,6 @@ export async function GET(
 ) {
   try {
     const session = await getAuthSession();
-    if (!session) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
 
     const { id } = await params;
     
@@ -31,7 +25,7 @@ export async function GET(
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${session.sessionToken}`,
+          Authorization: session?.sessionToken ? `Bearer ${session.sessionToken}` : "",
         },
       }
     );

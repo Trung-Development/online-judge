@@ -65,12 +65,6 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const session = await getAuthSession();
-    if (!session) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
 
     const { searchParams } = new URL(request.url);
     const pageStr = searchParams.get("page") || "1";
@@ -110,7 +104,7 @@ export async function GET(request: NextRequest) {
       {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${session.sessionToken}`,
+          Authorization: session?.sessionToken ? `Bearer ${session.sessionToken}` : "",
         },
       }
     );
