@@ -11,6 +11,7 @@ export const getShikiLanguage = (dmojLanguage: string): string => {
     'CPP14': 'cpp',
     'CPP17': 'cpp',
     'CPP20': 'cpp',
+    'CPP23': 'cpp',
     'CLANGX': 'cpp',
     
     // Python variants
