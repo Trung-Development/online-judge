@@ -26,7 +26,9 @@ import {
   faPrint,
   faChevronRight,
   faChevronDown,
-  faCog,
+  faDatabase,
+  faRectangleList,
+  faAddressBook,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { IProblemPageData } from "@/types";
@@ -44,13 +46,16 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
   const [langExpanded, setLangExpanded] = useState(true); // default open
 
   // Check if current user can edit test cases
-  const canUserEditTestcases = !problem.isLocked && user && canEditProblemTestcases(
-    user.perms,
-    problem.author,
-    problem.curator,
-    problem.tester || [],
-    user.id
-  );
+  const canUserEditTestcases =
+    !problem.isLocked &&
+    user &&
+    canEditProblemTestcases(
+      user.perms,
+      problem.author,
+      problem.curator,
+      problem.tester || [],
+      user.id
+    );
 
   const problemLocked = problem.isLocked;
 
@@ -151,20 +156,35 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
             {/* Mobile: Show as card, Desktop: Show as sidebar */}
             <div className="lg:space-y-4">
               {/* Buttons */}
-              <div aria-disabled className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 text-lg">
+              <div
+                aria-disabled
+                className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 text-lg"
+              >
                 <div className="flex flex-col gap-2">
-                  {problemLocked ? (<Button disabled className="w-full">
-                    Problem locked
-                  </Button>) : <Button asChild className="w-full">
-                    <Link href={`/problem/${slug}/submit`}>Submit</Link>
-                  </Button>}
+                  {problemLocked ? (
+                    <Button disabled className="w-full">
+                      Problem locked
+                    </Button>
+                  ) : (
+                    <Button asChild className="w-full">
+                      <Link href={`/problem/${slug}/submit`}>Submit</Link>
+                    </Button>
+                  )}
                   <Button variant="outline" asChild className="w-full">
                     <Link href={`/submissions?problemSlug=${slug}`}>
+                      <FontAwesomeIcon
+                        icon={faRectangleList}
+                        className="w-4 h-4 mr-2"
+                      />
                       All Submissions
                     </Link>
                   </Button>
                   <Button variant="outline" asChild className="w-full">
                     <Link href={`/submissions?problemSlug=${slug}&author=me`}>
+                      <FontAwesomeIcon
+                        icon={faAddressBook}
+                        className="w-4 h-4 mr-2"
+                      />
                       My Submissions
                     </Link>
                   </Button>
@@ -178,8 +198,11 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                   {canUserEditTestcases && (
                     <Button variant="outline" asChild className="w-full">
                       <Link href={`/problem/${slug}/testcases`}>
-                        <FontAwesomeIcon icon={faCog} className="w-4 h-4 mr-2" />
-                        Edit Test Cases
+                        <FontAwesomeIcon
+                          icon={faDatabase}
+                          className="w-4 h-4 mr-2"
+                        />
+                        Edit test data
                       </Link>
                     </Button>
                   )}
@@ -272,10 +295,10 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                           return (
                             <React.Fragment key={username}>
                               <Link
-                                  href={`/user/${username}`}
-                                  className="text-foreground underline"
+                                href={`/user/${username}`}
+                                className="text-foreground underline"
                               >
-                                  {username}
+                                {username}
                               </Link>
                               {idx < problem.author.length - 1 && ", "}
                             </React.Fragment>
@@ -309,31 +332,35 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                       </div>
                     </div>
                   </div>
-                  {problem.problemSource ? <div>
-                    <button
-                      onClick={() => setSourceExpanded(!sourceExpanded)}
-                      className="flex items-center gap-2 w-full text-left hover:opacity-70 transition-opacity"
-                    >
-                      <FontAwesomeIcon
-                        icon={sourceExpanded ? faChevronDown : faChevronRight}
-                        className="text-primary w-3 transition-transform duration-200"
-                      />
-                      <span className="font-bold text-foreground">
-                        Problem source
-                      </span>
-                    </button>
-                    <div
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        sourceExpanded
-                          ? "max-h-32 opacity-100 mt-2"
-                          : "max-h-0 opacity-0"
-                      }`}
-                    >
-                      <div className="text-foreground ml-5">
-                        {problem.problemSource}
+                  {problem.problemSource ? (
+                    <div>
+                      <button
+                        onClick={() => setSourceExpanded(!sourceExpanded)}
+                        className="flex items-center gap-2 w-full text-left hover:opacity-70 transition-opacity"
+                      >
+                        <FontAwesomeIcon
+                          icon={sourceExpanded ? faChevronDown : faChevronRight}
+                          className="text-primary w-3 transition-transform duration-200"
+                        />
+                        <span className="font-bold text-foreground">
+                          Problem source
+                        </span>
+                      </button>
+                      <div
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                          sourceExpanded
+                            ? "max-h-32 opacity-100 mt-2"
+                            : "max-h-0 opacity-0"
+                        }`}
+                      >
+                        <div className="text-foreground ml-5">
+                          {problem.problemSource}
+                        </div>
                       </div>
                     </div>
-                  </div> : <></>}
+                  ) : (
+                    <></>
+                  )}
                   <div>
                     <button
                       onClick={() => setLangExpanded(!langExpanded)}
