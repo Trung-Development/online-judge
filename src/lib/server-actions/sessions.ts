@@ -1,5 +1,7 @@
 "use server";
 
+import { env } from "../env";
+
 export interface SessionData {
   id: string;
   userAgent: string;
@@ -11,11 +13,10 @@ export interface SessionData {
 
 // Server action to validate session
 export async function validateUserSession(
-  sessionToken: string,
+  sessionToken: string
 ): Promise<boolean> {
   try {
-    const apiBase =
-      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const apiBase = env.API_ENDPOINT;
     if (!apiBase) {
       return false;
     }
@@ -24,7 +25,7 @@ export async function validateUserSession(
       new URL("/client/users/me", apiBase).toString(),
       {
         headers: { Authorization: `Bearer ${sessionToken}` },
-      },
+      }
     );
 
     return response.ok;
@@ -36,11 +37,10 @@ export async function validateUserSession(
 
 // Server action to get current session
 export async function getCurrentSession(
-  sessionToken: string,
+  sessionToken: string
 ): Promise<SessionData | null> {
   try {
-    const apiBase =
-      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const apiBase = env.API_ENDPOINT;
 
     if (!apiBase) {
       throw new Error("API base URL is not defined");
@@ -50,7 +50,7 @@ export async function getCurrentSession(
       new URL("/client/sessions/me", apiBase).toString(),
       {
         headers: { Authorization: `Bearer ${sessionToken}` },
-      },
+      }
     );
 
     if (response.ok) {
@@ -65,11 +65,11 @@ export async function getCurrentSession(
 
 // Server action to logout all sessions
 export async function logoutAllSessions(
-  sessionToken: string,
+  sessionToken: string
 ): Promise<boolean> {
   try {
-    const apiBase =
-      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const apiBase = env.API_ENDPOINT;
+
     if (!apiBase) {
       throw new Error("API base URL is not defined");
     }
@@ -79,7 +79,7 @@ export async function logoutAllSessions(
       {
         method: "DELETE",
         headers: { Authorization: `Bearer ${sessionToken}` },
-      },
+      }
     );
 
     return response.ok;
@@ -91,11 +91,11 @@ export async function logoutAllSessions(
 
 // Server action to get all active sessions
 export async function getActiveSessions(
-  sessionToken: string,
+  sessionToken: string
 ): Promise<SessionData[]> {
   try {
-    const apiBase =
-      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const apiBase = env.API_ENDPOINT;
+
     if (!apiBase) {
       throw new Error("API base URL is not defined");
     }
@@ -104,7 +104,7 @@ export async function getActiveSessions(
       new URL("/client/sessions/all", apiBase).toString(),
       {
         headers: { Authorization: `Bearer ${sessionToken}` },
-      },
+      }
     );
 
     if (response.ok) {

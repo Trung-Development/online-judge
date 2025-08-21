@@ -1,4 +1,5 @@
 import { TAllowedLang, TProblemStatus } from "@/types";
+import { env } from "../env";
 
 export interface ISubmissionsData {
   timestamp: number; // UNIX timestamp in milliseconds
@@ -28,8 +29,7 @@ export interface IUsersListData {
 }
 
 export async function getUsers() {
-  const apiBase =
-    process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+  const apiBase = env.API_ENDPOINT;
 
   if (!apiBase) {
     throw new Error("API base URL is not defined");
@@ -51,8 +51,7 @@ export async function getUsers() {
 }
 
 export async function getUser(username: string) {
-  const apiBase =
-    process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+  const apiBase = env.API_ENDPOINT;
 
   if (!apiBase) {
     throw new Error("API base URL is not defined");
@@ -77,8 +76,7 @@ export async function getUser(username: string) {
 }
 
 export async function getUsersList(): Promise<IUsersListData[]> {
-  const apiBase =
-    process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+  const apiBase = env.API_ENDPOINT;
 
   if (!apiBase) {
     throw new Error("API base URL is not defined");

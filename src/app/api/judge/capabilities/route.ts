@@ -1,8 +1,9 @@
+import { env } from '@/lib/env';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const apiEndpoint = process.env.API_ENDPOINT || 'http://localhost:50829';
+    const apiEndpoint = env.API_ENDPOINT;
     const response = await fetch(`${apiEndpoint}/client/judge/capabilities`, {
       method: 'GET',
       headers: {

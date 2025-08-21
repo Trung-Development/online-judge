@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { env } from "../env";
 
 interface SignupData {
   fullname: string;
@@ -79,8 +80,7 @@ export async function getClientIP(): Promise<string> {
 // Server action for user registration
 export async function registerUser(data: SignupData): Promise<SignupResult> {
   try {
-    const apiBase =
-      process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const apiBase = env.API_ENDPOINT;
     if (!apiBase) {
       return { success: false, error: "API endpoint not configured" };
     }

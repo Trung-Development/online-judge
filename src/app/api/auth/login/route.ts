@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { setAuthSession } from "@/lib/auth";
+import { env } from "@/lib/env";
 
 export const runtime = "edge";
 
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     // Get JWT session token from backend
     const sessionRes = await fetch(
-      new URL("/client/sessions/", process.env.API_ENDPOINT!).toString(),
+      new URL("/client/sessions/", env.API_ENDPOINT).toString(),
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     // Get user data from /client/users/me using the session token
     const userRes = await fetch(
-      new URL("/client/users/me", process.env.API_ENDPOINT!).toString(),
+      new URL("/client/users/me", env.API_ENDPOINT).toString(),
       {
         headers: { Authorization: `Bearer ${sessionToken}` },
       },

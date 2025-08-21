@@ -21,6 +21,7 @@ import { useAuth } from "@/components/AuthProvider";
 import dynamic from "next/dynamic";
 import Loading from "@/app/loading";
 import { AlertCircle } from "lucide-react";
+import { env } from "@/lib/env";
 
 const Turnstile = dynamic(() => import("next-turnstile").then(mod => mod.Turnstile), {
   ssr: false,
@@ -42,7 +43,7 @@ export default function LoginPage() {
     "success" | "error" | "expired" | "required"
   >("required");
 
-  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
+  const turnstileSiteKey = env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 
   useEffect(() => {
     setMounted(true);

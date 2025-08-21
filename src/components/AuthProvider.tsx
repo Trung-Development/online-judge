@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { User } from "@/lib/auth";
+import { env } from "@/lib/env";
 
 export interface AuthContextType {
   user: User | null;
@@ -66,7 +67,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Call backend to delete session
     if (sessionToken) {
       try {
-        const apiBase = process.env.NEXT_PUBLIC_API_ENDPOINT;
+        const apiBase = env.API_ENDPOINT;
         if (apiBase) {
           await fetch(new URL("/client/sessions/me", apiBase).toString(), {
             method: "DELETE",

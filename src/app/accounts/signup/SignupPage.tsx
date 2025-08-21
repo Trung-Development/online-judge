@@ -46,8 +46,8 @@ import {
 import { cn } from "@/lib/utils";
 import Loading from "@/app/loading";
 import { registerUser } from "@/lib/server-actions/auth";
-
 import { AlertCircle } from "lucide-react";
+import { env } from "@/lib/env";
 
 const Turnstile = dynamic(() => import("next-turnstile").then(mod => mod.Turnstile), {
   ssr: false,
@@ -75,7 +75,7 @@ export default function SignupPage() {
     "success" | "error" | "expired" | "required"
   >("required");
   const formRef = useRef<HTMLFormElement>(null);
-  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
+  const turnstileSiteKey = env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 
   // Redirect if already logged in
   useEffect(() => {
