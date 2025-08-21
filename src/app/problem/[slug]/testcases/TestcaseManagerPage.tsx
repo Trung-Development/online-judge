@@ -55,7 +55,7 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
 
   const handleSave = async () => {
     if (!sessionToken) {
-      setError("You must be logged in to save changes.");
+      setError("You must be logged in to make changes.");
       return;
     }
 
@@ -96,7 +96,7 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
           <FontAwesomeIcon icon={faExclamationTriangle} className="w-12 h-12 text-red-500 mb-4" />
           <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
           <p className="text-muted-foreground mb-4">
-            You don&apos;t have permission to edit test cases for this problem.
+            You don&apos;t have the permission to edit test cases for this problem.
           </p>
           <Button asChild>
             <Link href={`/problem/${slug}`}>
@@ -180,7 +180,6 @@ export default function TestcaseManagerPage({ problem, slug }: TestcaseManagerPa
               </div>
             </div>
 
-            <div className="space-y-4">
             <div className="flex items-start space-x-3 space-y-0">
               <input
                 type="radio"
