@@ -1,5 +1,4 @@
 import { z, ZodError } from "zod";
-import "dotenv/config";
 
 const envSchema = z.object({
   API_ENDPOINT: z.url("API_ENDPOINT must be a valid URL"),
@@ -13,7 +12,7 @@ let env: z.infer<typeof envSchema>;
 
 try {
   env = envSchema.parse({
-    API_ENDPOINT: process.env.API_ENDPOINT,
+    API_ENDPOINT: process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT,
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
   });
 } catch (error) {
