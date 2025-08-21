@@ -184,6 +184,9 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
 
         if (!response.ok) {
           const errorData = await response.json();
+          if(errorData.error == 'SUBMISSION_NOT_FOUND' || errorData.error == 'INVALID_SUBMISSION') throw new Error("No submission with the provided ID found. Please double check your spelling or try again later.")
+          if(errorData.error == 'SUBMISSION_NOT_VIEWABLE') throw new Error("You do not have permission to view this submission. Please check your access rights or contact an administrator.");
+
           throw new Error(errorData.error || "Failed to load submission");
         }
 
