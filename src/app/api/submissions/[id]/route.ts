@@ -5,14 +5,14 @@ import { env } from "@/lib/env";
 export const runtime = "edge";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getAuthSession();
 
     const { id } = await params;
-    
+
     if (!id || isNaN(parseInt(id))) {
       return NextResponse.json(
         { error: "Valid submission ID is required" },
@@ -25,7 +25,7 @@ export async function GET(
       {
         method: "GET",
         headers: {
-          Authorization: session?.sessionToken ? `Bearer ${session.sessionToken}` : "",
+          ...(session?.sessionToken && { Authorization: `Bearer ${session.sessionToken}` }),
         },
       }
     );

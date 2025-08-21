@@ -7,12 +7,6 @@ export const runtime = "edge";
 export async function POST(request: NextRequest) {
   try {
     const session = await getAuthSession();
-    if (!session) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
 
     const body = await request.json();
     const { problemSlug, language, sourceCode } = body;
@@ -28,11 +22,13 @@ export async function POST(request: NextRequest) {
       problemSlug: problemSlug, // Backend now expects problemSlug instead of problemId
       language,
       code: sourceCode,
-    };    const response = await fetch(new URL("/client/submissions", env.API_ENDPOINT).toString(), {
+    };
+
+    const response = await fetch(new URL("/client/submissions", env.API_ENDPOINT).toString(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${session.sessionToken}`,
+        ...(session?.sessionToken && { Authorization: `Bearer ${session.sessionToken}` }),
       },
       body: JSON.stringify(submissionPayload),
     });
@@ -46,11 +42,11 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await response.json();
-    
+
     // Backend returns { success: true, data: submission }
     // Frontend expects just the submission data
     const submissionData = result.data || result;
-    
+
     return NextResponse.json(submissionData);
 
   } catch (error) {
@@ -76,14 +72,14 @@ export async function GET(request: NextRequest) {
     // Validate that page and limit are valid integers
     const page = parseInt(pageStr, 10);
     const limit = parseInt(limitStr, 10);
-    
+
     if (isNaN(page) || page < 1) {
       return NextResponse.json(
         { error: "Invalid page parameter" },
         { status: 400 }
       );
     }
-    
+
     if (isNaN(limit) || limit < 1 || limit > 100) {
       return NextResponse.json(
         { error: "Invalid limit parameter (must be 1-100)" },
@@ -104,7 +100,7 @@ export async function GET(request: NextRequest) {
       {
         method: "GET",
         headers: {
-          Authorization: session?.sessionToken ? `Bearer ${session.sessionToken}` : "",
+          ...(session?.sessionToken && { Authorization: `Bearer ${session.sessionToken}` }),
         },
       }
     );
