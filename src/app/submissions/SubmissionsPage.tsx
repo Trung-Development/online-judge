@@ -54,7 +54,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function SubmissionsPage() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -114,11 +114,17 @@ export default function SubmissionsPage() {
       });
 
       if (problemFilter) params.append("problemSlug", problemFilter);
-      if (isMySubmissions && user?.username) {
+      
+      // Handle "me" filter specifically
+      if (isMySubmissions) {
+        if (!isAuthenticated || !user?.username) {
+          throw new Error("Please log in to view your submissions");
+        }
         params.append("author", user.username);
       } else if (authorFilter) {
         params.append("author", authorFilter);
       }
+      
       if (verdictFilter && verdictFilter !== "all") params.append("verdict", verdictFilter);
 
       const response = await fetch(`/api/submissions?${params}`);
@@ -130,14 +136,20 @@ export default function SubmissionsPage() {
       setSubmissions(result.data || []);
       setTotalPages(result.pagination?.totalPages || 0);
       setCurrentPage(result.pagination?.page || 1);
+      setError(null); // Clear any previous errors on successful fetch
     } catch (err) {
       if (!silent) setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [problemFilter, authorFilter, verdictFilter, isMySubmissions, user?.username]);
+  }, [problemFilter, authorFilter, verdictFilter, isMySubmissions, isAuthenticated, user?.username]);
 
   useEffect(() => {
+    // Don't fetch if we're waiting for auth and need user info for "me" filter
+    if (isMySubmissions && authLoading) {
+      return;
+    }
+    
     if (isMySubmissions && !isAuthenticated) {
       setError("Please log in to view your submissions");
       setLoading(false);
@@ -146,10 +158,10 @@ export default function SubmissionsPage() {
     
     // Set initial filters from URL params
     if (problemSlug) setProblemFilter(problemSlug);
-    if (isMySubmissions) setAuthorFilter("");
+    if (isMySubmissions) setAuthorFilter(""); // Clear author filter when showing "my submissions"
     
     fetchSubmissions(1);
-  }, [problemSlug, isMySubmissions, isAuthenticated, user, fetchSubmissions]);
+  }, [problemSlug, isMySubmissions, isAuthenticated, user, fetchSubmissions, authLoading]);
 
   // Polling effect - refresh submissions every 3 second
   useEffect(() => {
@@ -194,6 +206,19 @@ export default function SubmissionsPage() {
     return "All Submissions";
   };
 
+  if (isMySubmissions && authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Checking authentication...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -202,7 +227,7 @@ export default function SubmissionsPage() {
             <p className="text-red-600 mb-4">{error}</p>
             {!isAuthenticated && isMySubmissions && (
               <Button asChild>
-                <Link href="/accounts/login">Login</Link>
+                <Link href={`/accounts/login?callbackUrl=${encodeURIComponent('/submissions?author=me')}`}>Login</Link>
               </Button>
             )}
           </CardContent>
