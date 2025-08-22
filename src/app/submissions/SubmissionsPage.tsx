@@ -115,13 +115,8 @@ export default function SubmissionsPage() {
 
       if (problemFilter) params.append("problemSlug", problemFilter);
       
-      // Handle "me" filter specifically
-      if (isMySubmissions) {
-        if (!isAuthenticated || !user?.username) {
-          throw new Error("Please log in to view your submissions");
-        }
-        params.append("author", user.username);
-      } else if (authorFilter) {
+      // Use authorFilter directly - it should contain the username whether it's "me" or a specific user
+      if (authorFilter) {
         params.append("author", authorFilter);
       }
       
@@ -142,7 +137,7 @@ export default function SubmissionsPage() {
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [problemFilter, authorFilter, verdictFilter, isMySubmissions, isAuthenticated, user?.username]);
+  }, [problemFilter, authorFilter, verdictFilter]);
 
   useEffect(() => {
     // Don't fetch if we're waiting for auth and need user info for "me" filter
@@ -158,10 +153,17 @@ export default function SubmissionsPage() {
     
     // Set initial filters from URL params
     if (problemSlug) setProblemFilter(problemSlug);
-    if (isMySubmissions) setAuthorFilter(""); // Clear author filter when showing "my submissions"
+    
+    // If it's "me", set the author filter to the current user's username
+    if (isMySubmissions && user?.username) {
+      setAuthorFilter(user.username);
+    } else if (authorParam && authorParam !== "me") {
+      // If there's a specific author in URL (not "me"), use that
+      setAuthorFilter(authorParam);
+    }
     
     fetchSubmissions(1);
-  }, [problemSlug, isMySubmissions, isAuthenticated, user, fetchSubmissions, authLoading]);
+  }, [problemSlug, isMySubmissions, isAuthenticated, user, fetchSubmissions, authLoading, authorParam]);
 
   // Polling effect - refresh submissions every 3 second
   useEffect(() => {
