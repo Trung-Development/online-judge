@@ -597,23 +597,23 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-1">
-                {availableLanguages.length > 0 ? (
-                  availableLanguages
-                    .filter((lang) => lang.value && lang.value.trim() !== "")
-                    .map((lang) => (
+                {languages
+                  .filter(lang => 
+                    problem.allowedLanguages.includes(lang.value as TAllowedLang) &&
+                    lang.value && 
+                    lang.value.trim() !== ""
+                  )
+                  .map((lang) => (
                     <div key={lang.value} className="text-sm flex items-center gap-2">
                       <FontAwesomeIcon 
                         icon={isExecutorAvailable(lang.value) ? faCheck : faTimes} 
                         className={`w-3 h-3 ${isExecutorAvailable(lang.value) ? 'text-green-600' : 'text-red-600'}`} 
                       />
-                      {lang.label}
+                      <span className={isExecutorAvailable(lang.value) ? '' : 'text-muted-foreground'}>
+                        {lang.label}
+                      </span>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-sm text-muted-foreground">
-                    No languages available on connected judges
-                  </div>
-                )}
+                  ))}
               </div>
             </CardContent>
           </Card>
