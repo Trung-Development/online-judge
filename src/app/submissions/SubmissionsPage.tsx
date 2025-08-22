@@ -57,17 +57,23 @@ export default function SubmissionsPage() {
   const { isAuthenticated, user, isLoading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [allSubmissions, setAllSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [totalPages, setTotalPages] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
   
-  // Filter states
+  // Filter states - Initialize from URL params immediately
   const [problemFilter, setProblemFilter] = useState(searchParams.get("problemSlug") || "");
-  const [authorFilter, setAuthorFilter] = useState("");
+  const [authorFilter, setAuthorFilter] = useState(
+    searchParams.get("author") && searchParams.get("author") !== "me" 
+      ? searchParams.get("author") || ""
+      : ""
+  );
   const [verdictFilter, setVerdictFilter] = useState("");
   const [isPolling, setIsPolling] = useState(true);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
 
   const problemSlug = searchParams.get("problemSlug");
   const authorParam = searchParams.get("author");
@@ -105,40 +111,92 @@ export default function SubmissionsPage() {
     SK: "Skipped",
   };
 
-  const fetchSubmissions = React.useCallback(async (page: number = 1, silent: boolean = false) => {
+  const fetchSubmissions = React.useCallback(async (silent: boolean = false) => {
     try {
       if (!silent) setLoading(true);
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: "20",
-      });
-
-      if (problemFilter) params.append("problemSlug", problemFilter);
       
-      // Use authorFilter directly - it should contain the username whether it's "me" or a specific user
-      if (authorFilter) {
-        params.append("author", authorFilter);
+      // Fetch submissions in batches since API limits to 100 per request
+      let allSubs: Submission[] = [];
+      let page = 1;
+      let hasMore = true;
+      
+      while (hasMore && page <= 10) { // Limit to 10 pages (1000 submissions max)
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: "100", // Maximum allowed by API
+        });
+
+        const url = `/api/submissions?${params}`;
+        console.log(`Fetching submissions page ${page} from:`, url);
+
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch submissions (page ${page}): ${response.status} ${response.statusText}`);
+        }
+
+        const result: SubmissionsResponse = await response.json();
+        const pageData = result.data || [];
+        
+        allSubs = [...allSubs, ...pageData];
+        
+        // Check if we have more pages
+        hasMore = pageData.length === 100 && page < (result.pagination?.totalPages || 0);
+        page++;
       }
       
-      if (verdictFilter && verdictFilter !== "all") params.append("verdict", verdictFilter);
-
-      const response = await fetch(`/api/submissions?${params}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch submissions");
-      }
-
-      const result: SubmissionsResponse = await response.json();
-      setSubmissions(result.data || []);
-      setTotalPages(result.pagination?.totalPages || 0);
-      setCurrentPage(result.pagination?.page || 1);
-      setError(null); // Clear any previous errors on successful fetch
+      console.log(`Fetched ${allSubs.length} total submissions`);
+      setAllSubmissions(allSubs);
+      setError(null);
     } catch (err) {
+      console.error("Error fetching submissions:", err);
       if (!silent) setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       if (!silent) setLoading(false);
     }
-  }, [problemFilter, authorFilter, verdictFilter]);
+  }, []);
 
+  // Client-side filtering logic
+  const filteredSubmissions = React.useMemo(() => {
+    let filtered = allSubmissions;
+
+    // Problem filter
+    if (problemFilter.trim()) {
+      filtered = filtered.filter(sub => 
+        sub.problem.slug.toLowerCase().includes(problemFilter.toLowerCase()) ||
+        sub.problem.name.toLowerCase().includes(problemFilter.toLowerCase())
+      );
+    }
+
+    // Author filter
+    if (authorFilter.trim()) {
+      filtered = filtered.filter(sub => 
+        sub.author?.username?.toLowerCase().includes(authorFilter.toLowerCase())
+      );
+    }
+
+    // Verdict filter
+    if (verdictFilter && verdictFilter !== "all") {
+      filtered = filtered.filter(sub => sub.verdict === verdictFilter);
+    }
+
+    return filtered;
+  }, [allSubmissions, problemFilter, authorFilter, verdictFilter]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredSubmissions.length / itemsPerPage);
+  const paginatedSubmissions = filteredSubmissions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Separate effect to handle setting username when "me" is used
+  useEffect(() => {
+    if (isMySubmissions && user?.username && !authorFilter) {
+      setAuthorFilter(user.username);
+    }
+  }, [isMySubmissions, user?.username, authorFilter]);
+
+  // Main effect to fetch submissions
   useEffect(() => {
     // Don't fetch if we're waiting for auth and need user info for "me" filter
     if (isMySubmissions && authLoading) {
@@ -151,33 +209,22 @@ export default function SubmissionsPage() {
       return;
     }
     
-    // Set initial filters from URL params
-    if (problemSlug) setProblemFilter(problemSlug);
-    
-    // If it's "me", set the author filter to the current user's username
-    if (isMySubmissions && user?.username) {
-      setAuthorFilter(user.username);
-    } else if (authorParam && authorParam !== "me") {
-      // If there's a specific author in URL (not "me"), use that
-      setAuthorFilter(authorParam);
-    }
-    
-    fetchSubmissions(1);
-  }, [problemSlug, isMySubmissions, isAuthenticated, user, fetchSubmissions, authLoading, authorParam]);
+    fetchSubmissions();
+  }, [isAuthenticated, authLoading, fetchSubmissions, isMySubmissions]);
 
-  // Polling effect - refresh submissions every 3 second
+  // Polling effect - refresh submissions every 3 seconds
   useEffect(() => {
     if (!isPolling) return;
 
     const interval = setInterval(() => {
-      fetchSubmissions(currentPage, true); // Silent update during polling
+      fetchSubmissions(true); // Silent update during polling
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [isPolling, currentPage, fetchSubmissions]);
+  }, [isPolling, fetchSubmissions]);
 
   const handleSearch = () => {
-    fetchSubmissions(1);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   const formatTime = (s: number) => {
@@ -279,7 +326,7 @@ export default function SubmissionsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="problem">Problem</Label>
                 <Input
@@ -289,17 +336,22 @@ export default function SubmissionsPage() {
                   onChange={(e) => setProblemFilter(e.target.value)}
                 />
               </div>
-              {!isMySubmissions && (
-                <div>
-                  <Label htmlFor="author">Author</Label>
-                  <Input
-                    id="author"
-                    placeholder="Username"
-                    value={authorFilter}
-                    onChange={(e) => setAuthorFilter(e.target.value)}
-                  />
-                </div>
-              )}
+              <div>
+                <Label htmlFor="author">Author</Label>
+                <Input
+                  id="author"
+                  placeholder="Username"
+                  value={authorFilter}
+                  onChange={(e) => setAuthorFilter(e.target.value)}
+                  readOnly={isMySubmissions}
+                  className={isMySubmissions ? "bg-muted" : ""}
+                />
+                {isMySubmissions && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Showing your submissions
+                  </p>
+                )}
+              </div>
               <div>
                 <Label htmlFor="verdict">Verdict</Label>
                 <Select value={verdictFilter} onValueChange={setVerdictFilter}>
@@ -316,12 +368,12 @@ export default function SubmissionsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-end">
-                <Button onClick={handleSearch} className="w-full">
-                  <FontAwesomeIcon icon={faSearch} className="w-4 h-4 mr-2" />
-                  Search
-                </Button>
-              </div>
+            </div>
+            <div className="flex justify-start mt-4">
+              <Button onClick={handleSearch} className="w-full md:w-auto">
+                <FontAwesomeIcon icon={faSearch} className="w-4 h-4 mr-2" />
+                Search
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -334,7 +386,7 @@ export default function SubmissionsPage() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                 <p className="mt-4">Loading submissions...</p>
               </div>
-            ) : !submissions || submissions.length === 0 ? (
+            ) : !paginatedSubmissions || paginatedSubmissions.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
                 No submissions found
               </div>
@@ -355,7 +407,7 @@ export default function SubmissionsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {submissions && submissions.map((submission) => (
+                    {paginatedSubmissions.map((submission) => (
                       <tr key={submission.id} className="border-b hover:bg-muted/50">
                         <td className="p-4">
                           <Link
@@ -419,7 +471,7 @@ export default function SubmissionsPage() {
             <Button
               variant="outline"
               disabled={currentPage === 1}
-              onClick={() => fetchSubmissions(currentPage - 1)}
+              onClick={() => setCurrentPage(currentPage - 1)}
             >
               Previous
             </Button>
@@ -429,7 +481,7 @@ export default function SubmissionsPage() {
             <Button
               variant="outline"
               disabled={currentPage === totalPages}
-              onClick={() => fetchSubmissions(currentPage + 1)}
+              onClick={() => setCurrentPage(currentPage + 1)}
             >
               Next
             </Button>
