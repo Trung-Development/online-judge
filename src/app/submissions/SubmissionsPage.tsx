@@ -47,30 +47,30 @@ interface SubmissionsResponse {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-    return {
-      title: `Submission list - ${Config.siteDescription}`,
-      description: `View public submissions of ${Config.sitename}`,
-    };
+  return {
+    title: `Submission list - ${Config.siteDescription}`,
+    description: `View public submissions of ${Config.sitename}`,
+  };
 }
 
 export default function SubmissionsPage() {
   const { isAuthenticated, user, isLoading: authLoading } = useAuth();
   const searchParams = useSearchParams();
-  
+
   const [allSubmissions, setAllSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Filter states - Initialize from URL params immediately
   const [problemFilter, setProblemFilter] = useState(searchParams.get("problemSlug") || "");
   const [authorFilter, setAuthorFilter] = useState(
-    searchParams.get("author") && searchParams.get("author") !== "me" 
+    searchParams.get("author") && searchParams.get("author") !== "me"
       ? searchParams.get("author") || ""
       : ""
   );
   const [verdictFilter, setVerdictFilter] = useState("");
   const [isPolling, setIsPolling] = useState(true);
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
@@ -114,12 +114,12 @@ export default function SubmissionsPage() {
   const fetchSubmissions = React.useCallback(async (silent: boolean = false) => {
     try {
       if (!silent) setLoading(true);
-      
+
       // Fetch submissions in batches since API limits to 100 per request
       let allSubs: Submission[] = [];
       let page = 1;
       let hasMore = true;
-      
+
       while (hasMore && page <= 10) { // Limit to 10 pages (1000 submissions max)
         const params = new URLSearchParams({
           page: page.toString(),
@@ -136,14 +136,14 @@ export default function SubmissionsPage() {
 
         const result: SubmissionsResponse = await response.json();
         const pageData = result.data || [];
-        
+
         allSubs = [...allSubs, ...pageData];
-        
+
         // Check if we have more pages
         hasMore = pageData.length === 100 && page < (result.pagination?.totalPages || 0);
         page++;
       }
-      
+
       console.log(`Fetched ${allSubs.length} total submissions`);
       setAllSubmissions(allSubs);
       setError(null);
@@ -161,7 +161,7 @@ export default function SubmissionsPage() {
 
     // Problem filter
     if (problemFilter.trim()) {
-      filtered = filtered.filter(sub => 
+      filtered = filtered.filter(sub =>
         sub.problem.slug.toLowerCase().includes(problemFilter.toLowerCase()) ||
         sub.problem.name.toLowerCase().includes(problemFilter.toLowerCase())
       );
@@ -169,7 +169,7 @@ export default function SubmissionsPage() {
 
     // Author filter
     if (authorFilter.trim()) {
-      filtered = filtered.filter(sub => 
+      filtered = filtered.filter(sub =>
         sub.author?.username?.toLowerCase().includes(authorFilter.toLowerCase())
       );
     }
@@ -202,13 +202,13 @@ export default function SubmissionsPage() {
     if (isMySubmissions && authLoading) {
       return;
     }
-    
+
     if (isMySubmissions && !isAuthenticated) {
       setError("Please log in to view your submissions");
       setLoading(false);
       return;
     }
-    
+
     fetchSubmissions();
   }, [isAuthenticated, authLoading, fetchSubmissions, isMySubmissions]);
 
@@ -244,7 +244,7 @@ export default function SubmissionsPage() {
     } catch {
       return "Invalid Date";
     }
-  };  const getPageTitle = () => {
+  }; const getPageTitle = () => {
     if (problemSlug && isMySubmissions) {
       return `My Submissions for Problem ${problemSlug}`;
     } else if (problemSlug) {
@@ -318,45 +318,50 @@ export default function SubmissionsPage() {
         </div>
 
         {/* Filters */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <Card className="mb-6 shadow-sm rounded-2xl border">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-lg">
               <FontAwesomeIcon icon={faFilter} className="w-4 h-4" />
               Filters
             </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Narrow down your search by problem, author, or verdict
+            </p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="problem">Problem</Label>
+                <Label htmlFor="problem" className="mb-1 block">Problem</Label>
                 <Input
                   id="problem"
-                  placeholder="Problem slug"
+                  placeholder="Enter problem slug"
                   value={problemFilter}
                   onChange={(e) => setProblemFilter(e.target.value)}
                 />
               </div>
+
               <div>
-                <Label htmlFor="author">Author</Label>
+                <Label htmlFor="author" className="mb-1 block">Author</Label>
                 <Input
                   id="author"
                   placeholder="Username"
                   value={authorFilter}
                   onChange={(e) => setAuthorFilter(e.target.value)}
                   readOnly={isMySubmissions}
-                  className={isMySubmissions ? "bg-muted" : ""}
+                  className={isMySubmissions ? "bg-muted text-muted-foreground cursor-not-allowed" : ""}
                 />
                 {isMySubmissions && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Showing your submissions
+                    Showing only your submissions
                   </p>
                 )}
               </div>
+
               <div>
-                <Label htmlFor="verdict">Verdict</Label>
+                <Label htmlFor="verdict" className="mb-1 block">Verdict</Label>
                 <Select value={verdictFilter} onValueChange={setVerdictFilter}>
                   <SelectTrigger>
-                    <SelectValue placeholder="All verdicts" />
+                    <SelectValue placeholder="Select verdict" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All verdicts</SelectItem>
@@ -369,10 +374,11 @@ export default function SubmissionsPage() {
                 </Select>
               </div>
             </div>
-            <div className="flex justify-start mt-4">
-              <Button onClick={handleSearch} className="w-full md:w-auto">
+
+            <div className="flex justify-end mt-6">
+              <Button onClick={handleSearch} className="w-full sm:w-auto">
                 <FontAwesomeIcon icon={faSearch} className="w-4 h-4 mr-2" />
-                Search
+                Apply Filters
               </Button>
             </div>
           </CardContent>
