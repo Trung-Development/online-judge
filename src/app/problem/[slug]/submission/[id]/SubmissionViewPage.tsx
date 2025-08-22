@@ -26,6 +26,7 @@ import {
   faStop,
   faChevronDown,
   faChevronRight,
+  faServer,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface SubmissionViewPageProps {
@@ -64,6 +65,9 @@ interface SubmissionDetail {
     id: string;
     username: string;
   };
+  judge: {
+    name: string;
+  }
 }
 
 export default function SubmissionViewPage({ problem, slug, submissionId }: SubmissionViewPageProps) {
@@ -191,6 +195,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
         }
 
         const submissionData = await response.json();
+        console.log(submissionData)
         setSubmission(submissionData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
@@ -584,6 +589,16 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                   {submission.isLocked ? "Private" : "Public"}
                 </span>
               </div>
+
+              {submission?.judge?.name && (
+                <div className="flex items-center gap-2">
+                  <FontAwesomeIcon icon={faServer} className="text-muted-foreground w-4" />
+                  <span className="font-medium">Judge:</span>
+                  <span className="text-sm">
+                    {submission.judge.name}
+                  </span>
+                </div>
+              )}
             </CardContent>
           </Card>
 
