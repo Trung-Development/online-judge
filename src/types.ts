@@ -54,6 +54,8 @@ export type TAllowedLang =
   | "KOTLIN"
   | "PIKE"
   | "CPP17"
+  | "CPP23"
+  | "CPPTHEMIS"
   | "SBCL"
   | "C11"
   | "ZIG"

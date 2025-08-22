@@ -426,4 +426,12 @@ export const languages = [
     extension: "cpp",
     commonName: "C++",
   },
+  {
+    value: "CPPTHEMIS",
+    label: "C++ Themis",
+    template:
+      "#include <bits/stdc++.h>\r\n\r\nusing namespace std;\r\n\r\nint main() {\r\n    return 0;\r\n}",
+    extension: "cpp",
+    commonName: "C++",
+  },
 ].sort((a, b) => a.label.localeCompare(b.label));
