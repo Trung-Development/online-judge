@@ -16,7 +16,7 @@ import Link from "next/link";
 import { MagicCard } from "@/components/magicui/magic-card";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import dynamic from "next/dynamic";
 import Loading from "@/app/loading";
@@ -30,6 +30,7 @@ const Turnstile = dynamic(() => import("next-turnstile").then(mod => mod.Turnsti
 export default function LoginPage() {
   const { theme } = useTheme();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, login, isLoading: authLoading } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
@@ -44,6 +45,7 @@ export default function LoginPage() {
   >("required");
 
   const turnstileSiteKey = env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   useEffect(() => {
     setMounted(true);
@@ -52,9 +54,9 @@ export default function LoginPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (user && !authLoading) {
-      router.push("/");
+      router.push(callbackUrl);
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, callbackUrl]);
 
   // Show loading while checking authentication
   if (authLoading) {
@@ -116,7 +118,7 @@ export default function LoginPage() {
       } else if (result.success) {
         // Login successful, update auth context
         login(result.sessionToken, result.user);
-        router.push("/");
+        router.push(callbackUrl);
       }
     } catch (err) {
       console.error("Login error:", err);

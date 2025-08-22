@@ -57,7 +57,7 @@ interface SubmissionResponse {
 }
 
 export default function SubmitPage({ problem, slug }: SubmitPageProps) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   
   // Judge capabilities for availability checking
@@ -140,12 +140,12 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
     }
   }, [selectedLanguage, code]);
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated (but wait for auth loading to complete)
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push(`/accounts/login?callbackUrl=/problem/${slug}/submit`);
+    if (!authLoading && !isAuthenticated) {
+      router.push(`/accounts/login?callbackUrl=${encodeURIComponent(`/problem/${slug}/submit`)}`);
     }
-  }, [isAuthenticated, router, slug]);
+  }, [isAuthenticated, authLoading, router, slug]);
 
   useEffect(() => {
     if(problem.isLocked) {
@@ -268,6 +268,17 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
   const formatMemory = (kb: number): string => {
     return `${(kb / 1024).toFixed(1)}MB`;
   };
+
+  if (authLoading) {
+    return (
+      <div className="max-w-4xl mx-auto py-8 px-4">
+        <div className="text-center">
+          <FontAwesomeIcon icon={faSpinner} className="w-8 h-8 animate-spin text-muted-foreground mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
