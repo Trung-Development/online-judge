@@ -21,6 +21,8 @@ import {
   faTimes,
   faPlay,
   faExclamationCircle,
+  faGlobeAsia,
+  faClipboardList,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "@/components/AuthProvider";
 import { IProblemPageData, TAllowedLang } from "@/types";
@@ -550,7 +552,10 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
           {/* Problem Summary */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Problem Summary</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FontAwesomeIcon icon={faClipboardList} className="w-4 h-4" />
+                Problem Summary
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2">
@@ -574,7 +579,10 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
           {/* Allowed Languages */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Allowed Languages</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FontAwesomeIcon icon={faGlobeAsia} className="w-4 h-4" />
+                Allowed Languages
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-1">
