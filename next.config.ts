@@ -8,6 +8,30 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [],
     optimizeCss: true,
   },
+  // Force dynamic rendering for all pages
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  webpack: (config, { dev }) => {
+    // Only apply esbuild-loader to our source files, not node_modules or Next.js internals
+    config.module.rules.unshift({
+      test: /\.(ts|tsx|js|jsx)$/,
+      include: [
+        /src/,  // Only process files in src directory
+      ],
+      exclude: /node_modules/,
+      use: {
+        loader: 'esbuild-loader',
+        options: {
+          loader: 'tsx',
+          target: dev ? 'es2017' : 'es2015',
+          jsx: 'automatic',
+        },
+      },
+    });
+
+    return config;
+  },
   async rewrites() {
     return [
       {
