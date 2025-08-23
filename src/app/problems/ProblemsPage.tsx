@@ -64,6 +64,7 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
   const [chosenCategory, setChosenCategory] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1);
   const [showEditorialOnly, setShowEditorialOnly] = useState(false);
+  const [hideSolved, setHideSolved] = useState(false);
   const [showTypes, setShowTypes] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -191,6 +192,11 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
       filtered = filtered.filter((problem) => problem.solution);
     }
 
+    // Hide solved problems filter
+    if (hideSolved && isAuthenticated) {
+      filtered = filtered.filter((problem) => !problem.status?.solved);
+    }
+
     // Category filter
     if (chosenCategory != '') {
       filtered = filtered.filter(
@@ -213,6 +219,8 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
     searchTerm,
     initialProblems,
     showEditorialOnly,
+    hideSolved,
+    isAuthenticated,
     sortField,
     sortOrder,
     sortProblems,
@@ -236,6 +244,17 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
   const getTypeDisplay = (types: string[]) => {
     if (types.length === 0) return "-";
     return types.join(", ");
+  };
+
+  const handleRandomProblem = () => {
+    if (filteredProblems.length === 0) return;
+    
+    // Get a random problem from the filtered list
+    const randomIndex = Math.floor(Math.random() * filteredProblems.length);
+    const randomProblem = filteredProblems[randomIndex];
+    
+    // Open in new tab
+    window.open(`/problem/${randomProblem.code}`, '_blank');
   };
 
   return (
@@ -333,6 +352,23 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
                 </button>
               </div>
 
+              {isAuthenticated && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Hide solved problems</span>
+                  <button
+                    type="button"
+                    onClick={() => setHideSolved(!hideSolved)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${hideSolved ? "bg-primary" : "bg-muted"
+                      }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${hideSolved ? "translate-x-6" : "translate-x-1"
+                        }`}
+                    />
+                  </button>
+                </div>
+              )}
+
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Show problem types</span>
                 <button
@@ -347,6 +383,23 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
                   />
                 </button>
               </div>
+            </div>
+
+            {/* Random Problem Button */}
+            <div className="border-t pt-4">
+              <Button
+                onClick={handleRandomProblem}
+                disabled={filteredProblems.length === 0}
+                className="w-full"
+                variant="outline"
+              >
+                🎲 Random Problem
+                {filteredProblems.length > 0 && (
+                  <span className="ml-2 text-xs text-muted-foreground">
+                    (from {filteredProblems.length} results)
+                  </span>
+                )}
+              </Button>
             </div>
           </CardContent>
         </Card>
