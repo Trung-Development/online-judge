@@ -25,7 +25,7 @@ export default function UserProblemsPage({ userData, username, serverUser }: Use
     const { user: clientUser } = useAuth();
     const currentUser = serverUser || clientUser;
     
-    const ratingValue = userData.totalPoints ? Math.floor(userData.totalPoints / 10) + 1200 : 1200;
+    const ratingValue = userData.rating || 0;
     
     // Group problems by category
     const problemsByCategory: {[key: string]: {code: string, name: string, points: number}[]} = {};
