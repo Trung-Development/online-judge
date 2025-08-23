@@ -8,7 +8,7 @@ export interface User {
   email: string;
   username: string;
   fullname: string;
-  defaultLang: string; // Default language on signup, able to change
+  defaultRuntime: string; // Default runtime on signup, able to change
   perms?: string; // Permission bits as string (from backend)
 }
 
