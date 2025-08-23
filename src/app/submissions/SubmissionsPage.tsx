@@ -337,7 +337,7 @@ export default function SubmissionsPage() {
                 </Label>
                 <Input
                   id="problem"
-                  placeholder="Enter problem slug"
+                  placeholder="Enter problem name or slug"
                   value={problemFilter}
                   onChange={(e) => setProblemFilter(e.target.value)}
                   className="rounded-md"
@@ -372,7 +372,7 @@ export default function SubmissionsPage() {
                 </Label>
                 <Select value={verdictFilter} onValueChange={setVerdictFilter}>
                   <SelectTrigger className="rounded-md">
-                    <SelectValue placeholder="Select verdict" />
+                    <SelectValue placeholder="Select a verdict" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All verdicts</SelectItem>
