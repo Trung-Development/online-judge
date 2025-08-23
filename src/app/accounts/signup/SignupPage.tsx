@@ -63,7 +63,7 @@ export default function SignupPage() {
     email: "",
     password1: "",
     password2: "",
-    defaultLanguage: "CPP17",
+    defaultRuntime: "CPP17",
     dateOfBirth: undefined as Date | undefined,
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -217,7 +217,7 @@ export default function SignupPage() {
         username: formData.username,
         email: formData.email,
         password: formData.password1,
-        defaultLanguage: formData.defaultLanguage,
+        defaultRuntime: formData.defaultRuntime,
         dateOfBirth: formData.dateOfBirth
           ? formatDateMMDDYYYY(formData.dateOfBirth)
           : undefined,
@@ -406,8 +406,8 @@ export default function SignupPage() {
                 </div>
                 {/* Default Language Combobox */}
                 <div className="grid gap-2">
-                  <Label htmlFor="defaultLanguage-combobox">
-                    Default Language
+                  <Label htmlFor="defaultRuntime-combobox">
+                    Default Runtime
                   </Label>
                   <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
                     <PopoverTrigger asChild>
@@ -417,11 +417,11 @@ export default function SignupPage() {
                         aria-expanded={comboboxOpen}
                         className="w-full justify-between"
                         type="button"
-                        id="defaultLanguage-combobox"
+                        id="defaultRuntime-combobox"
                       >
-                        {formData.defaultLanguage
+                        {formData.defaultRuntime
                           ? languages.find(
-                              (lang) => lang.value === formData.defaultLanguage,
+                              (lang) => lang.value === formData.defaultRuntime,
                             )?.label
                           : "Select your default language"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -443,7 +443,7 @@ export default function SignupPage() {
                                 onSelect={(currentValue) => {
                                   setFormData((prev) => ({
                                     ...prev,
-                                    defaultLanguage: currentValue,
+                                    defaultRuntime: currentValue,
                                   }));
                                   setComboboxOpen(false);
                                 }}
@@ -452,7 +452,7 @@ export default function SignupPage() {
                                 <Check
                                   className={cn(
                                     "ml-auto",
-                                    formData.defaultLanguage === language.value
+                                    formData.defaultRuntime === language.value
                                       ? "opacity-100"
                                       : "opacity-0",
                                   )}

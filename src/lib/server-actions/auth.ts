@@ -8,7 +8,7 @@ interface SignupData {
   username: string;
   email: string;
   password: string;
-  defaultLanguage: string;
+  defaultRuntime: string;
   dateOfBirth?: string;
   captchaToken: string;
 }
