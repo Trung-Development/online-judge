@@ -17,6 +17,7 @@ interface UserProblemsPageProps {
         email: string;
         username: string;
         fullname: string;
+        defaultRuntime: string;
     } | null;
 }
 
