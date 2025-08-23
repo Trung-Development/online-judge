@@ -25,8 +25,23 @@ export default function UserSubmissionsPage({ userData, username, serverUser }: 
     const { user: clientUser } = useAuth();
     const currentUser = serverUser || clientUser;
     
-    const ratingValue = userData.totalPoints ? Math.floor(userData.totalPoints / 10) + 1200 : 1200;
-    const solvedProblems = userData.submissions.filter(s => s.status === 'AC').length;
+    const ratingValue = userData.rating || 0;
+    // Compute solved problems and total points similar to UserProblemsPage logic
+    // Track maximum points for each problem (only count AC submissions)
+    const maxPointsByProblem = new Map<string, number>();
+
+    userData.submissions.forEach(submission => {
+        if (submission.status === 'AC') {
+            const currentMax = maxPointsByProblem.get(submission.problemSlug) || 0;
+            maxPointsByProblem.set(submission.problemSlug, Math.max(currentMax, submission.points));
+        }
+    });
+
+    // Count unique solved problems
+    const solvedProblems = maxPointsByProblem.size;
+
+    // Total points based on maximum points per unique problem
+    const totalPoints = Array.from(maxPointsByProblem.values()).reduce((sum, p) => sum + p, 0);
     
     return (
         <main className="max-w-6xl mx-auto py-8 px-4">
@@ -65,7 +80,7 @@ export default function UserSubmissionsPage({ userData, username, serverUser }: 
                             </div>
                         )}
                         <div>
-                            <span className="font-medium">Total points:</span> {userData.totalPoints.toLocaleString()}
+                            <span className="font-medium">Total points:</span> {totalPoints.toLocaleString()}
                         </div>
                     </div>
                 </aside>
