@@ -51,29 +51,40 @@ export async function getUsers() {
   return data;
 }
 
-export async function getUser(username: string) {
+export async function getUser(username: string): Promise<IUserData> {
   const apiBase = env.API_ENDPOINT;
 
   if (!apiBase) {
     throw new Error("API base URL is not defined");
   }
 
-  const response = await fetch(
-    new URL(`/client/users/details/${username}`, apiBase).toString(),
-    {
+  const [userResponse, avatarResponse] = await Promise.all([
+    fetch(new URL(`/client/users/details/${username}`, apiBase).toString(), {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
-    }
-  );
+    }),
+    fetch(new URL(`/client/users/avatar/${username}`, apiBase).toString(), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }),
+  ]);
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch user: ${response.statusText}`);
+  if (!userResponse.ok) {
+    throw new Error(`Failed to fetch user: ${userResponse.statusText}`);
   }
 
-  const data: IUserData = await response.json();
-  return data;
+  if (!avatarResponse.ok) {
+    throw new Error(`Failed to fetch avatar URL: ${avatarResponse.statusText}`);
+  }
+
+  const userData: IUserData = await userResponse.json();
+  const avatarData: { avatarURL: string } = await avatarResponse.json();
+
+  return { ...userData, avatarURL: avatarData.avatarURL };
 }
 
 export async function getUsersList(): Promise<IUsersListData[]> {
