@@ -17,6 +17,7 @@ export interface IUserData {
   submissions: ISubmissionsData[];
   bio: string;
   avatarURL: string;
+  rating: number;
 }
 
 // Interface for users list

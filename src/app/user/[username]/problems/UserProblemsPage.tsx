@@ -32,27 +32,43 @@ export default function UserProblemsPage({ userData, username, serverUser }: Use
     const pointsByCategory: {[key: string]: number} = {};
     
     // Only count AC submissions and unique problems
-    const processedproblemSlugs = new Set<string>();
-    
-    userData.submissions
-        .filter(s => s.status === 'AC' && !processedproblemSlugs.has(s.problemSlug))
-        .forEach(submission => {
-            processedproblemSlugs.add(submission.problemSlug);
-            
+    const processedProblemSlugs = new Set<string>();
+
+    // Track maximum points for each problem
+    const maxPointsByProblem = new Map<string, number>();
+
+    userData.submissions.forEach(submission => {
+        if (submission.status === 'AC') {
+            const currentMax = maxPointsByProblem.get(submission.problemSlug) || 0;
+            maxPointsByProblem.set(submission.problemSlug, Math.max(currentMax, submission.points));
+        }
+    });
+
+    // Group problems by category using the maximum points
+    maxPointsByProblem.forEach((points, problemSlug) => {
+        const submission = userData.submissions.find(sub => sub.problemSlug === problemSlug);
+        if (submission) {
             if (!problemsByCategory[submission.problemCategory]) {
                 problemsByCategory[submission.problemCategory] = [];
                 pointsByCategory[submission.problemCategory] = 0;
             }
-            
+
             problemsByCategory[submission.problemCategory].push({
                 code: submission.problemSlug,
                 name: submission.problemName,
-                points: submission.points
+                points
             });
-            
-            pointsByCategory[submission.problemCategory] += submission.points;
-        });
+
+            pointsByCategory[submission.problemCategory] += points;
+
+            // Add the problem slug to the processed set
+            processedProblemSlugs.add(problemSlug);
+        }
+    });
     
+    // Calculate total points based on maximum points for unique problems
+    const totalPoints = Array.from(maxPointsByProblem.values()).reduce((sum, points) => sum + points, 0);
+
     return (
         <main className="max-w-6xl mx-auto py-8 px-4">
             <div className="user-profile grid md:grid-cols-[250px_1fr] gap-8">
@@ -82,7 +98,7 @@ export default function UserProblemsPage({ userData, username, serverUser }: Use
                     
                     <div className="space-y-3 bg-card border rounded-lg p-4 mb-4">
                         <div>
-                            <span className="font-medium">Problems solved:</span> {processedproblemSlugs.size}
+                            <span className="font-medium">Problems solved:</span> {processedProblemSlugs.size}
                         </div>
                         {userData.rankByPoints && (
                             <div>
@@ -90,7 +106,7 @@ export default function UserProblemsPage({ userData, username, serverUser }: Use
                             </div>
                         )}
                         <div>
-                            <span className="font-medium">Total points:</span> {userData.totalPoints.toLocaleString()}
+                            <span className="font-medium">Total points:</span> {totalPoints.toLocaleString()}
                         </div>
                     </div>
 

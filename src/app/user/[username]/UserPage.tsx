@@ -26,8 +26,18 @@ export default function UserPage({ userData, username, serverUser }: UserPagePro
     const { user: clientUser } = useAuth();
     const currentUser = serverUser || clientUser;
     
-    const ratingValue = userData.totalPoints ? Math.floor(userData.totalPoints / 10) + 1200 : 1200;
-    const solvedProblems = userData.submissions.filter(s => s.status === 'AC').length;
+    const uniqueProblems = new Map();
+    userData.submissions.forEach(submission => {
+        if (submission.status === 'AC') {
+            const currentMax = uniqueProblems.get(submission.problemSlug) || 0;
+            uniqueProblems.set(submission.problemSlug, Math.max(currentMax, submission.points));
+        }
+    });
+
+    const solvedProblems = uniqueProblems.size;
+    const totalPoints = Array.from(uniqueProblems.values()).reduce((sum, points) => sum + points, 0);
+
+    const ratingValue = userData.rating || 0;
     
     return (
         <main className="max-w-6xl mx-auto py-8 px-4">
@@ -52,7 +62,7 @@ export default function UserPage({ userData, username, serverUser }: UserPagePro
                             {username}
                         </h1>
                         <p className="text-muted-foreground text-center mb-4">
-                            {getRatingTitle(ratingValue)}
+                            {typeof ratingValue === "number" ? getRatingTitle(ratingValue) : ratingValue}
                         </p>
                     </div>
                     
@@ -66,7 +76,7 @@ export default function UserPage({ userData, username, serverUser }: UserPagePro
                             </div>
                         )}
                         <div>
-                            <span className="font-medium">Total points:</span> {userData.totalPoints.toLocaleString()}
+                            <span className="font-medium">Total points:</span> {totalPoints.toLocaleString()}
                         </div>
                     </div>
 
