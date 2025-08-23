@@ -108,15 +108,15 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
       case "AC":
         return <FontAwesomeIcon icon={faCheck} className="text-green-600" />;
       case "WA":
+        return <FontAwesomeIcon icon={faTimes} className="text-red-600" />;
       case "TLE":
       case "MLE":
       case "RTE":
       case "CE":
-        return <FontAwesomeIcon icon={faTimes} className="text-red-600" />;
+        return <FontAwesomeIcon icon={faExclamationTriangle} className="text-yellow-600" />;
       case "RN":
-        return <FontAwesomeIcon icon={faSpinner} className="text-blue-600 animate-spin" />;
       case "QU":
-        return <FontAwesomeIcon icon={faSpinner} className="text-yellow-600" />;
+        return <FontAwesomeIcon icon={faSpinner} className="text-blue-600 animate-spin" />;
       default:
         return <FontAwesomeIcon icon={faExclamationTriangle} className="text-gray-600" />;
     }
@@ -151,15 +151,15 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
       case "AC":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
       case "WA":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
       case "TLE":
       case "MLE":
       case "RTE":
       case "CE":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case "RN":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "QU":
         return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+      case "RN":
+      case "QU":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
     }
@@ -430,7 +430,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {submission.testCases.map((testCase) => {
+                  {submission.testCases.map((testCase, i) => {
                     // Check if there's any detailed data to show
                     const hasDetailedData = (testCase.input && testCase.input.trim()) || 
                                           (testCase.expected && testCase.expected.trim()) || 
@@ -446,14 +446,14 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                         >
                           <div className="flex items-center gap-2">
                             {getVerdictIcon(testCase.verdict)}
-                            <span className="font-medium">Test Case {testCase.position}</span>
+                            <span className="font-medium">Case #{i+1}</span>
                             <Badge className={getVerdictColor(testCase.verdict)}>
                               {getVerdictText(testCase.verdict)}
                             </Badge>
                           </div>
                           <div className="flex items-center gap-2">
                             <div className="text-sm text-muted-foreground">
-                              {testCase.points}/{problem.points}pts
+                              {testCase.points}/{problem.points} point{testCase.points !== 1 ? 's' : ''}
                             </div>
                             {hasDetailedData && (
                               <FontAwesomeIcon 
@@ -488,7 +488,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                               
                               {testCase.expected && testCase.expected.trim() && (
                                 <div>
-                                  <div className="text-sm font-medium mb-1">Expected Output:</div>
+                                  <div className="text-sm font-medium mb-1">Expected:</div>
                                   <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
                                     {testCase.expected.length > 1000 ? testCase.expected.substring(0, 1000) + '\n... [truncated]' : testCase.expected}
                                   </pre>
@@ -497,7 +497,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                               
                               {testCase.output && testCase.output.trim() && (
                                 <div>
-                                  <div className="text-sm font-medium mb-1">Your Output:</div>
+                                  <div className="text-sm font-medium mb-1">Actual:</div>
                                   <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
                                     {testCase.output.length > 1000 ? testCase.output.substring(0, 1000) + '\n... [truncated]' : testCase.output}
                                   </pre>
