@@ -504,7 +504,10 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                       data-hs-file-upload='{"url": "/upload", "maxFiles": 1, "singleton": true}'
                       className="w-full"
                     >
-                      <template data-hs-file-upload-preview="">
+                      <div
+                        data-hs-file-upload-preview=""
+                        style={{ display: 'none' }}
+                      >
                         <div className="flex items-center w-full">
                           <span
                             className="grow-0 overflow-hidden truncate"
@@ -516,7 +519,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                             data-hs-file-upload-file-ext=""
                           ></span>
                         </div>
-                      </template>
+                      </div>
 
                       <label className="relative flex w-full border overflow-hidden border-gray-200 shadow-2xs rounded-lg text-sm focus:outline-hidden focus:z-10 focus:border-blue-500 disabled:opacity-50 disabled:pointer-events-none cursor-pointer">
                         <span className="h-full py-3 px-4 bg-gray-100 text-nowrap">
