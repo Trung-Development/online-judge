@@ -10,7 +10,7 @@ import { getTypesNames } from "@/lib/server-actions/types";
 export const runtime = "edge";
 
 export const metadata: Metadata = {
-  title: `Problem - ${Config.siteDescription}`,
+  title: `Problems list - ${Config.siteDescription}`,
   description: "List of problems available in the YACPS Online Judge.",
 };
 
