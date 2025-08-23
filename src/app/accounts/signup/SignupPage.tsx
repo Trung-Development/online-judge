@@ -95,9 +95,22 @@ export default function SignupPage() {
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    
+    // Username validation
+    if (id === 'username') {
+      // Allow only a-z, A-Z, 0-9, -, _, and . (dots)
+      const usernameRegex = /^[a-zA-Z0-9\-_.]*$/;
+      
+      if (value && !usernameRegex.test(value)) {
+        // Don't update if invalid characters are entered
+        return;
+      }
+    }
+    
     setFormData({
       ...formData,
-      [e.target.id]: e.target.value,
+      [id]: value,
     });
   };
 
@@ -155,6 +168,20 @@ export default function SignupPage() {
         !formData.fullName
       ) {
         throw new Error("All fields are required");
+      }
+
+      // Username validation
+      const usernameRegex = /^[a-zA-Z0-9\-_.]+$/;
+      if (!usernameRegex.test(formData.username)) {
+        throw new Error("Username can only contain letters, numbers, hyphens (-), underscores (_), and dots (.)");
+      }
+
+      if (formData.username.length < 4) {
+        throw new Error("Username must be at least 4 characters long");
+      }
+
+      if (formData.username.length > 30) {
+        throw new Error("Username must be no more than 30 characters long");
       }
 
       if (formData.password1 !== formData.password2) {
@@ -263,11 +290,16 @@ export default function SignupPage() {
                   <Input
                     id="username"
                     type="text"
-                    placeholder="johndoe"
+                    placeholder="johndoe123"
                     required
                     value={formData.username}
                     onChange={handleChange}
+                    minLength={4}
+                    maxLength={30}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    3-30 characters. Only letters, numbers, hyphens (-), underscores (_), and dots (.) allowed.
+                  </p>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
