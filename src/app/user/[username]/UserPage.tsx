@@ -83,7 +83,7 @@ export default function UserPage({ userData, username, serverUser }: UserPagePro
 
                     <div className="bg-card border rounded-lg p-4">
                         <Link 
-                            href={`/user/${username}/submissions`} 
+                            href={`/submissions?${new URLSearchParams({ author: username }).toString()}`} 
                             className="text-primary hover:underline block"
                         >
                             View all submissions

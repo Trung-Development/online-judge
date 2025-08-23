@@ -16,7 +16,7 @@ export default function UserTabs({ username, currentUser }: UserTabsProps) {
   const tabs = [
     { name: "About", href: `/user/${username}`, active: pathname === `/user/${username}` },
     { name: "Problems", href: `/user/${username}/problems`, active: pathname === `/user/${username}/problems` },
-    { name: "Submissions", href: `/user/${username}/submissions`, active: pathname === `/user/${username}/submissions` },
+    { name: "Submissions", href: `/submissions?author=${username}`, active: pathname === `/submissions?author=${username}` },
   ];
   
   // Check if the current user matches the profile being viewed
