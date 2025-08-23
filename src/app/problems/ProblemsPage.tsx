@@ -19,17 +19,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { IProblemData, ProblemStatus } from "@/lib/server-actions/problems";
 import { useAuth } from "@/components/AuthProvider";
+import { useSearchParams } from "next/navigation";
 
 const PROBLEMS_PER_PAGE = 50;
 
@@ -55,10 +47,11 @@ function getStatusIcon(status?: ProblemStatus) {
 
 export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
   const { sessionToken } = useAuth();
+  const searchParams = useSearchParams();
   const [filteredProblems, setFilteredProblems] =
     useState<IProblemData[]>(initialProblems);
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1);
   const [showEditorialOnly, setShowEditorialOnly] = useState(false);
   const [showTypes, setShowTypes] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -191,7 +184,6 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
     filtered = sortProblems(filtered);
 
     setFilteredProblems(filtered);
-    setCurrentPage(1); // Reset to first page when filters change
   }, [
     searchTerm,
     initialProblems,
@@ -199,6 +191,8 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
     sortField,
     sortOrder,
     sortProblems,
+    currentPage,
+    totalPages
   ]);
 
   const calculateAcceptanceRate = (stats: IProblemData["stats"]) => {
@@ -267,16 +261,6 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
             {showTypes ? "Hide" : "Show"} problem types
           </Button>
         </div>
-
-        {/* Results count */}
-        <div className="mb-4 text-sm text-muted-foreground">
-          {totalPages > 1 && (
-            <>
-              {" "}
-              • Page {currentPage} of {totalPages}
-            </>
-          )}
-        </div>
       </div>
 
       {/* Problems Table */}
@@ -307,9 +291,8 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                   </th>
                 )}
                 <th
-                  className={`h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 ${
-                    !isAuthenticated ? "first:rounded-tl-md" : ""
-                  } cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100`}
+                  className={`h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 ${!isAuthenticated ? "first:rounded-tl-md" : ""
+                    } cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100`}
                   onClick={() => handleSort("id")}
                 >
                   <div className="flex items-center gap-2">
@@ -404,11 +387,10 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                 currentProblems.map((problem) => (
                   <tr
                     key={problem.code}
-                    className={`border-b transition-colors ${
-                      problem.isDeleted // The problem is deleted
+                    className={`border-b transition-colors ${problem.isDeleted // The problem is deleted
                         ? "bg-muted/100 opacity-50 pointer-events-none"
                         : "hover:bg-muted/50"
-                    }`}
+                      }`}
                   >
                     {isAuthenticated && (
                       <td
@@ -424,11 +406,9 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                         <span className="flex items-center justify-center h-full w-full">
                           <FontAwesomeIcon
                             icon={getStatusIcon(problem.status).icon}
-                            className={`w-4 h-4 text-${
-                              getStatusIcon(problem.status).color
-                            }-600 dark:text-${
-                              getStatusIcon(problem.status).color
-                            }-400`}
+                            className={`w-4 h-4 text-${getStatusIcon(problem.status).color
+                              }-600 dark:text-${getStatusIcon(problem.status).color
+                              }-400`}
                           />
                         </span>
                       </td>
@@ -466,17 +446,16 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
                     </td>
                     <td className="p-4 align-middle text-center border-r border-border w-16">
                       <span
-                        className={`font-medium ${
-                          !problem.stats
+                        className={`font-medium ${!problem.stats
                             ? "text-muted-foreground"
                             : calculateAcceptanceRate(problem.stats) === null
-                            ? "text-muted-foreground"
-                            : calculateAcceptanceRate(problem.stats)! >= 50
-                            ? "text-green-600 dark:text-green-400"
-                            : calculateAcceptanceRate(problem.stats)! >= 25
-                            ? "text-yellow-600 dark:text-yellow-400"
-                            : "text-red-600 dark:text-red-400"
-                        }`}
+                              ? "text-muted-foreground"
+                              : calculateAcceptanceRate(problem.stats)! >= 50
+                                ? "text-green-600 dark:text-green-400"
+                                : calculateAcceptanceRate(problem.stats)! >= 25
+                                  ? "text-yellow-600 dark:text-yellow-400"
+                                  : "text-red-600 dark:text-red-400"
+                          }`}
                       >
                         {problem.stats
                           ? formatAcceptanceRate(problem.stats)
@@ -509,86 +488,38 @@ export default function ProblemsPage({ initialProblems }: ProblemsPageProps) {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-6 flex justify-center">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.max(prev - 1, 1))
-                  }
-                  className={
-                    currentPage === 1
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
+        <div className="flex justify-center items-center gap-2 mt-6">
+          <Button
+            variant="outline"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+          >
+            Previous
+          </Button>
 
-              {/* Page numbers */}
-              {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-                let pageNumber;
-                if (totalPages <= 7) {
-                  pageNumber = i + 1;
-                } else if (currentPage <= 4) {
-                  pageNumber = i + 1;
-                } else if (currentPage >= totalPages - 3) {
-                  pageNumber = totalPages - 6 + i;
-                } else {
-                  pageNumber = currentPage - 3 + i;
+          <div className="flex items-center gap-2">
+            <span>Page</span>
+            <Input
+              type="text"
+              className="w-16 text-center"
+              value={currentPage}
+              onChange={(e) => {
+                const val = parseInt(e.target.value);
+                if (!isNaN(val) && val >= 1 && val <= totalPages) {
+                  setCurrentPage(val);
                 }
+              }}
+            />
+            <span>of {totalPages}</span>
+          </div>
 
-                if (
-                  pageNumber === currentPage - 2 &&
-                  currentPage > 4 &&
-                  totalPages > 7
-                ) {
-                  return (
-                    <PaginationItem key="ellipsis-start">
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  );
-                }
-
-                if (
-                  pageNumber === currentPage + 2 &&
-                  currentPage < totalPages - 3 &&
-                  totalPages > 7
-                ) {
-                  return (
-                    <PaginationItem key="ellipsis-end">
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  );
-                }
-
-                return (
-                  <PaginationItem key={pageNumber}>
-                    <PaginationLink
-                      onClick={() => setCurrentPage(pageNumber)}
-                      isActive={pageNumber === currentPage}
-                      className="cursor-pointer"
-                    >
-                      {pageNumber}
-                    </PaginationLink>
-                  </PaginationItem>
-                );
-              })}
-
-              <PaginationItem>
-                <PaginationNext
-                  onClick={() =>
-                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                  }
-                  className={
-                    currentPage === totalPages
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+          <Button
+            variant="outline"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            Next
+          </Button>
         </div>
       )}
 
