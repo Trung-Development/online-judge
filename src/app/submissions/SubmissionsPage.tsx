@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faSearch, faFilter, faPlay, faPause } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faFilter, faPlay, faPause } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "@/components/AuthProvider";
 import { Metadata } from "next";
 import { Config } from "@/config";
@@ -61,12 +61,12 @@ export default function SubmissionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const isMySubmissions = typeof searchParams.get("mySubmissions") == "string";
+
   // Filter states - Initialize from URL params immediately
   const [problemFilter, setProblemFilter] = useState(searchParams.get("problemSlug") || "");
   const [authorFilter, setAuthorFilter] = useState(
-    searchParams.get("author") && searchParams.get("author") !== "me"
-      ? searchParams.get("author") || ""
-      : ""
+    searchParams.get("author") || ""
   );
   const [verdictFilter, setVerdictFilter] = useState("");
   const [isPolling, setIsPolling] = useState(true);
@@ -76,8 +76,7 @@ export default function SubmissionsPage() {
   const itemsPerPage = 20;
 
   const problemSlug = searchParams.get("problemSlug");
-  const authorParam = searchParams.get("author");
-  const isMySubmissions = authorParam === "me";
+  console.log(typeof searchParams.get("mySubmissions") == "string")
 
   const verdictColors: { [key: string]: string } = {
     AC: "bg-green-100 text-green-800 border-green-300",
@@ -223,9 +222,10 @@ export default function SubmissionsPage() {
     return () => clearInterval(interval);
   }, [isPolling, fetchSubmissions]);
 
-  const handleSearch = () => {
-    setCurrentPage(1); // Reset to first page when searching
-  };
+  // On filter change - set current page to 1
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(1);
+  }, [problemFilter, authorFilter, verdictFilter, currentPage, totalPages]);
 
   const formatTime = (s: number) => {
     return `${s.toFixed(2)}s`;
@@ -276,7 +276,7 @@ export default function SubmissionsPage() {
             <p className="text-red-600 mb-4">{error}</p>
             {!isAuthenticated && isMySubmissions && (
               <Button asChild>
-                <Link href={`/accounts/login?callbackUrl=${encodeURIComponent('/submissions?author=me')}`}>Login</Link>
+                <Link href={`/accounts/login?callbackUrl=${encodeURIComponent('/submissions?mySubmissions')}`}>Login</Link>
               </Button>
             )}
           </CardContent>
@@ -329,26 +329,34 @@ export default function SubmissionsPage() {
             </p>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="problem" className="mb-1 block">Problem</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Problem Filter */}
+              <div className="flex flex-col">
+                <Label htmlFor="problem" className="mb-2 text-sm font-medium">
+                  Problem
+                </Label>
                 <Input
                   id="problem"
                   placeholder="Enter problem slug"
                   value={problemFilter}
                   onChange={(e) => setProblemFilter(e.target.value)}
+                  className="rounded-md"
                 />
               </div>
 
-              <div>
-                <Label htmlFor="author" className="mb-1 block">Author</Label>
+              {/* Author Filter */}
+              <div className="flex flex-col">
+                <Label htmlFor="author" className="mb-2 text-sm font-medium">
+                  Author
+                </Label>
                 <Input
                   id="author"
                   placeholder="Username"
                   value={authorFilter}
                   onChange={(e) => setAuthorFilter(e.target.value)}
                   readOnly={isMySubmissions}
-                  className={isMySubmissions ? "bg-muted text-muted-foreground cursor-not-allowed" : ""}
+                  className={`rounded-md ${isMySubmissions ? "bg-muted text-muted-foreground cursor-not-allowed" : ""
+                    }`}
                 />
                 {isMySubmissions && (
                   <p className="text-xs text-muted-foreground mt-1">
@@ -357,10 +365,13 @@ export default function SubmissionsPage() {
                 )}
               </div>
 
-              <div>
-                <Label htmlFor="verdict" className="mb-1 block">Verdict</Label>
+              {/* Verdict Filter */}
+              <div className="flex flex-col">
+                <Label htmlFor="verdict" className="mb-2 text-sm font-medium">
+                  Verdict
+                </Label>
                 <Select value={verdictFilter} onValueChange={setVerdictFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-md">
                     <SelectValue placeholder="Select verdict" />
                   </SelectTrigger>
                   <SelectContent>
@@ -373,13 +384,6 @@ export default function SubmissionsPage() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div className="flex justify-end mt-6">
-              <Button onClick={handleSearch} className="w-full sm:w-auto">
-                <FontAwesomeIcon icon={faSearch} className="w-4 h-4 mr-2" />
-                Apply Filters
-              </Button>
             </div>
           </CardContent>
         </Card>

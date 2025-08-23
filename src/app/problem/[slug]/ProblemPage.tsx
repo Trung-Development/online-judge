@@ -180,7 +180,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                     </Link>
                   </Button>
                   <Button variant="outline" asChild className="w-full">
-                    <Link href={`/submissions?problemSlug=${slug}&author=me`}>
+                    <Link href={`/submissions?problemSlug=${slug}&mySubmissions`}>
                       <FontAwesomeIcon
                         icon={faAddressBook}
                         className="w-4 h-4 mr-2"
