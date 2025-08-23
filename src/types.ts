@@ -59,7 +59,8 @@ export type TAllowedLang =
   | "SBCL"
   | "C11"
   | "ZIG"
-  | "CPP20";
+  | "CPP20"
+  | "SCRATCH";
 
 export type TProblemStatus =
   | "AC" // Accepted
@@ -106,7 +107,7 @@ export interface IProblemPageData {
   isDeleted?: boolean;
 
   // Test case visibility control
-  testcaseDataVisibility?: 'AUTHOR_ONLY' | 'AC_ONLY' | 'EVERYONE';
+  testcaseDataVisibility?: "AUTHOR_ONLY" | "AC_ONLY" | "EVERYONE";
 
   stats: {
     submissions: number;

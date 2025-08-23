@@ -434,4 +434,11 @@ export const languages = [
     extension: "cpp",
     commonName: "C++",
   },
+  {
+    value: "SCRATCH",
+    label: "Scratch",
+    template: "",
+    extension: "sb3",
+    commonName: "Scratch",
+  },
 ].sort((a, b) => a.label.localeCompare(b.label));
