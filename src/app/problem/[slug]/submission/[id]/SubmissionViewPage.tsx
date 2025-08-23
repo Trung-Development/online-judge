@@ -176,6 +176,26 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
     }
   };
 
+  // Helper function to clean error messages from ANSI escape codes and HTML entities
+  const cleanErrorMessage = (message: string): string => {
+    if (!message) return message;
+    
+    return message
+      // Remove ANSI escape sequences (like [01m[K, [m[K, etc.)
+      .replace(/\[[\d;]*[mK]/g, '')
+      // Remove other ANSI escape codes
+      .replace(/\x1b\[[0-9;]*[mGKH]/g, '')
+      // Decode HTML entities
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      // Clean up extra whitespace
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
   // Load submission data
   useEffect(() => {
     const loadSubmission = async () => {
@@ -392,7 +412,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                   <FontAwesomeIcon icon={faExclamationTriangle} />
                   <AlertDescription>
                     <pre className="whitespace-pre-wrap font-mono text-sm">
-                      {submission.errorMessage}
+                      {cleanErrorMessage(submission.errorMessage)}
                     </pre>
                   </AlertDescription>
                 </Alert>
