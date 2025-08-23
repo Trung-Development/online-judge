@@ -170,42 +170,42 @@ export function Navbar() {
 
               {/* Home */}
               <NavigationMenuItem>
-                <NavigationMenuLink asChild className={`${navigationMenuTriggerStyle()} bg-transparent text-zinc-100 hover:bg-transparent hover:text-zinc-100`}>
+                <NavigationMenuLink asChild className={`${navigationMenuTriggerStyle()} !bg-transparent text-zinc-100 !hover:bg-transparent hover:text-zinc-100 data-[active=true]:!bg-transparent data-[active=true]:!hover:bg-transparent data-[active=true]:!text-zinc-100`}>
                   <Link href="/" data-nav data-href="/" className="relative inline-block px-3 py-2 z-30" onMouseEnter={(e) => updateIndicator(e.currentTarget as HTMLElement)} onMouseLeave={() => updateIndicator(computeActiveLink() as HTMLElement | null)}>Home</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
               {/* Problems */}
               <NavigationMenuItem>
-                <NavigationMenuLink asChild className={`${navigationMenuTriggerStyle()} bg-transparent text-zinc-100 hover:bg-transparent hover:text-zinc-100`}>
+                <NavigationMenuLink asChild className={`${navigationMenuTriggerStyle()} !bg-transparent text-zinc-100 !hover:bg-transparent hover:text-zinc-100 data-[active=true]:!bg-transparent data-[active=true]:!hover:bg-transparent data-[active=true]:!text-zinc-100`}>
                   <Link href="/problems" data-nav data-href="/problems" className="relative inline-block px-3 py-2 z-30" onMouseEnter={(e) => updateIndicator(e.currentTarget as HTMLElement)} onMouseLeave={() => updateIndicator(computeActiveLink() as HTMLElement | null)}>Problems</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
               {/* Submissions */}
               <NavigationMenuItem>
-                <NavigationMenuLink asChild className={`${navigationMenuTriggerStyle()} bg-transparent text-zinc-100 hover:bg-transparent hover:text-zinc-100`}>
+                <NavigationMenuLink asChild className={`${navigationMenuTriggerStyle()} !bg-transparent text-zinc-100 !hover:bg-transparent hover:text-zinc-100 data-[active=true]:!bg-transparent data-[active=true]:!hover:bg-transparent data-[active=true]:!text-zinc-100`}>
                   <Link href="/submissions" data-nav data-href="/submissions" className="relative inline-block px-3 py-2 z-30" onMouseEnter={(e) => updateIndicator(e.currentTarget as HTMLElement)} onMouseLeave={() => updateIndicator(computeActiveLink() as HTMLElement | null)}>Submissions</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
               {/* Users */}
               <NavigationMenuItem>
-                <NavigationMenuLink asChild className={`${navigationMenuTriggerStyle()} bg-transparent text-zinc-100 hover:bg-transparent hover:text-zinc-100`}>
+                <NavigationMenuLink asChild className={`${navigationMenuTriggerStyle()} !bg-transparent text-zinc-100 !hover:bg-transparent hover:text-zinc-100 data-[active=true]:!bg-transparent data-[active=true]:!hover:bg-transparent data-[active=true]:!text-zinc-100`}>
                   <Link href="/users" data-nav data-href="/users" className="relative inline-block px-3 py-2 z-30" onMouseEnter={(e) => updateIndicator(e.currentTarget as HTMLElement)} onMouseLeave={() => updateIndicator(computeActiveLink() as HTMLElement | null)}>Users</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
               {/* Contests */}
               <NavigationMenuItem>
-                <NavigationMenuLink asChild className={`${navigationMenuTriggerStyle()} bg-transparent text-zinc-100 hover:bg-transparent hover:text-zinc-100`}>
+                <NavigationMenuLink asChild className={`${navigationMenuTriggerStyle()} !bg-transparent text-zinc-100 !hover:bg-transparent hover:text-zinc-100 data-[active=true]:!bg-transparent data-[active=true]:!hover:bg-transparent data-[active=true]:!text-zinc-100`}>
                   <Link href="/contests" data-nav data-href="/contests" className="relative inline-block px-3 py-2 z-30" onMouseEnter={(e) => updateIndicator(e.currentTarget as HTMLElement)} onMouseLeave={() => updateIndicator(computeActiveLink() as HTMLElement | null)}>Contests</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
               {/* About - with dropdown */}
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="bg-transparent text-zinc-100 hover:bg-transparent hover:text-zinc-100 data-[state=open]:bg-zinc-800">
+                <NavigationMenuTrigger className="!bg-transparent text-zinc-100 !hover:bg-transparent hover:text-zinc-100 data-[state=open]:!bg-transparent">
                   About
                 </NavigationMenuTrigger>
                 <NavigationMenuContent>
