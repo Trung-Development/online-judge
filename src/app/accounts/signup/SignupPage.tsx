@@ -298,7 +298,7 @@ export default function SignupPage() {
                     maxLength={30}
                   />
                   <p className="text-xs text-muted-foreground">
-                    3-30 characters. Only letters, numbers, hyphens (-), underscores (_), and dots (.) allowed.
+                    4-30 characters. Only letters, numbers, hyphens (-), underscores (_), and dots (.) allowed.
                   </p>
                 </div>
                 <div className="grid gap-2">
