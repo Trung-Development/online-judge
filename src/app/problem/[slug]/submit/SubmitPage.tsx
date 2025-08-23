@@ -83,6 +83,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
   const [code, setCode] = useState<string>("");
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
@@ -165,8 +166,41 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
       });
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Upload failed" }));
-        throw new Error(err.error || "Upload failed");
+        // If server doesn't provide an upload endpoint (404) we can still
+        // load non-SB3 files into the editor locally. For SB3 we must have
+        // an upload endpoint on the server; surface a helpful message.
+        if (res.status === 404) {
+          if (file.name.toLowerCase().endsWith('.sb3')) {
+            // Store the sb3 locally and submit it as multipart/form-data during submit
+            setPendingFile(file);
+            setUploadedFileName(file.name);
+            return;
+          } else {
+            // Load text files into editor locally (silent)
+            const txt = await file.text();
+            setCode(txt);
+            setUploadedFileName(file.name);
+            return;
+          }
+        }
+        // Try to parse JSON error message, but be resilient to non-JSON responses
+        let msg = res.statusText || "Upload failed";
+        try {
+          const parsed = await res.json();
+          const parsedObj = parsed as Record<string, unknown> | string;
+          if (parsedObj && typeof parsedObj === 'object') {
+            if (typeof parsedObj.error === 'string' && parsedObj.error.trim()) {
+              msg = parsedObj.error;
+            } else if (typeof parsedObj.message === 'string') {
+              msg = parsedObj.message;
+            }
+          } else if (typeof parsedObj === 'string' && parsedObj.trim()) {
+            msg = parsedObj;
+          }
+        } catch {
+          // ignore parse errors
+        }
+        throw new Error(msg || "Upload failed");
       }
 
       const data = await res.json();
@@ -271,8 +305,8 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
       return;
     }
 
-    // For scratch require uploaded file
-    if (selectedLanguage === "SCRATCH" && !uploadedFileUrl) {
+    // For scratch require uploaded file (either uploadedFileUrl or pendingFile staged)
+    if (selectedLanguage === "SCRATCH" && !uploadedFileUrl && !pendingFile) {
       setError("Please upload your Scratch (.sb3) file.");
       return;
     }
@@ -306,18 +340,34 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
     setSuccess(false);
 
     try {
-      const response = await fetch("/api/submissions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          problemSlug: slug,
-          language: selectedLanguage,
-          sourceCode: selectedLanguage === "SCRATCH" ? undefined : code,
-          uploadedFile: uploadedFileUrl || undefined,
-        }),
-      });
+      let response: Response;
+
+      if (pendingFile) {
+        // Submit multipart/form-data including the staged file
+        const form = new FormData();
+        form.append("file", pendingFile);
+        form.append("problemSlug", slug);
+        form.append("language", selectedLanguage);
+        if (selectedLanguage !== "SCRATCH") form.append("sourceCode", code);
+
+        response = await fetch("/api/submissions", {
+          method: "POST",
+          body: form,
+        });
+      } else {
+        response = await fetch("/api/submissions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            problemSlug: slug,
+            language: selectedLanguage,
+            sourceCode: selectedLanguage === "SCRATCH" ? undefined : code,
+            uploadedFile: uploadedFileUrl || undefined,
+          }),
+        });
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -357,6 +407,16 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
   const formatMemory = (kb: number): string => {
     return `${(kb / 1024).toFixed(1)}MB`;
   };
+
+  // Compute submit button enabled/disabled state in one place
+  const isSubmitDisabled =
+    isSubmitting ||
+    !selectedLanguage ||
+    (selectedLanguage !== "SCRATCH" && !uploadedFileUrl && !code.trim()) ||
+    (selectedLanguage === "SCRATCH" && !uploadedFileUrl && !pendingFile) ||
+    !isProblemAvailable ||
+    (selectedLanguage ? !isExecutorAvailable(selectedLanguage) : false) ||
+    problem.isLocked;
 
   if (authLoading) {
     return (
@@ -754,23 +814,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                 )}
 
                 {/* Submit Button */}
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={
-                    isSubmitting ||
-                    !selectedLanguage ||
-                    (!uploadedFileUrl &&
-                      !code.trim() &&
-                      selectedLanguage !== "SCRATCH") ||
-                    !isProblemAvailable ||
-                    (selectedLanguage
-                      ? !isExecutorAvailable(selectedLanguage)
-                      : false) ||
-                    problem.isLocked ||
-                    (selectedLanguage === "SCRATCH" && !uploadedFileUrl)
-                  }
-                >
+                <Button type="submit" className="w-full" disabled={isSubmitDisabled}>
                   {isSubmitting ? (
                     <>
                       <FontAwesomeIcon

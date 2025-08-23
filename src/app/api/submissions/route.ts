@@ -7,31 +7,72 @@ export const runtime = "edge";
 export async function POST(request: NextRequest) {
   try {
     const session = await getAuthSession();
+    const contentType = request.headers.get("content-type") || "";
 
-    const body = await request.json();
-    const { problemSlug, language, sourceCode } = body;
+    let response: Response;
 
-    if (!problemSlug || !language || !sourceCode) {
-      return NextResponse.json(
-        { error: "Problem slug, language, and source code are required" },
-        { status: 400 }
-      );
+    if (contentType.includes("multipart/form-data")) {
+      // Edge: use request.formData() to parse multipart body
+      const form = await request.formData();
+      const file = form.get("file");
+      const problemSlug = form.get("problemSlug")?.toString() || "";
+      const language = form.get("language")?.toString() || "";
+  const sourceCode = form.get("sourceCode")?.toString() || undefined;
+  // backend expects 'code' field name, include it when present
+  const codeField = form.get("code")?.toString() || undefined;
+
+      if (!problemSlug || !language) {
+        return NextResponse.json({ error: "Problem slug and language are required" }, { status: 400 });
+      }
+
+      const forward = new FormData();
+      // forward file if present
+      if (file) {
+        const fileBlob = file as Blob;
+        let maybeName = "upload";
+        if (file instanceof File && typeof file.name === 'string') maybeName = file.name;
+        forward.append("file", fileBlob, maybeName);
+      }
+      forward.append("problemSlug", problemSlug);
+      forward.append("language", language);
+      if (sourceCode) forward.append("sourceCode", sourceCode);
+      // backend requires a non-empty `code` string; if none provided, use a short placeholder
+      const codeToSend = codeField || sourceCode || (file ? "[binary submission]" : "");
+      forward.append("code", codeToSend);
+
+      response = await fetch(new URL("/client/submissions", env.API_ENDPOINT).toString(), {
+        method: "POST",
+        headers: {
+          ...(session?.sessionToken && { Authorization: `Bearer ${session.sessionToken}` }),
+        },
+        body: forward,
+      });
+    } else {
+      const body = await request.json();
+      const { problemSlug, language, sourceCode } = body;
+
+      if (!problemSlug || !language || !sourceCode) {
+        return NextResponse.json(
+          { error: "Problem slug, language, and source code are required" },
+          { status: 400 }
+        );
+      }
+
+      const submissionPayload = {
+        problemSlug: problemSlug, // Backend now expects problemSlug instead of problemId
+        language,
+        code: sourceCode,
+      };
+
+      response = await fetch(new URL("/client/submissions", env.API_ENDPOINT).toString(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(session?.sessionToken && { Authorization: `Bearer ${session.sessionToken}` }),
+        },
+        body: JSON.stringify(submissionPayload),
+      });
     }
-
-    const submissionPayload = {
-      problemSlug: problemSlug, // Backend now expects problemSlug instead of problemId
-      language,
-      code: sourceCode,
-    };
-
-    const response = await fetch(new URL("/client/submissions", env.API_ENDPOINT).toString(), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(session?.sessionToken && { Authorization: `Bearer ${session.sessionToken}` }),
-      },
-      body: JSON.stringify(submissionPayload),
-    });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));

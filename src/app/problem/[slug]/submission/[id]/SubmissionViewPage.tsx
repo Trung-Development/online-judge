@@ -524,23 +524,54 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
             </Card>
           )}
 
-          {/* Source Code */}
-          {submission.code && submission.code.trim() !== "" && (
+          {/* Source Code or Download for Scratch */}
+          {(() => {
+            const uploaded = (submission as unknown) as { uploadedFile?: string; uploadedFileUrl?: string };
+            const hasUploaded = !!(uploaded.uploadedFile || uploaded.uploadedFileUrl);
+            return (submission.language === 'SCRATCH' || hasUploaded) ? (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FontAwesomeIcon icon={faCode} />
-                  Source Code
+                  Submission File
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <CodeHighlight 
-                  code={submission.code}
-                  language={submission.language}
-                />
+                {(uploaded.uploadedFileUrl || uploaded.uploadedFile) ? (
+                  <div className="space-y-2">
+                    <a
+                      href={uploaded.uploadedFileUrl || uploaded.uploadedFile}
+                      className="inline-block w-full text-center px-4 py-2 border rounded bg-primary text-white"
+                      download
+                    >
+                      Download Submission File
+                    </a>
+                    <div className="text-sm text-muted-foreground">If the download does not start, right click and open in a new tab.</div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground">No uploaded file available for this submission.</div>
+                )}
               </CardContent>
             </Card>
-          )}
+          ) : (
+            submission.code && submission.code.trim() !== "" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FontAwesomeIcon icon={faCode} />
+                    Source Code
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CodeHighlight 
+                    code={submission.code}
+                    language={submission.language}
+                  />
+                </CardContent>
+              </Card>
+            )
+          )
+            })()}
         </div>
 
         {/* Sidebar */}
