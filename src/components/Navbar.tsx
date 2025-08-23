@@ -116,8 +116,10 @@ export function Navbar() {
       }
     });
     if (best.el) return best.el;
-    // fallback: if we have a link with href exactly matching pathname
-    return links.find((el) => el.getAttribute("data-href") === pathname) || links[0] || null;
+  // fallback: if we have a link with href exactly matching pathname
+  // otherwise return null (don't default to the first link) so we don't
+  // highlight Home on unrelated routes like /accounts/security
+  return links.find((el) => el.getAttribute("data-href") === pathname) || null;
   };
 
   React.useLayoutEffect(() => {
