@@ -8,10 +8,6 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [],
     optimizeCss: true,
   },
-  // Force dynamic rendering for all pages
-  typescript: {
-    ignoreBuildErrors: false,
-  },
   webpack: (config, { dev }) => {
     // Only apply esbuild-loader to our source files, not node_modules or Next.js internals
     config.module.rules.unshift({
