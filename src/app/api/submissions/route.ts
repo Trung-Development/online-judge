@@ -17,12 +17,15 @@ export async function POST(request: NextRequest) {
       const file = form.get("file");
       const problemSlug = form.get("problemSlug")?.toString() || "";
       const language = form.get("language")?.toString() || "";
-  const sourceCode = form.get("sourceCode")?.toString() || undefined;
-  // backend expects 'code' field name, include it when present
-  const codeField = form.get("code")?.toString() || undefined;
+      const sourceCode = form.get("sourceCode")?.toString() || undefined;
+      // backend expects 'code' field name, include it when present
+      const codeField = form.get("code")?.toString() || undefined;
 
       if (!problemSlug || !language) {
-        return NextResponse.json({ error: "Problem slug and language are required" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Problem slug and language are required" },
+          { status: 400 }
+        );
       }
 
       const forward = new FormData();
@@ -30,23 +33,33 @@ export async function POST(request: NextRequest) {
       if (file) {
         const fileBlob = file as Blob;
         let maybeName = "upload";
-        if (file instanceof File && typeof file.name === 'string') maybeName = file.name;
+        if (file instanceof File && typeof file.name === "string")
+          maybeName = file.name;
         forward.append("file", fileBlob, maybeName);
       }
       forward.append("problemSlug", problemSlug);
       forward.append("language", language);
       if (sourceCode) forward.append("sourceCode", sourceCode);
       // backend requires a non-empty `code` string; if none provided, use a short placeholder
-      const codeToSend = codeField || sourceCode || (file ? "[binary submission]" : "");
+      const codeToSend =
+        codeField || sourceCode || (file ? "[binary submission]" : "");
       forward.append("code", codeToSend);
 
-      response = await fetch(new URL("/client/submissions", env.API_ENDPOINT).toString(), {
-        method: "POST",
-        headers: {
-          ...(session?.sessionToken && { Authorization: `Bearer ${session.sessionToken}` }),
-        },
-        body: forward,
-      });
+      // When a file is present, forward to the backend upload endpoint so
+      // the NestJS controller's multipart handler (`POST /client/submissions/upload`)
+      // receives the request and processes the file properly.
+      response = await fetch(
+        new URL("/client/submissions/upload", env.API_ENDPOINT).toString(),
+        {
+          method: "POST",
+          headers: {
+            ...(session?.sessionToken && {
+              Authorization: `Bearer ${session.sessionToken}`,
+            }),
+          },
+          body: forward,
+        }
+      );
     } else {
       const body = await request.json();
       const { problemSlug, language, sourceCode } = body;
@@ -64,14 +77,19 @@ export async function POST(request: NextRequest) {
         code: sourceCode,
       };
 
-      response = await fetch(new URL("/client/submissions", env.API_ENDPOINT).toString(), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(session?.sessionToken && { Authorization: `Bearer ${session.sessionToken}` }),
-        },
-        body: JSON.stringify(submissionPayload),
-      });
+      response = await fetch(
+        new URL("/client/submissions", env.API_ENDPOINT).toString(),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(session?.sessionToken && {
+              Authorization: `Bearer ${session.sessionToken}`,
+            }),
+          },
+          body: JSON.stringify(submissionPayload),
+        }
+      );
     }
 
     if (!response.ok) {
@@ -89,7 +107,6 @@ export async function POST(request: NextRequest) {
     const submissionData = result.data || result;
 
     return NextResponse.json(submissionData);
-
   } catch (error) {
     console.error("Submission API error:", error);
     return NextResponse.json(
@@ -141,7 +158,9 @@ export async function GET(request: NextRequest) {
       {
         method: "GET",
         headers: {
-          ...(session?.sessionToken && { Authorization: `Bearer ${session.sessionToken}` }),
+          ...(session?.sessionToken && {
+            Authorization: `Bearer ${session.sessionToken}`,
+          }),
         },
       }
     );
@@ -156,7 +175,6 @@ export async function GET(request: NextRequest) {
 
     const result = await response.json();
     return NextResponse.json(result);
-
   } catch (error) {
     console.error("Submissions fetch API error:", error);
     return NextResponse.json(
