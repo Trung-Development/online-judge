@@ -18,6 +18,7 @@ interface UserPageProps {
         email: string;
         username: string;
         fullname: string;
+        defaultRuntime: string;
     } | null;
 }
 
