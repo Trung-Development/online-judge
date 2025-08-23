@@ -92,20 +92,51 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
   const [submissionStatus, setSubmissionStatus] =
     useState<SubmissionResponse | null>(null);
 
-  // Check problem availability when judges status changes
+  // Check problem availability when judge connection state changes.
+  // Only depend on the primitive connected/count fields to avoid
+  // re-running when the judgeStatus object identity changes and
+  // causing repeated setState calls (which can trigger infinite loops
+  // in production builds).
+  // Keep a stable ref to checkProblemAvailability to avoid re-running the effect
+  // when the hook returns a new function instance.
+  const checkProblemAvailabilityRef = React.useRef(checkProblemAvailability);
+  checkProblemAvailabilityRef.current = checkProblemAvailability;
+
   useEffect(() => {
-    if (judgeStatus && judgeStatus.connected && judgeStatus.judgeCount > 0) {
-      checkProblemAvailability(slug).then(setIsProblemAvailable);
-    } else {
-      setIsProblemAvailable(false);
-    }
-  }, [judgeStatus, checkProblemAvailability, slug]);
+    let mounted = true;
+
+    const runCheck = async () => {
+      if (judgeStatus?.connected && judgeStatus.judgeCount > 0) {
+        try {
+          const available = await checkProblemAvailabilityRef.current(slug);
+          if (mounted) setIsProblemAvailable(available);
+        } catch {
+          if (mounted) setIsProblemAvailable(false);
+        }
+      } else {
+        if (mounted) setIsProblemAvailable(false);
+      }
+    };
+
+    void runCheck();
+    return () => {
+      mounted = false;
+    };
+    // Note: we intentionally only depend on these primitives to avoid
+    // re-running the effect due to function identity changes from hooks.
+  }, [judgeStatus?.connected, judgeStatus?.judgeCount, slug]);
 
   // Filter available languages based on problem settings AND judge availability
-  const availableLanguages = languages.filter(
-    (lang) =>
-      problem.allowedLanguages.includes(lang.value as TAllowedLang) &&
-      isExecutorAvailable(lang.value)
+  // Memoize available languages to avoid re-evaluating on every render and
+  // reduce risk of causing repeated renders if isExecutorAvailable has unstable identity.
+  const availableLanguages = React.useMemo(
+    () =>
+      languages.filter(
+        (lang) =>
+          problem.allowedLanguages.includes(lang.value as TAllowedLang) &&
+          isExecutorAvailable(lang.value),
+      ),
+    [problem.allowedLanguages, isExecutorAvailable],
   );
 
   // Polling for submission updates (instead of WebSocket to avoid CORS issues)
@@ -140,19 +171,29 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
     };
   }, [submissionId]);
 
-  // Set default language template when language changes
+  // Apply user's default runtime only once to avoid repeated setSelectedLanguage
+  const defaultAppliedRef = React.useRef(false);
   useEffect(() => {
-    if (!selectedLanguage) {
-      if (user?.defaultRuntime) setSelectedLanguage(user.defaultRuntime);
+    if (
+      !defaultAppliedRef.current &&
+      !selectedLanguage &&
+      user?.defaultRuntime &&
+      availableLanguages.some((l) => l.value === user.defaultRuntime)
+    ) {
+      setSelectedLanguage(user.defaultRuntime);
+      defaultAppliedRef.current = true;
     }
+  }, [user?.defaultRuntime, selectedLanguage, availableLanguages]);
 
+  // When the selected language changes, apply its template once if code is empty
+  useEffect(() => {
     if (selectedLanguage) {
       const lang = languages.find((l) => l.value === selectedLanguage);
       if (lang && lang.template && !code) {
         setCode(lang.template);
       }
     }
-  }, [selectedLanguage, code, user]);
+  }, [selectedLanguage, code]);
 
   // Upload file helper: posts to /upload and stores returned URL & filename
   const uploadFile = async (file: File) => {
