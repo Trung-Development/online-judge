@@ -99,12 +99,20 @@ export function Navbar() {
     if (links.length === 0) return null;
 
     // pick the best matching href (longest prefix match)
+    // special-case root ('/') so it only matches exactly
     let best: { el: HTMLElement | null; len: number } = { el: null, len: 0 };
     links.forEach((el) => {
       const href = el.getAttribute("data-href") || "";
       if (!href) return;
-      if (pathname === href || pathname.startsWith(href)) {
-        if (href.length > best.len) best = { el, len: href.length };
+      if (href === "/") {
+        // only match root exactly
+        if (pathname === "/") {
+          if (href.length > best.len) best = { el, len: href.length };
+        }
+      } else {
+        if (pathname === href || pathname.startsWith(href)) {
+          if (href.length > best.len) best = { el, len: href.length };
+        }
       }
     });
     if (best.el) return best.el;
