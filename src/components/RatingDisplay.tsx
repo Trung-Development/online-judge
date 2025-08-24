@@ -31,12 +31,8 @@ export default function RatingDisplay({
   const ratingClass = getRatingClass(rating);
   const ratingTitle = getRatingTitle(rating);
   
-  if (rating === 0) {
-    return (
-      <span className={`rate-group ${className}`} title="Unrated">
-        {/* Empty for unrated users */}
-      </span>
-    );
+  if (!rating || rating === 0) {
+    return null; // Display nothing for unrated users
   }
   
   const progress = RatingProgress({ rating });
