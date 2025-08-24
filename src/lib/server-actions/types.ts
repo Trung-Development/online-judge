@@ -26,3 +26,27 @@ export async function getTypesNames(token?: string): Promise<string[]> {
         return [];
     }
 }
+
+export async function getTypes(token?: string): Promise<{ id: number; name: string }[]> {
+    try {
+        const baseUrl = env.API_ENDPOINT;
+        const url = new URL("/client/types/all", baseUrl);
+
+        const headers = new Headers();
+        if (token && token.length > 0)
+            headers.append("Authorization", `Bearer ${token}`);
+
+        const response = await fetch(url.toString(), {
+            headers,
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch types: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error fetching types:", error);
+        return [];
+    }
+}

@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBook,
   faCheck,
+  faPlus,
   faEye,
   faEyeDropper,
   faEyeSlash,
@@ -20,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { IProblemData, ProblemStatus } from "@/lib/server-actions/problems";
+import { hasPermission, UserPermissions as FEUserPermissions } from "@/lib/permissions";
 import { useAuth } from "@/components/AuthProvider";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,7 +57,7 @@ function getStatusIcon(status?: ProblemStatus) {
 }
 
 export default function ProblemsPage({ initialProblems, initialCategories, initialTypes }: ProblemsPageProps) {
-  const { sessionToken } = useAuth();
+  const { sessionToken, user } = useAuth();
   const searchParams = useSearchParams();
   const [filteredProblems, setFilteredProblems] =
     useState<IProblemData[]>(initialProblems);
@@ -260,7 +262,19 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
   return (
     <main className="max-w-7xl mx-auto py-8 px-4">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-4">Problems list</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold mb-4">Problems list</h1>
+          {isAuthenticated && hasPermission(user?.perms, FEUserPermissions.CREATE_NEW_PROBLEM) && (
+            <div className="ml-4">
+              <Link href="/problem/create">
+                <Button className="ml-2">
+                  <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                  Create problem
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
         <hr className="mb-6" />
         {/* Filters */}
         <Card className="mb-8 rounded-2xl border border-border bg-card shadow-sm">

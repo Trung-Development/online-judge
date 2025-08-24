@@ -6,6 +6,7 @@
 // Permission constants - must match backend constants/permissions.ts
 export const UserPermissions = {
   ADMINISTRATOR: BigInt(1) << BigInt(0),
+  CREATE_NEW_PROBLEM: BigInt(1) << BigInt(25),
   EDIT_PROBLEM_TESTS: BigInt(1) << BigInt(33),
   // Add other permissions as needed
 } as const;
