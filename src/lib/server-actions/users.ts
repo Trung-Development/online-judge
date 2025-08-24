@@ -94,7 +94,7 @@ export async function getUsersList(): Promise<IUsersListData[]> {
     throw new Error("API base URL is not defined");
   }
 
-  const response = await fetch(new URL("/client/users/list", apiBase).toString(), {
+  const response = await fetch(new URL("/client/users/all", apiBase).toString(), {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
