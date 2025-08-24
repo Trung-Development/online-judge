@@ -396,7 +396,7 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
                 🎲 Random Problem
                 {filteredProblems.length > 0 && (
                   <span className="ml-2 text-xs text-muted-foreground">
-                    (from {filteredProblems.length} results)
+                    (from {filteredProblems.length} result{filteredProblems.length != 1 ? "s" : ""})
                   </span>
                 )}
               </Button>

@@ -29,6 +29,7 @@ import {
   faExclamationCircle,
   faGlobeAsia,
   faClipboardList,
+  faLightbulb,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "@/components/AuthProvider";
 import { IProblemPageData, TAllowedLang } from "@/types";
@@ -1060,7 +1061,10 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
           {/* Tips */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Submission Tips</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <FontAwesomeIcon icon={faLightbulb} className="w-4 h-4" />
+                Submission Tips
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm text-muted-foreground">
               <p>• Make sure your solution handles all edge cases</p>
