@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.873.0",
+    "@aws-sdk/s3-request-presigner": "^3.873.0",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-brands-svg-icons": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
@@ -36,6 +37,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.1",
     "dotenv-cli": "^10.0.0",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.513.0",
     "md5": "^2.3.0",
     "monaco-editor": "^0.52.2",

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,7 @@ import {
   faExclamationTriangle,
   faCheckCircle,
 } from "@fortawesome/free-solid-svg-icons";
+import JSZip from 'jszip';
 
 interface TestcaseManagerPageProps {
   problem: IProblemPageData;
@@ -39,6 +40,18 @@ export default function TestcaseManagerPage({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // ZIP upload state
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [zipName, setZipName] = useState<string | null>(null);
+  const [zipFiles, setZipFiles] = useState<string[]>([]);
+  const [detectedCases, setDetectedCases] = useState<{
+    input: string;
+    output?: string;
+    type?: string;
+  }[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
 
   // Check if current user can edit test cases
   const canUserEditTestcases =
@@ -313,6 +326,212 @@ export default function TestcaseManagerPage({
         </CardContent>
       </Card>
 
+      {/* ZIP Upload Card */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FontAwesomeIcon icon={faCheckCircle} className="w-5 h-5" />
+            Upload Testcase Archive (ZIP)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <Label className="mb-2">ZIP archive (.zip)</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".zip"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  if (!f.name.endsWith(".zip")) {
+                    setUploadMessage("Only .zip archives are supported");
+                    return;
+                  }
+                  setZipName(f.name);
+                  setUploadMessage(null);
+                  try {
+                    const buf = await f.arrayBuffer();
+                    const zip = await JSZip.loadAsync(buf);
+                    const names = Object.keys(zip.files).filter((n) => !n.endsWith("/"));
+                    setZipFiles(names);
+
+                    // Lightweight auto-detection (VNOI-like): find pairs like *.in, *.out or inputN.txt, outputN.txt
+                    const inputs: Record<string, string> = {};
+                    const outputs: Record<string, string> = {};
+                    const simpleIn = /(?:^|\/)(.+?)\.(?:in|input|inp)$/i;
+                    const simpleOut = /(?:^|\/)(.+?)\.(?:out|output|ans|exp)$/i;
+                    const numIn = /(?:^|\/)input(?:[_\-.]?)(\d+)?(?:\.|$)/i;
+                    const numOut = /(?:^|\/)output(?:[_\-.]?)(\d+)?(?:\.|$)/i;
+
+                    names.forEach((n) => {
+                      const s = n.split("/").pop() || n;
+                      let m;
+                      if ((m = s.match(simpleIn))) {
+                        inputs[m[1]] = n;
+                      } else if ((m = s.match(simpleOut))) {
+                        outputs[m[1]] = n;
+                      } else if ((m = s.match(numIn))) {
+                        const idx = m[1] || '1';
+                        inputs[idx] = n;
+                      } else if ((m = s.match(numOut))) {
+                        const idx = m[1] || '1';
+                        outputs[idx] = n;
+                      }
+                    });
+
+                    const cases: { input: string; output?: string; type?: string }[] = [];
+                    // Pair by key
+                    Object.keys(inputs).forEach((k) => {
+                      cases.push({ input: inputs[k], output: outputs[k], type: 'standard' });
+                    });
+                    // Add outputs that were unmatched as separate cases
+                    Object.keys(outputs).forEach((k) => {
+                      if (!inputs[k]) cases.push({ input: outputs[k], output: undefined, type: 'output-only' });
+                    });
+
+                    if (cases.length > 0) setDetectedCases(cases);
+                  } catch (err) {
+                    console.error('Failed to read zip archive', err);
+                    setUploadMessage("Failed to read zip archive");
+                    setZipFiles([]);
+                  }
+                }}
+              />
+            </div>
+
+            {zipName && (
+              <div>
+                <p className="text-sm">Selected: {zipName}</p>
+                <p className="text-sm text-muted-foreground">Contents:</p>
+                <ul className="list-disc pl-6">
+                  {zipFiles.map((f) => (
+                    <li key={f} className="text-sm">
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+              {detectedCases.length > 0 && (
+                <div className="mt-4">
+                  <Label className="mb-2">Detected testcases</Label>
+                  <div className="space-y-2">
+                    {detectedCases.map((c, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <input
+                          className="flex-1 text-sm p-1 border rounded"
+                          value={c.input}
+                          onChange={(e) => {
+                            const nc = [...detectedCases];
+                            nc[i] = { ...nc[i], input: e.target.value };
+                            setDetectedCases(nc);
+                          }}
+                        />
+                        <input
+                          className="flex-1 text-sm p-1 border rounded"
+                          value={c.output ?? ""}
+                          onChange={(e) => {
+                            const nc = [...detectedCases];
+                            nc[i] = { ...nc[i], output: e.target.value };
+                            setDetectedCases(nc);
+                          }}
+                        />
+                        <span className="text-xs text-muted-foreground">{c.type}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            {uploadMessage && (
+              <Alert variant="destructive">
+                <AlertDescription>{uploadMessage}</AlertDescription>
+              </Alert>
+            )}
+
+            <div className="flex gap-2">
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+              >
+                Choose ZIP
+              </Button>
+              <Button
+                onClick={async () => {
+                  const f = fileInputRef.current?.files?.[0];
+                  if (!f) {
+                    setUploadMessage("No file selected");
+                    return;
+                  }
+                  setUploading(true);
+                  setUploadMessage(null);
+                  try {
+                    const form = new FormData();
+                    form.append("file", f);
+                    // store under tests/<slug>/ on object storage
+                    form.append("path", `tests/${slug}/${f.name}`);
+
+                      // Request presigned URLs from our app route. We pass JSON (not multipart)
+                      const presignRes = await fetch(`/api/upload-testcase-file`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+                        },
+                        body: JSON.stringify({ slug, filename: f.name }),
+                      });
+
+                      if (!presignRes.ok) throw new Error('Failed to get presigned URL');
+                      const presign = await presignRes.json();
+
+                      // Upload directly to object storage using the returned uploadUrl
+                      const putRes = await fetch(presign.uploadUrl, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/zip' },
+                        body: f,
+                      });
+
+                      if (!putRes.ok) throw new Error('Upload to storage failed');
+
+                      // Finalize by notifying backend with the download URL (presigned GET)
+                      const fin = await fetch(`/api/problem/${slug}/finalize-testcase-upload`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+                        },
+                        body: JSON.stringify({ url: presign.downloadUrl || presign.download_url || presign.downloadUrl || presign.download }),
+                      });
+
+                      if (!fin.ok) {
+                        const err = await fin.json().catch(() => ({}));
+                        throw new Error(err?.error || 'Finalize failed');
+                      }
+
+                      const fj = await fin.json();
+                      setUploadMessage(fj.message || 'Upload & finalize complete');
+                    // Optionally trigger a refresh of problem metadata here
+                  } catch (error) {
+                    const msg =
+                      error && typeof error === 'object' && 'message' in error
+                        ? (error as { message?: string }).message
+                        : String(error);
+                    setUploadMessage(msg || "Upload error");
+                  } finally {
+                    setUploading(false);
+                  }
+                }}
+                disabled={uploading || !zipName}
+              >
+                {uploading ? "Uploading..." : "Upload & Finalize"}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
       {/* Info Card */}
       <Card className="mt-6">
         <CardContent className="flex items-start gap-4">
