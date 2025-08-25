@@ -130,7 +130,9 @@ export async function createProblem(
     description: string;
     categoryId?: number;
     types?: number[];
-    allowedLanguages?: string[];
+  allowedLanguages?: string[];
+  timeLimit?: number;
+  memoryLimit?: number;
   },
   token?: string
 ) {
@@ -153,7 +155,9 @@ export async function createProblem(
         description: data.description,
         categoryId: data.categoryId,
         types: data.types,
-        allowedLanguages: data.allowedLanguages,
+  allowedLanguages: data.allowedLanguages,
+  timeLimit: data.timeLimit ?? 1,
+  memoryLimit: data.memoryLimit ?? 256,
       }),
     });
 
@@ -181,7 +185,9 @@ export async function updateProblem(
     description?: string;
     categoryId?: number;
     types?: number[];
-    allowedLanguages?: string[];
+  allowedLanguages?: string[];
+  timeLimit?: number;
+  memoryLimit?: number;
   },
   token?: string
 ) {

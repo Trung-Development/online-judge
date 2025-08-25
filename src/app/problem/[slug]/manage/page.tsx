@@ -3,11 +3,20 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { hasPermission, UserPermissions as FEUserPermissions } from "@/lib/permissions";
+import {
+  hasPermission,
+  UserPermissions as FEUserPermissions,
+} from "@/lib/permissions";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { languages } from "@/constants";
 
@@ -18,7 +27,10 @@ export default function ManageProblemPage() {
 
   const { user, sessionToken } = useAuth();
 
-  const canEdit = hasPermission(user?.perms, FEUserPermissions.EDIT_PROBLEM_TESTS);
+  const canEdit = hasPermission(
+    user?.perms,
+    FEUserPermissions.EDIT_PROBLEM_TESTS
+  );
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,10 +39,16 @@ export default function ManageProblemPage() {
   const [slug, setSlug] = useState(slugParam);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [timeLimit, setTimeLimit] = useState<number>(1);
+  const [memoryLimit, setMemoryLimit] = useState<number>(256);
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [allowedLanguages, setAllowedLanguages] = useState<string[]>([]);
-  const [typesOptions, setTypesOptions] = useState<{ id: number; name: string }[]>([]);
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [typesOptions, setTypesOptions] = useState<
+    { id: number; name: string }[]
+  >([]);
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>(
+    []
+  );
   const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
 
   useEffect(() => {
@@ -38,21 +56,31 @@ export default function ManageProblemPage() {
       setLoading(true);
       try {
         const [catsRes, typesRes] = await Promise.all([
-          fetch('/api/categories/all').then((r) => r.json()).catch(() => [] as { id: number; name: string }[]),
-          fetch('/api/types/all').then((r) => r.json()).catch(() => [] as { id: number; name: string }[]),
+          fetch("/api/categories/all")
+            .then((r) => r.json())
+            .catch(() => [] as { id: number; name: string }[]),
+          fetch("/api/types/all")
+            .then((r) => r.json())
+            .catch(() => [] as { id: number; name: string }[]),
         ]);
         setCategories(catsRes);
         setTypesOptions(typesRes);
 
-        const probRes = await fetch(`/api/problem/${encodeURIComponent(slugParam)}`);
+        const probRes = await fetch(
+          `/api/problem/${encodeURIComponent(slugParam)}`
+        );
         if (!probRes.ok) {
-          setError('Failed to load problem');
+          setError("Failed to load problem");
           setLoading(false);
           return;
         }
         const prob = await probRes.json();
-        setName(prob.name || '');
-        setDescription(prob.description || '');
+        setName(prob.name || "");
+        setDescription(prob.description || "");
+        setTimeLimit(typeof prob.timeLimit === "number" ? prob.timeLimit : 1);
+        setMemoryLimit(
+          typeof prob.memoryLimit === "number" ? prob.memoryLimit : 256
+        );
         setCategoryId(prob.categoryId ?? undefined);
         setAllowedLanguages(prob.allowedLanguages || []);
         // types are names on read; if API returns ids, adapt; try to map by name
@@ -74,12 +102,24 @@ export default function ManageProblemPage() {
   const handleSave = async () => {
     setError(null);
     setLoading(true);
+    // client-side validation
+    if (!(timeLimit > 0) || timeLimit > 60) {
+      setError('Time limit must be > 0 and ≤ 60 seconds');
+      setLoading(false);
+      return;
+    }
+    if (!(memoryLimit > 0)) {
+      setError('Memory limit must be > 0 MB');
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch(`/api/problem/${encodeURIComponent(slugParam)}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: sessionToken ? `Bearer ${sessionToken}` : '',
+          "Content-Type": "application/json",
+          Authorization: sessionToken ? `Bearer ${sessionToken}` : "",
         },
         body: JSON.stringify({
           slug,
@@ -88,6 +128,8 @@ export default function ManageProblemPage() {
           categoryId,
           types: selectedTypes,
           allowedLanguages,
+          timeLimit,
+          memoryLimit,
         }),
       });
       if (!res.ok) {
@@ -104,14 +146,14 @@ export default function ManageProblemPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Delete this problem? This cannot be undone.')) return;
+    if (!confirm("Delete this problem? This cannot be undone.")) return;
     setError(null);
     setLoading(true);
     try {
       const res = await fetch(`/api/problem/${encodeURIComponent(slugParam)}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          Authorization: sessionToken ? `Bearer ${sessionToken}` : '',
+          Authorization: sessionToken ? `Bearer ${sessionToken}` : "",
         },
       });
       if (!res.ok) {
@@ -119,7 +161,7 @@ export default function ManageProblemPage() {
         throw new Error(j?.message || `Failed to delete: ${res.status}`);
       }
       // Navigate away after delete
-      router.push('/problems');
+      router.push("/problems");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
@@ -131,7 +173,9 @@ export default function ManageProblemPage() {
   if (!canEdit) {
     return (
       <main className="max-w-4xl mx-auto py-8 px-4">
-        <div className="text-yellow-600">You do not have permission to edit this problem.</div>
+        <div className="text-yellow-600">
+          You do not have permission to edit this problem.
+        </div>
       </main>
     );
   }
@@ -151,6 +195,10 @@ export default function ManageProblemPage() {
         <div>
           <label className="block text-sm font-medium mb-1">Slug</label>
           <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
+          <p className="text-xs text-muted-foreground">
+            The problem slug becomes the problem page path — for example, slug{" "}
+            <code>abc</code> will be available at <code>/problem/abc</code>.
+          </p>
         </div>
 
         <div>
@@ -160,18 +208,27 @@ export default function ManageProblemPage() {
 
         <div>
           <label className="block text-sm font-medium mb-1">Description</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full rounded-md border p-2" />
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full rounded-md border p-2"
+          />
         </div>
 
         <div>
           <label className="block text-sm font-medium mb-1">Category</label>
-          <Select onValueChange={(v) => setCategoryId(v ? parseInt(v) : undefined)} value={categoryId !== undefined ? String(categoryId) : undefined}>
+          <Select
+            onValueChange={(v) => setCategoryId(v ? parseInt(v) : undefined)}
+            value={categoryId !== undefined ? String(categoryId) : undefined}
+          >
             <SelectTrigger className="rounded-lg">
               <SelectValue placeholder="Select a category" />
             </SelectTrigger>
             <SelectContent>
               {categories.map((c) => (
-                <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                <SelectItem key={c.id} value={String(c.id)}>
+                  {c.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -182,15 +239,22 @@ export default function ManageProblemPage() {
           <MultiSelect
             id="types"
             placeholder="Select types"
-            options={typesOptions.map((t) => ({ value: String(t.id), label: t.name }))}
-            onValueChange={(vals) => setSelectedTypes(vals.map((v) => parseInt(v)))}
+            options={typesOptions.map((t) => ({
+              value: String(t.id),
+              label: t.name,
+            }))}
+            onValueChange={(vals) =>
+              setSelectedTypes(vals.map((v) => parseInt(v)))
+            }
             defaultValue={selectedTypes.map((v) => String(v))}
             hideSelectAll
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Allowed languages</label>
+          <label className="block text-sm font-medium mb-1">
+            Allowed languages
+          </label>
           <MultiSelect
             id="allowedLanguages"
             placeholder="Select allowed languages"
@@ -201,11 +265,31 @@ export default function ManageProblemPage() {
           />
         </div>
 
+        <div>
+          <label className="block text-sm font-medium mb-1">Time limit (seconds)</label>
+          <Input type="number" step="0.01" value={String(timeLimit)} onChange={(e) => setTimeLimit(parseFloat(e.target.value || '0'))} />
+          <p className="text-xs text-muted-foreground">Maximum 60s. Decimal values allowed (e.g. 0.5).</p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Memory limit (MB)</label>
+          <Input type="number" step="0.1" value={String(memoryLimit)} onChange={(e) => setMemoryLimit(parseFloat(e.target.value || '0'))} />
+          <p className="text-xs text-muted-foreground">Value in MB. 1024 MB = 1 GB. Decimal values allowed.</p>
+        </div>
+
         {error && <div className="text-red-600">{error}</div>}
 
         <div className="flex gap-2">
-          <Button onClick={handleSave} disabled={loading}>{loading ? 'Saving...' : 'Save'}</Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={loading}>{loading ? 'Deleting...' : 'Delete'}</Button>
+          <Button onClick={handleSave} disabled={loading}>
+            {loading ? "Saving..." : "Save"}
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={loading}
+          >
+            {loading ? "Deleting..." : "Delete"}
+          </Button>
         </div>
       </div>
     </main>
