@@ -261,7 +261,6 @@ export default function ManageProblemPage() {
             options={languages.map((l) => ({ value: l.value, label: l.label }))}
             onValueChange={setAllowedLanguages}
             defaultValue={allowedLanguages}
-            hideSelectAll
           />
         </div>
 
