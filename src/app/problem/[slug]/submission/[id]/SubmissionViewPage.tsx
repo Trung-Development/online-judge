@@ -56,6 +56,7 @@ interface SubmissionDetail {
     time: number;
     memory: number;
     position: number;
+  batchNumber?: number | null;
     output?: string;
     feedback?: string;
     input?: string;
@@ -80,6 +81,8 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
   
   // State for collapsible test case sections
   const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
+  // State for collapsible batch sections
+  const [expandedBatches, setExpandedBatches] = useState<{[key: string]: boolean}>({});
 
   // Helper function to toggle expanded sections
   const toggleSection = (testCaseId: number, sectionType: string) => {
@@ -88,6 +91,11 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
       ...prev,
       [key]: !prev[key]
     }));
+  };
+
+  const toggleBatch = (batchId: string | number) => {
+    const key = `batch-${batchId}`;
+    setExpandedBatches(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   // Check if a section is expanded
@@ -429,8 +437,21 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {submission.testCases.map((testCase, i) => {
+                    <div className="space-y-3">
+                      {/* Group test cases by batchNumber (null/undefined => unbatched) */}
+                      {(() => {
+                        type TestCaseType = SubmissionDetail['testCases'][number];
+                        const groups: { [key: string]: TestCaseType[] } = {};
+                        submission.testCases.forEach((tc: TestCaseType) => {
+                          const key = tc.batchNumber != null ? `batch-${tc.batchNumber}` : 'unbatched';
+                          if (!groups[key]) groups[key] = [];
+                          groups[key].push(tc);
+                        });
+
+                        // If there's only the unbatched group, render as before
+                        const groupKeys = Object.keys(groups);
+                        if (groupKeys.length === 1 && groupKeys[0] === 'unbatched') {
+                          return submission.testCases.map((testCase, i) => {
                     // Check if there's any detailed data to show
                     const hasDetailedData = (testCase.input && testCase.input.trim()) || 
                                           (testCase.expected && testCase.expected.trim()) || 
@@ -518,7 +539,199 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                         )}
                       </div>
                     );
-                  })}
+                      });
+                    }
+
+                    // Otherwise render batches as collapsible boxes
+                    return groupKeys.map((gk) => {
+                      if (gk === 'unbatched') {
+                        // Render unbatched cases as a regular list
+                        return groups[gk].map((testCase: TestCaseType, idx: number) => (
+                          <div key={testCase.id} className="border rounded-lg p-4">
+                            {/* reuse existing single-case rendering - copy of code below */}
+                            {/* Test case header with conditional expand/collapse button */}
+                            <div 
+                              className={`flex items-center justify-between ${( (testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim()) ) ? 'cursor-pointer' : ''}`}
+                              onClick={( (testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim()) ) ? () => toggleSection(testCase.id, 'details') : undefined}
+                            >
+                              <div className="flex items-center gap-2">
+                                {getVerdictIcon(testCase.verdict)}
+                                <span className="font-medium">Case #{idx+1}</span>
+                                <Badge className={getVerdictColor(testCase.verdict)}>
+                                  {getVerdictText(testCase.verdict)}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="text-sm text-muted-foreground">
+                                  {testCase.points}/{problem.points} point{testCase.points !== 1 ? 's' : ''}
+                                </div>
+                                {((testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim())) && (
+                                  <FontAwesomeIcon 
+                                    icon={isSectionExpanded(testCase.id, 'details') ? faChevronDown : faChevronRight} 
+                                    className="w-4 h-4 text-muted-foreground" 
+                                  />
+                                )}
+                              </div>
+                            </div>
+                            {/* Basic timing and memory info (always visible) */}
+                            <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+                              <div>
+                                <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
+                              </div>
+                              <div>
+                                <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'}
+                              </div>
+                            </div>
+
+                            {/* Collapsible detailed section - only show if there's data */}
+                            {((testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim())) && isSectionExpanded(testCase.id, 'details') && (
+                              <div className="mt-4 pt-3 border-t">
+                                <div className="space-y-3">
+                                  {testCase.input && testCase.input.trim() && (
+                                    <div>
+                                      <div className="text-sm font-medium mb-1">Input:</div>
+                                      <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                        {testCase.input.length > 1000 ? testCase.input.substring(0, 1000) + '\n... [truncated]' : testCase.input}
+                                      </pre>
+                                    </div>
+                                  )}
+                                  
+                                  {testCase.expected && testCase.expected.trim() && (
+                                    <div>
+                                      <div className="text-sm font-medium mb-1">Expected:</div>
+                                      <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                        {testCase.expected.length > 1000 ? testCase.expected.substring(0, 1000) + '\n... [truncated]' : testCase.expected}
+                                      </pre>
+                                    </div>
+                                  )}
+                                  
+                                  {testCase.output && testCase.output.trim() && (
+                                    <div>
+                                      <div className="text-sm font-medium mb-1">Actual:</div>
+                                      <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                        {testCase.output.length > 1000 ? testCase.output.substring(0, 1000) + '\n... [truncated]' : testCase.output}
+                                      </pre>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                {/* Show feedback */}
+                                {testCase.feedback && testCase.feedback.trim() && (
+                                  <div className="mt-3">
+                                    <div className="text-sm font-medium mb-1">Feedback:</div>
+                                    <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
+                                      {testCase.feedback}
+                                    </pre>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      }
+
+                      const batchNum = gk.replace('batch-', '');
+                      const batchKey = `batch-${batchNum}`;
+                      const batchCases: TestCaseType[] = groups[gk];
+
+                      return (
+                        <div key={batchKey} className="border rounded-lg">
+                          <div 
+                            className="p-3 flex items-center justify-between cursor-pointer"
+                            onClick={() => toggleBatch(batchNum)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Badge className="bg-gray-100 text-gray-800">Batch #{batchNum}</Badge>
+                              <div className="text-sm text-muted-foreground">{batchCases.reduce((a,b)=>a+(b.points||0),0)}/{batchCases.reduce((a,b)=>a+(b.points||0),0) /* placeholder for total */} points</div>
+                            </div>
+                            <FontAwesomeIcon icon={expandedBatches[batchKey] ? faChevronDown : faChevronRight} />
+                          </div>
+
+                          {expandedBatches[batchKey] && (
+                            <div className="p-4 space-y-3">
+                              {batchCases.map((testCase: TestCaseType, idx: number) => (
+                                <div key={testCase.id} className="border rounded-lg p-4">
+                                  <div className={`flex items-center justify-between ${((testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim())) ? 'cursor-pointer' : ''}`}
+                                    onClick={((testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim())) ? () => toggleSection(testCase.id, 'details') : undefined}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      {getVerdictIcon(testCase.verdict)}
+                                      <span className="font-medium">Case #{idx+1}</span>
+                                      <Badge className={getVerdictColor(testCase.verdict)}>
+                                        {getVerdictText(testCase.verdict)}
+                                      </Badge>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className="text-sm text-muted-foreground">
+                                        {testCase.points}/{problem.points} point{testCase.points !== 1 ? 's' : ''}
+                                      </div>
+                                      {((testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim())) && (
+                                        <FontAwesomeIcon 
+                                          icon={isSectionExpanded(testCase.id, 'details') ? faChevronDown : faChevronRight} 
+                                          className="w-4 h-4 text-muted-foreground" 
+                                        />
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+                                    <div>
+                                      <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'}
+                                    </div>
+                                  </div>
+
+                                  {((testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim())) && isSectionExpanded(testCase.id, 'details') && (
+                                    <div className="mt-4 pt-3 border-t">
+                                      <div className="space-y-3">
+                                        {testCase.input && testCase.input.trim() && (
+                                          <div>
+                                            <div className="text-sm font-medium mb-1">Input:</div>
+                                            <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                              {testCase.input.length > 1000 ? testCase.input.substring(0, 1000) + '\n... [truncated]' : testCase.input}
+                                            </pre>
+                                          </div>
+                                        )}
+
+                                        {testCase.expected && testCase.expected.trim() && (
+                                          <div>
+                                            <div className="text-sm font-medium mb-1">Expected:</div>
+                                            <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                              {testCase.expected.length > 1000 ? testCase.expected.substring(0, 1000) + '\n... [truncated]' : testCase.expected}
+                                            </pre>
+                                          </div>
+                                        )}
+
+                                        {testCase.output && testCase.output.trim() && (
+                                          <div>
+                                            <div className="text-sm font-medium mb-1">Actual:</div>
+                                            <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                              {testCase.output.length > 1000 ? testCase.output.substring(0, 1000) + '\n... [truncated]' : testCase.output}
+                                            </pre>
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      {testCase.feedback && testCase.feedback.trim() && (
+                                        <div className="mt-3">
+                                          <div className="text-sm font-medium mb-1">Feedback:</div>
+                                          <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
+                                            {testCase.feedback}
+                                          </pre>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               </CardContent>
             </Card>
