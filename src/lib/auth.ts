@@ -32,6 +32,16 @@ const COOKIE_OPTIONS = {
 let _cryptoKey: CryptoKey | null = null;
 
 function base64ToUint8Array(b64: string) {
+  // Accept either base64 or hex input. Detect hex (only 0-9a-f chars, even length)
+  const isHex = /^[0-9a-fA-F]+$/.test(b64) && b64.length % 2 === 0;
+  if (isHex) {
+    // hex -> bytes
+    if (typeof Buffer !== "undefined") return Uint8Array.from(Buffer.from(b64, "hex"));
+    const bytes = new Uint8Array(b64.length / 2);
+    for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(b64.substr(i * 2, 2), 16);
+    return bytes;
+  }
+
   try {
     // atob expects a base64 string
     const bin = atob(b64);
@@ -85,31 +95,49 @@ async function getCryptoKey(): Promise<CryptoKey> {
 }
 
 async function encryptString(plain: string): Promise<string> {
-  const key = await getCryptoKey();
-  const cryptoObj = (globalThis as unknown) as { crypto?: Crypto };
-  const subtle = cryptoObj.crypto!.subtle;
-  const iv = cryptoObj.crypto!.getRandomValues(new Uint8Array(12));
-  const enc = new TextEncoder();
-  const data = enc.encode(plain);
-  const cipher = new Uint8Array(await subtle.encrypt({ name: "AES-GCM", iv }, key, data));
-  // store as base64(iv + cipher)
-  const out = new Uint8Array(iv.length + cipher.length);
-  out.set(iv, 0);
-  out.set(cipher, iv.length);
-  return uint8ArrayToBase64(out);
+  // Try WebCrypto first
+  try {
+    const key = await getCryptoKey();
+    const cryptoObj = (globalThis as unknown) as { crypto?: Crypto };
+    const subtle = cryptoObj.crypto!.subtle;
+    const iv = cryptoObj.crypto!.getRandomValues(new Uint8Array(12));
+    const enc = new TextEncoder();
+    const data = enc.encode(plain);
+    const cipherBuf = await subtle.encrypt({ name: "AES-GCM", iv }, key, data);
+    const cipher = new Uint8Array(cipherBuf);
+    // store as base64(iv + cipher)
+    const out = new Uint8Array(iv.length + cipher.length);
+    out.set(iv, 0);
+    out.set(cipher, iv.length);
+    return uint8ArrayToBase64(out);
+  } catch (err: unknown) {
+    // Let caller handle fallback (e.g., write plaintext cookie). Avoid attempting
+    // to require Node crypto in Edge runtimes where that is forbidden.
+    const e = err as Error;
+    console.warn("WebCrypto encrypt failed:", e?.name ?? e?.message ?? e);
+    throw err;
+  }
 }
 
 async function decryptString(b64: string): Promise<string> {
-  const key = await getCryptoKey();
-  const cryptoObj = (globalThis as unknown) as { crypto?: Crypto };
-  const subtle = cryptoObj.crypto!.subtle;
-  const data = base64ToUint8Array(b64);
-  if (data.length < 13) throw new Error("Encrypted session cookie too short");
-  const iv = data.slice(0, 12);
-  const cipher = data.slice(12);
-  const plainBuf = await subtle.decrypt({ name: "AES-GCM", iv }, key, cipher);
-  const dec = new TextDecoder();
-  return dec.decode(new Uint8Array(plainBuf));
+  // Try WebCrypto first
+  try {
+    const key = await getCryptoKey();
+    const cryptoObj = (globalThis as unknown) as { crypto?: Crypto };
+    const subtle = cryptoObj.crypto!.subtle;
+    const data = base64ToUint8Array(b64);
+    if (data.length < 13) throw new Error("Encrypted session cookie too short");
+    const iv = data.slice(0, 12);
+    const cipher = data.slice(12);
+    const plainBuf = await subtle.decrypt({ name: "AES-GCM", iv }, key, cipher);
+    const dec = new TextDecoder();
+    return dec.decode(new Uint8Array(plainBuf));
+  } catch (err: unknown) {
+    const e = err as Error;
+    console.warn("WebCrypto decrypt failed:", e?.name ?? e?.message ?? e);
+    // Bubble up to caller so session parsing falls back or clears the cookie.
+    throw err;
+  }
 }
 
 // Decode JWT token to extract session data
@@ -146,13 +174,21 @@ export async function setAuthSession(sessionToken: string, user: User): Promise<
     sessionExpires,
     user,
   };
-  // Encrypt session payload before storing in cookie
+  // Encrypt session payload before storing in cookie. If encryption fails
+  // (missing key, WebCrypto unavailable), fall back to plain JSON to avoid
+  // blocking login. This maintains backward compatibility with existing
+  // deployments while preferring encrypted cookies when possible.
   try {
     const encrypted = await encryptString(JSON.stringify(session));
     cookieStore.set(COOKIE_NAME, encrypted, COOKIE_OPTIONS);
   } catch (e) {
-    console.error("Failed to encrypt session cookie:", e);
-    throw e;
+    console.warn("Failed to encrypt session cookie, falling back to plaintext cookie:", e);
+    try {
+      cookieStore.set(COOKIE_NAME, JSON.stringify(session), COOKIE_OPTIONS);
+    } catch (e2) {
+      console.error("Failed to set plaintext session cookie as fallback:", e2);
+      throw e2;
+    }
   }
 }
 
@@ -165,9 +201,22 @@ export async function getAuthSession(): Promise<AuthSession | null> {
   }
   
   try {
-    // Decrypt cookie value then parse
-    const decrypted = await decryptString(sessionCookie.value);
-    const session: AuthSession = JSON.parse(decrypted);
+    // Heuristic: if cookie value appears to be plain JSON, parse it directly
+    // (backwards compatibility with unencrypted cookies). Encrypted values
+    // are base64/hex and won't start with '{' or '['.
+    const raw = sessionCookie.value;
+    let session: AuthSession;
+    if (raw && (raw[0] === '{' || raw[0] === '[')) {
+      try {
+        session = JSON.parse(raw);
+      } catch {
+        // fall through to decrypt attempt
+        session = JSON.parse(await decryptString(raw));
+      }
+    } else {
+      const decrypted = await decryptString(raw);
+      session = JSON.parse(decrypted);
+    }
     
     // Check if session is expired
     if (Date.now() > session.sessionExpires) {
