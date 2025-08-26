@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import {
@@ -39,6 +39,7 @@ export default function ManageProblemPage() {
   const [slug, setSlug] = useState(slugParam);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const overTypeRef = useRef<import("overtype").default | null>(null);
   const [timeLimit, setTimeLimit] = useState<number>(1);
   const [memoryLimit, setMemoryLimit] = useState<number>(256);
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
@@ -96,12 +97,77 @@ export default function ManageProblemPage() {
       } finally {
         setLoading(false);
       }
-    })();
+      })();
+      // Initialize OverType editor for manage page description
+      (async () => {
+        if (typeof window === "undefined") return;
+        try {
+          const OverType = (await import("overtype")).default;
+        
+          try {
+            const OTModule = await import("overtype");
+            const OTGlobal = ((OTModule as { default?: unknown }).default || OTModule) as unknown as { setTheme?: (s: string) => void };
+            if (OTGlobal && typeof OTGlobal.setTheme === "function") {
+              OTGlobal.setTheme("solar");
+            }
+          } catch {}
+          const inst = new OverType("#overtype-editor-manage", {
+            toolbar: true,
+            showStats: true,
+            value: description,
+            textareaProps: { name: "description" },
+            theme: "solar",
+          });
+          overTypeRef.current = inst;
+          try {
+            const opts = {
+              bgPrimary: "#0a0a0a",
+              bgSecondary: "#111",
+              textPrimary: "#fff",
+              accent: "#4251de",
+              border: "#333",
+            } as Record<string, string>;
+            const instSafe = inst as { setTheme?: (s: string, o?: Record<string, string>) => void } | null;
+            if (instSafe && typeof instSafe.setTheme === "function") {
+              instSafe.setTheme!("solar", opts);
+            }
+          } catch {}
+          const onStorage = (e: StorageEvent) => {
+            if (e.key === "theme") {
+              const cur = overTypeRef.current as { showPreviewMode?: (v: boolean) => void } | null;
+              if (cur && typeof cur.showPreviewMode === "function") {
+                try {
+                  cur.showPreviewMode(false);
+                } catch {}
+              }
+            }
+          };
+          window.addEventListener("storage", onStorage);
+          window.addEventListener("beforeunload", () => window.removeEventListener("storage", onStorage));
+        } catch {}
+      })();
+      return () => {
+        const cur = overTypeRef.current as { destroy?: () => void } | null;
+        if (cur && typeof cur.destroy === "function") {
+          try {
+            cur.destroy();
+          } catch {}
+        }
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
   }, [slugParam]);
 
   const handleSave = async () => {
     setError(null);
     setLoading(true);
+    // read editor content if present
+    try {
+      const cur = overTypeRef.current as { getValue?: () => string } | null;
+      if (cur && typeof cur.getValue === "function") {
+        const v = cur.getValue();
+        setDescription(v);
+      }
+    } catch {}
     // client-side validation
     if (!(timeLimit > 0) || timeLimit > 60) {
       setError('Time limit must be > 0 and ≤ 60 seconds');
@@ -208,11 +274,7 @@ export default function ManageProblemPage() {
 
         <div>
           <label className="block text-sm font-medium mb-1">Description</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full rounded-md border p-2"
-          />
+          <div id="overtype-editor-manage" className="w-full min-h-[24rem] h-96" />
         </div>
 
         <div>

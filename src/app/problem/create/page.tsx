@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -25,6 +25,84 @@ export default function CreateProblemPage() {
   const [name, setName] = useState("");
   const [points, setPoints] = useState(100);
   const [description, setDescription] = useState("");
+  const overTypeRef = useRef<import("overtype").default | null>(null);
+  // Initialize OverType editor on the client only
+  useEffect(() => {
+    (async () => {
+      if (typeof window === "undefined") return;
+      try {
+        const OverType = (await import("overtype")).default;
+        // determine theme: prefer localStorage 'theme', then html.dark, then prefers-color-scheme
+        // attempt to set demo theme globally if supported
+        try {
+          const OTModule = await import("overtype");
+            const OTGlobal = ((OTModule as { default?: unknown }).default || OTModule) as unknown as { setTheme?: (s: string) => void };
+            if (OTGlobal && typeof OTGlobal.setTheme === "function") {
+              OTGlobal.setTheme("solar");
+            }
+        } catch {}
+
+        const inst = new OverType("#overtype-editor-create", {
+          toolbar: true,
+          showStats: true,
+          value: description,
+          textareaProps: { name: "description" },
+          theme: "solar",
+        });
+        overTypeRef.current = inst;
+        // Ensure theme is applied at runtime by calling instance API if available
+        try {
+          const opts = {
+            bgPrimary: "#0a0a0a",
+            bgSecondary: "#111",
+            textPrimary: "#fff",
+            accent: "#4251de",
+            border: "#333",
+          } as Record<string, string>;
+          const instSafe = inst as { setTheme?: (s: string, o?: Record<string, string>) => void } | null;
+          if (instSafe && typeof instSafe.setTheme === "function") {
+            instSafe.setTheme!("solar", opts);
+          } else {
+            // fallback to module-level API if present
+            const OTGlobal = (await import("overtype")).default as unknown as { setTheme?: (s: string, o?: Record<string, string>) => void };
+            if (OTGlobal && typeof OTGlobal.setTheme === "function") {
+              OTGlobal.setTheme!("solar", opts);
+            }
+          }
+        } catch {}
+
+        // listen to storage changes for theme toggle in other tabs
+        const onStorage = (e: StorageEvent) => {
+          if (e.key === "theme") {
+            const cur = overTypeRef.current as { showPreviewMode?: (v: boolean) => void } | null;
+            if (cur && typeof cur.showPreviewMode === "function") {
+              try {
+                // no-op placeholder: some OverType builds may expose dynamic theme setter
+                // leaving here to avoid hard reloads; if not supported, reload will be required
+                cur.showPreviewMode(false);
+              } catch {}
+            }
+          }
+        };
+        window.addEventListener("storage", onStorage);
+        // remove listener on unload
+        window.addEventListener("beforeunload", () => window.removeEventListener("storage", onStorage));
+      } catch {
+        // ignore if lib not present
+      }
+    })();
+    return () => {
+      const cur = overTypeRef.current as
+        | { destroy?: () => void }
+        | null;
+      if (cur && typeof cur.destroy === "function") {
+        try {
+          cur.destroy();
+        } catch {}
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount for editor init
+  }, []);
   const [timeLimit, setTimeLimit] = useState<number>(1);
   const [memoryLimit, setMemoryLimit] = useState<number>(256);
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
@@ -43,6 +121,13 @@ export default function CreateProblemPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+    // If OverType editor is present, use its value
+    try {
+      if (overTypeRef.current && typeof overTypeRef.current.getValue === "function") {
+        const v = overTypeRef.current.getValue();
+        setDescription(v);
+      }
+    } catch {}
     try {
       const res = await fetch("/api/problem/create/", {
         method: "POST",
@@ -121,11 +206,8 @@ export default function CreateProblemPage() {
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Description</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full rounded-md border p-2"
-          />
+          {/* OverType editor will attach to this element in the client */}
+          <div id="overtype-editor-create" className="w-full min-h-[24rem] h-96" />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Category</label>
