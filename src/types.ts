@@ -113,4 +113,6 @@ export interface IProblemPageData {
     submissions: number;
     ACSubmissions: number;
   };
+  // Optional list of stored archives (init.yml, uploaded zips, uploaded checker files)
+  archives?: Array<{ id: number; filename: string; url: string; hasInit?: boolean }>;
 }

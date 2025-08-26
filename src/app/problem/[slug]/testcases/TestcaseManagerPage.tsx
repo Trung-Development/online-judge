@@ -29,7 +29,7 @@ import {
   faExclamationTriangle,
   faCheckCircle,
 } from "@fortawesome/free-solid-svg-icons";
-import JSZip from 'jszip';
+import JSZip from "jszip";
 
 interface TestcaseManagerPageProps {
   problem: IProblemPageData;
@@ -39,7 +39,7 @@ interface TestcaseManagerPageProps {
 type DetectedCase = {
   input: string;
   output?: string;
-  type?: 'C' | 'S' | 'E' | string;
+  type?: "C" | "S" | "E" | string;
   points?: number | null;
   is_pretest?: boolean;
   generator_args?: string;
@@ -47,6 +47,13 @@ type DetectedCase = {
   output_prefix?: number | null;
   checker?: Record<string, unknown> | null;
 };
+
+// Define a type for the archive objects
+interface Archive {
+  id: number;
+  url: string;
+  filename: string;
+}
 
 export default function TestcaseManagerPage({
   problem,
@@ -69,16 +76,21 @@ export default function TestcaseManagerPage({
   // Selection state for batch creation: map of detectedCases index -> selected
   const [selected, setSelected] = useState<Record<number, boolean>>({});
   // Checker chooser state (mirror VNOI CHECKERS and allow custom args key)
-  const [checkerChoice, setCheckerChoice] = useState<string>('standard');
+  const [checkerChoice, setCheckerChoice] = useState<string>("standard");
   const checkerFileRef = useRef<HTMLInputElement | null>(null);
   const [checkerUploading, setCheckerUploading] = useState(false);
-  const [checkerUploadMessage, setCheckerUploadMessage] = useState<string | null>(null);
-  const [checkerInfo, setCheckerInfo] = useState<Record<string, unknown> | null>(null);
+  const [checkerUploadMessage, setCheckerUploadMessage] = useState<
+    string | null
+  >(null);
+  const [checkerInfo, setCheckerInfo] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [checkerArgs, setCheckerArgs] = useState<Record<string, unknown>>({});
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   // IO global settings (match LQDOJ data.html fields)
-  const [ioMethod, setIoMethod] = useState<string | null>('standard');
+  const [ioMethod, setIoMethod] = useState<string | null>("standard");
   const [ioInputFile, setIoInputFile] = useState<string | null>(null);
   const [ioOutputFile, setIoOutputFile] = useState<string | null>(null);
 
@@ -188,7 +200,9 @@ export default function TestcaseManagerPage({
         </Button>
         <div>
           <h1 className="text-3xl font-bold">{problem.name}</h1>
-          <p className="text-muted-foreground">Test Case Visibilty Management</p>
+          <p className="text-muted-foreground">
+            Test Case Visibilty Management
+          </p>
         </div>
       </div>
 
@@ -383,7 +397,9 @@ export default function TestcaseManagerPage({
                   try {
                     const buf = await f.arrayBuffer();
                     const zip = await JSZip.loadAsync(buf);
-                    const names = Object.keys(zip.files).filter((n) => !n.endsWith("/"));
+                    const names = Object.keys(zip.files).filter(
+                      (n) => !n.endsWith("/")
+                    );
 
                     // Lightweight auto-detection (VNOI-like): find pairs like *.in, *.out or inputN.txt, outputN.txt
                     const inputs: Record<string, string> = {};
@@ -400,7 +416,9 @@ export default function TestcaseManagerPage({
                       // are preserved as "1/aplusb1" keys and won't collide with
                       // identically named files in other folders.
                       const s = n.split("/").pop() || n;
-                      const dir = n.includes("/") ? n.slice(0, n.lastIndexOf("/")) : "";
+                      const dir = n.includes("/")
+                        ? n.slice(0, n.lastIndexOf("/"))
+                        : "";
                       let m;
                       if ((m = s.match(simpleIn))) {
                         const base = m[1];
@@ -411,11 +429,11 @@ export default function TestcaseManagerPage({
                         const key = dir ? `${dir}/${base}` : base;
                         outputs[key] = n;
                       } else if ((m = s.match(numIn))) {
-                        const idx = m[1] || '1';
+                        const idx = m[1] || "1";
                         const key = dir ? `${dir}/${idx}` : idx;
                         inputs[key] = n;
                       } else if ((m = s.match(numOut))) {
-                        const idx = m[1] || '1';
+                        const idx = m[1] || "1";
                         const key = dir ? `${dir}/${idx}` : idx;
                         outputs[key] = n;
                       }
@@ -424,16 +442,27 @@ export default function TestcaseManagerPage({
                     const cases: DetectedCase[] = [];
                     // Pair by key
                     Object.keys(inputs).forEach((k) => {
-                      cases.push({ input: inputs[k], output: outputs[k], type: 'C', points: 1, is_pretest: false });
+                      cases.push({
+                        input: inputs[k],
+                        output: outputs[k],
+                        type: "C",
+                        points: 1,
+                        is_pretest: false,
+                      });
                     });
                     // Add outputs that were unmatched as separate cases
                     Object.keys(outputs).forEach((k) => {
-                      if (!inputs[k]) cases.push({ input: outputs[k], output: undefined, type: 'output-only' });
+                      if (!inputs[k])
+                        cases.push({
+                          input: outputs[k],
+                          output: undefined,
+                          type: "output-only",
+                        });
                     });
 
                     if (cases.length > 0) setDetectedCases(cases);
                   } catch (err) {
-                    console.error('Failed to read zip archive', err);
+                    console.error("Failed to read zip archive", err);
                     setUploadMessage("Failed to read zip archive");
                   }
                 }}
@@ -442,43 +471,72 @@ export default function TestcaseManagerPage({
             {zipName && (
               <div>
                 <p className="text-sm">Selected: {zipName}</p>
+                {/* If the problem already has an uploaded archive, show it as a download link */}
+                {problem.archives && problem.archives.length > 0 && (
+                  <div className="text-sm mt-1">
+                    Existing files:
+                    {problem.archives.map((a: Archive) => (
+                      <div key={a.id}>
+                        <a
+                          className="text-blue-600 underline"
+                          href={a.url}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {a.filename}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
-              {detectedCases.length > 0 && (
-                <div className="mt-4">
-                  <Label className="mb-2">Detected testcases</Label>
-                  {/* Group by top-level folder (VNOI style). Empty string represents root files. */}
-                  <div className="space-y-4">
-                    {/** compute folder groups */}
-                    {Object.entries(
-                      detectedCases.reduce<Record<string, number[]>>((acc, _c, idx) => {
-                        const p = detectedCases[idx].input || '';
-                        const folder = p.includes('/') ? p.split('/')[0] : '';
+            {detectedCases.length > 0 && (
+              <div className="mt-4">
+                <Label className="mb-2">Detected testcases</Label>
+                {/* Group by top-level folder (VNOI style). Empty string represents root files. */}
+                <div className="space-y-4">
+                  {/** compute folder groups */}
+                  {Object.entries(
+                    detectedCases.reduce<Record<string, number[]>>(
+                      (acc, _c, idx) => {
+                        const p = detectedCases[idx].input || "";
+                        const folder = p.includes("/") ? p.split("/")[0] : "";
                         (acc[folder] = acc[folder] || []).push(idx);
                         return acc;
-                      }, {})
-                    ).map(([folder, indices]) => (
-                      <div key={folder} className="border rounded p-3">
-                        <div className="flex items-center justify-between mb-2">
+                      },
+                      {}
+                    )
+                  ).map(([folder, indices]) => (
+                    <div key={folder} className="border rounded p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Checkbox
+                            checked={indices.every((i) => !!selected[i])}
+                            onCheckedChange={(val) => {
+                              const checked = !!val;
+                              setSelected((s) => {
+                                const ns = { ...s };
+                                indices.forEach((i) => (ns[i] = checked));
+                                return ns;
+                              });
+                            }}
+                          />
+                          <span className="font-medium">
+                            {folder || "root"}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            ({indices.length} files)
+                          </span>
+                        </div>
+                        <div>
                           <div className="flex items-center gap-2">
-                            <Checkbox
-                              checked={indices.every((i) => !!selected[i])}
-                              onCheckedChange={(val) => {
-                                const checked = !!val;
-                                setSelected((s) => {
-                                  const ns = { ...s };
-                                  indices.forEach((i) => (ns[i] = checked));
-                                  return ns;
-                                });
-                              }}
-                            />
-                            <span className="font-medium">{folder || 'root'}</span>
-                            <span className="text-sm text-muted-foreground">({indices.length} files)</span>
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <Button size="sm" variant="ghost" className="bg-yellow-50 text-yellow-800" onClick={() => {
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="bg-yellow-50 text-yellow-800"
+                              onClick={() => {
                                 // Toggle selection for this folder
                                 const all = indices.every((i) => !!selected[i]);
                                 setSelected((s) => {
@@ -486,220 +544,362 @@ export default function TestcaseManagerPage({
                                   indices.forEach((i) => (ns[i] = !all));
                                   return ns;
                                 });
-                              }}>Toggle</Button>
-                              <Button size="sm" variant="outline" className="bg-green-50 text-green-700" onClick={() => {
+                              }}
+                            >
+                              Toggle
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="bg-green-50 text-green-700"
+                              onClick={() => {
                                 // Group selected indices in this folder into a batch (preserve first case IO)
-                                const sel = indices.filter((i) => !!selected[i]).sort((a,b)=>a-b);
+                                const sel = indices
+                                  .filter((i) => !!selected[i])
+                                  .sort((a, b) => a - b);
                                 if (sel.length < 2) return;
                                 setDetectedCases((dc) => {
                                   const nc = [...dc];
                                   const first = sel[0];
                                   // preserve first's input/output but mark as batch start
-                                  const preservedInput = nc[first]?.input ?? '';
-                                  const preservedOutput = nc[first]?.output ?? '';
-                                  nc[first] = { ...nc[first], type: 'S', input: preservedInput, output: preservedOutput };
+                                  const preservedInput = nc[first]?.input ?? "";
+                                  const preservedOutput =
+                                    nc[first]?.output ?? "";
+                                  nc[first] = {
+                                    ...nc[first],
+                                    type: "S",
+                                    input: preservedInput,
+                                    output: preservedOutput,
+                                  };
                                   if (!nc[first].points) nc[first].points = 1;
                                   // middle -> C with null points and clear input/output
                                   for (let j = 1; j < sel.length; j++) {
                                     const idx = sel[j];
-                                    nc[idx] = { ...nc[idx], type: j === sel.length - 1 ? 'E' : 'C', points: j === sel.length - 1 ? nc[idx].points : null, input: '', output: '' };
+                                    nc[idx] = {
+                                      ...nc[idx],
+                                      type: j === sel.length - 1 ? "E" : "C",
+                                      points:
+                                        j === sel.length - 1
+                                          ? nc[idx].points
+                                          : null,
+                                      input: "",
+                                      output: "",
+                                    };
                                   }
                                   return nc;
                                 });
-                              }}>Group into Batch</Button>
-                            </div>
+                              }}
+                            >
+                              Group into Batch
+                            </Button>
                           </div>
                         </div>
-
-                        <div className="space-y-2">
-                          {indices.map((i) => {
-                            const c = detectedCases[i];
-                            return (
-                                <div key={i} className="flex items-center gap-2">
-                                  <Checkbox checked={!!selected[i]} onCheckedChange={(v) => setSelected((s) => ({ ...s, [i]: !!v }))} />
-                                  <input
-                                    className="w-48 text-sm p-1 border rounded"
-                                    value={c.input}
-                                    onChange={(e) => {
-                                      const nc = [...detectedCases];
-                                      nc[i] = { ...nc[i], input: e.target.value };
-                                      setDetectedCases(nc);
-                                    }}
-                                  />
-                                  <input
-                                    className="w-48 text-sm p-1 border rounded"
-                                    value={c.output ?? ""}
-                                    onChange={(e) => {
-                                      const nc = [...detectedCases];
-                                      nc[i] = { ...nc[i], output: e.target.value };
-                                      setDetectedCases(nc);
-                                    }}
-                                  />
-                                  <Select value={c.type || 'C'} onValueChange={(v) => {
-                                    const nc = [...detectedCases];
-                                    nc[i] = { ...nc[i], type: v };
-                                    setDetectedCases(nc);
-                                  }}>
-                                    <SelectTrigger size="sm">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="C">Case (C)</SelectItem>
-                                      <SelectItem value="S">Batch start (S)</SelectItem>
-                                      <SelectItem value="E">Batch end (E)</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    value={c.points ?? ''}
-                                    placeholder="points"
-                                    onChange={(e) => {
-                                      const nc = [...detectedCases];
-                                      nc[i] = { ...nc[i], points: e.target.value ? Number(e.target.value) : null };
-                                      setDetectedCases(nc);
-                                    }}
-                                    className="w-20 text-sm p-1 border rounded"
-                                  />
-                                  <div className="flex items-center gap-1 text-sm">
-                                    <Checkbox checked={!!c.is_pretest} onCheckedChange={(v) => {
-                                      const nc = [...detectedCases];
-                                      nc[i] = { ...nc[i], is_pretest: !!v };
-                                      setDetectedCases(nc);
-                                    }} />
-                                    <span className="text-sm">Pretest</span>
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-red-600"
-                                    onClick={() => {
-                                      const nc = detectedCases.filter((_, idx) => idx !== i);
-                                      setDetectedCases(nc);
-                                      // remove selection for shifted indices
-                                      setSelected((s) => {
-                                        const ns: Record<number, boolean> = {};
-                                        Object.keys(s).forEach((k) => {
-                                          const ki = Number(k);
-                                          if (ki < i) ns[ki] = s[ki];
-                                          else if (ki > i) ns[ki - 1] = s[ki];
-                                        });
-                                        return ns;
-                                      });
-                                    }}
-                                  >
-                                    Delete
-                                  </Button>
-                                </div>
-                            );
-                          })}
-                        </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-              {/* Checker + IO settings */}
-              <div className="mt-4 border rounded p-3">
-                <Label className="mb-2">Checker & IO Settings</Label>
-                <div className="flex items-center gap-4">
-                  <div>
-                    <div className="text-sm">Checker</div>
-                    <div className="w-64">
-                      <Select value={checkerChoice} onValueChange={(v) => setCheckerChoice(v)}>
-                        <SelectTrigger size="sm"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="standard">Standard</SelectItem>
-                          <SelectItem value="floats">Floats</SelectItem>
-                          <SelectItem value="floatsabs">Floats (absolute)</SelectItem>
-                          <SelectItem value="floatsrel">Floats (relative)</SelectItem>
-                          <SelectItem value="rstripped">Non-trailing spaces</SelectItem>
-                          <SelectItem value="sorted">Unordered</SelectItem>
-                          <SelectItem value="identical">Byte identical</SelectItem>
-                          <SelectItem value="linecount">Line-by-line</SelectItem>
-                          <SelectItem value="custom">Custom checker (PY)</SelectItem>
-                          <SelectItem value="customcpp">Custom checker (CPP)</SelectItem>
-                          <SelectItem value="interact">Interactive</SelectItem>
-                          <SelectItem value="testlib">Testlib</SelectItem>
-                          <SelectItem value="interacttl">Interactive (Testlib)</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="space-y-2">
+                        {indices.map((i) => {
+                          const c = detectedCases[i];
+                          return (
+                            <div key={i} className="flex items-center gap-2">
+                              <Checkbox
+                                checked={!!selected[i]}
+                                onCheckedChange={(v) =>
+                                  setSelected((s) => ({ ...s, [i]: !!v }))
+                                }
+                              />
+                              <input
+                                className="w-48 text-sm p-1 border rounded"
+                                value={c.input}
+                                onChange={(e) => {
+                                  const nc = [...detectedCases];
+                                  nc[i] = { ...nc[i], input: e.target.value };
+                                  setDetectedCases(nc);
+                                }}
+                              />
+                              <input
+                                className="w-48 text-sm p-1 border rounded"
+                                value={c.output ?? ""}
+                                onChange={(e) => {
+                                  const nc = [...detectedCases];
+                                  nc[i] = { ...nc[i], output: e.target.value };
+                                  setDetectedCases(nc);
+                                }}
+                              />
+                              <Select
+                                value={c.type || "C"}
+                                onValueChange={(v) => {
+                                  const nc = [...detectedCases];
+                                  nc[i] = { ...nc[i], type: v };
+                                  setDetectedCases(nc);
+                                }}
+                              >
+                                <SelectTrigger size="sm">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="C">Case (C)</SelectItem>
+                                  <SelectItem value="S">
+                                    Batch start (S)
+                                  </SelectItem>
+                                  <SelectItem value="E">
+                                    Batch end (E)
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <input
+                                type="number"
+                                min={0}
+                                value={c.points ?? ""}
+                                placeholder="points"
+                                onChange={(e) => {
+                                  const nc = [...detectedCases];
+                                  nc[i] = {
+                                    ...nc[i],
+                                    points: e.target.value
+                                      ? Number(e.target.value)
+                                      : null,
+                                  };
+                                  setDetectedCases(nc);
+                                }}
+                                className="w-20 text-sm p-1 border rounded"
+                              />
+                              <div className="flex items-center gap-1 text-sm">
+                                <Checkbox
+                                  checked={!!c.is_pretest}
+                                  onCheckedChange={(v) => {
+                                    const nc = [...detectedCases];
+                                    nc[i] = { ...nc[i], is_pretest: !!v };
+                                    setDetectedCases(nc);
+                                  }}
+                                />
+                                <span className="text-sm">Pretest</span>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-600"
+                                onClick={() => {
+                                  const nc = detectedCases.filter(
+                                    (_, idx) => idx !== i
+                                  );
+                                  setDetectedCases(nc);
+                                  // remove selection for shifted indices
+                                  setSelected((s) => {
+                                    const ns: Record<number, boolean> = {};
+                                    Object.keys(s).forEach((k) => {
+                                      const ki = Number(k);
+                                      if (ki < i) ns[ki] = s[ki];
+                                      else if (ki > i) ns[ki - 1] = s[ki];
+                                    });
+                                    return ns;
+                                  });
+                                }}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-                    {/* Upload UI for choices that need a file */}
-                    {(checkerChoice === 'testlib' || checkerChoice === 'custom' || checkerChoice === 'customcpp' || checkerChoice === 'interact' || checkerChoice === 'interacttl') && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <input ref={checkerFileRef} type="file" accept="*/*" onChange={async (e) => {
+            {/* Checker + IO settings */}
+            <div className="mt-4 border rounded p-3">
+              <Label className="mb-2">Checker & IO Settings</Label>
+              <div className="flex items-center gap-4">
+                <div>
+                  <div className="text-sm">Checker</div>
+                  <div className="w-64">
+                    <Select
+                      value={checkerChoice}
+                      onValueChange={(v) => setCheckerChoice(v)}
+                    >
+                      <SelectTrigger size="sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="standard">Standard</SelectItem>
+                        <SelectItem value="floats">Floats</SelectItem>
+                        <SelectItem value="floatsabs">
+                          Floats (absolute)
+                        </SelectItem>
+                        <SelectItem value="floatsrel">
+                          Floats (relative)
+                        </SelectItem>
+                        <SelectItem value="rstripped">
+                          Non-trailing spaces
+                        </SelectItem>
+                        <SelectItem value="sorted">Unordered</SelectItem>
+                        <SelectItem value="identical">
+                          Byte identical
+                        </SelectItem>
+                        <SelectItem value="linecount">Line-by-line</SelectItem>
+                        <SelectItem value="custom">
+                          Custom checker (PY)
+                        </SelectItem>
+                        <SelectItem value="customcpp">
+                          Custom checker (CPP)
+                        </SelectItem>
+                        <SelectItem value="interact">Interactive</SelectItem>
+                        <SelectItem value="testlib">Testlib</SelectItem>
+                        <SelectItem value="interacttl">
+                          Interactive (Testlib)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Upload UI for choices that need a file */}
+                  {(checkerChoice === "testlib" ||
+                    checkerChoice === "custom" ||
+                    checkerChoice === "customcpp" ||
+                    checkerChoice === "interact" ||
+                    checkerChoice === "interacttl") && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <input
+                        ref={checkerFileRef}
+                        type="file"
+                        accept="*/*"
+                        onChange={async (e) => {
                           const f = e.target.files?.[0];
                           if (!f) return;
                           setCheckerUploading(true);
                           setCheckerUploadMessage(null);
                           try {
                             const form = new FormData();
-                            form.append('file', f);
-                            form.append('path', `tests/${slug}/${f.name}`);
-                            const res = await fetch('/api/upload-checker', {
-                              method: 'POST',
+                            form.append("file", f);
+                            form.append("path", `tests/${slug}/${f.name}`);
+                            const res = await fetch("/api/upload-checker", {
+                              method: "POST",
                               headers: {
-                                ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+                                ...(sessionToken
+                                  ? { Authorization: `Bearer ${sessionToken}` }
+                                  : {}),
                               },
                               body: form,
                             });
-                            if (!res.ok) throw new Error('Upload failed');
+                            if (!res.ok) throw new Error("Upload failed");
                             const j = await res.json();
-                            setCheckerInfo({ url: j.url, key: j.key, name: f.name });
-                            setCheckerUploadMessage('Checker uploaded');
+                            setCheckerInfo({
+                              url: j.url,
+                              key: j.key,
+                              name: f.name,
+                            });
+                            setCheckerUploadMessage("Checker uploaded");
                           } catch (err) {
-                            setCheckerUploadMessage((err as Error).message || 'Upload error');
+                            setCheckerUploadMessage(
+                              (err as Error).message || "Upload error"
+                            );
                           } finally {
                             setCheckerUploading(false);
                           }
-                        }} />
-                        <Button size="sm" onClick={() => checkerFileRef.current?.click()}>Choose file</Button>
-                        {checkerUploading && <span className="text-sm">Uploading...</span>}
-                        {checkerUploadMessage && <span className="text-sm text-muted-foreground">{checkerUploadMessage}</span>}
-                        {checkerInfo && <span className="text-sm">Uploaded: {String(((checkerInfo as unknown) as { name?: string }).name ?? '')}</span>}
-                      </div>
-                    )}
-                    {/* Precision box for floats family (default 6) */}
-                    {checkerChoice && checkerChoice.startsWith('floats') && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <Label>Precision</Label>
-                        <input
-                          type="number"
-                          min={0}
-                          value={Number(((checkerArgs as unknown) as { precision?: number }).precision ?? 6)}
-                          onChange={(e) => setCheckerArgs({ ...(checkerArgs || {}), precision: Number(e.target.value) })}
-                          className="w-20 p-1 border rounded"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <div className="text-sm">IO Method</div>
-                    <div className="w-40">
-                      <Select value={ioMethod || 'standard'} onValueChange={(v) => setIoMethod(v)}>
-                        <SelectTrigger size="sm"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="standard">Standard</SelectItem>
-                          <SelectItem value="file">File</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        }}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => checkerFileRef.current?.click()}
+                      >
+                        Choose file
+                      </Button>
+                      {checkerUploading && (
+                        <span className="text-sm">Uploading...</span>
+                      )}
+                      {checkerUploadMessage && (
+                        <span className="text-sm text-muted-foreground">
+                          {checkerUploadMessage}
+                        </span>
+                      )}
+                      {checkerInfo && (
+                        <span className="text-sm">
+                          Uploaded:{" "}
+                          {String(
+                            (checkerInfo as unknown as { name?: string })
+                              .name ?? ""
+                          )}
+                        </span>
+                      )}
+                      {/* If problem has stored archives or checkers, display them */}
+                      {problem.archives && problem.archives.length > 0 && (
+                        <div className="text-sm">
+                          {problem.archives.map((a: Archive) => (
+                            <div key={a.id}>
+                              <a
+                                className="text-blue-600 underline"
+                                href={a.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {a.filename}
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  {ioMethod === 'file' && (
-                    <div className="flex items-center gap-2">
-                      <div className="w-40">
-                        <Input placeholder="input file" value={ioInputFile ?? ''} onChange={(e) => setIoInputFile(e.target.value)} />
-                      </div>
-                      <div className="w-40">
-                        <Input placeholder="output file" value={ioOutputFile ?? ''} onChange={(e) => setIoOutputFile(e.target.value)} />
-                      </div>
+                  )}
+                  {/* Precision box for floats family (default 6) */}
+                  {checkerChoice && checkerChoice.startsWith("floats") && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <Label>Precision</Label>
+                      <input
+                        type="number"
+                        min={0}
+                        value={Number(
+                          (checkerArgs as unknown as { precision?: number })
+                            .precision ?? 6
+                        )}
+                        onChange={(e) =>
+                          setCheckerArgs({
+                            ...(checkerArgs || {}),
+                            precision: Number(e.target.value),
+                          })
+                        }
+                        className="w-20 p-1 border rounded"
+                      />
                     </div>
                   )}
                 </div>
+                <div>
+                  <div className="text-sm">IO Method</div>
+                  <div className="w-40">
+                    <Select
+                      value={ioMethod || "standard"}
+                      onValueChange={(v) => setIoMethod(v)}
+                    >
+                      <SelectTrigger size="sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="standard">Standard</SelectItem>
+                        <SelectItem value="file">File</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                {ioMethod === "file" && (
+                  <div className="flex items-center gap-2">
+                    <div className="w-40">
+                      <Input
+                        placeholder="input file"
+                        value={ioInputFile ?? ""}
+                        onChange={(e) => setIoInputFile(e.target.value)}
+                      />
+                    </div>
+                    <div className="w-40">
+                      <Input
+                        placeholder="output file"
+                        value={ioOutputFile ?? ""}
+                        onChange={(e) => setIoOutputFile(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
+            </div>
 
             {uploadMessage && (
               <Alert variant="destructive">
@@ -721,17 +921,17 @@ export default function TestcaseManagerPage({
                     setUploadMessage("No file selected");
                     return;
                   }
-                  if (!sessionToken) return setUploadMessage('Login required');
+                  if (!sessionToken) return setUploadMessage("Login required");
                   setUploading(true);
                   setUploadMessage(null);
                   try {
                     // Always upload with fixed archive name 'archive.zip' to keep consistent naming
                     const form = new FormData();
-                    form.append('file', f);
-                    form.append('path', `tests/${slug}/archive.zip`);
+                    form.append("file", f);
+                    form.append("path", `tests/${slug}/archive.zip`);
 
                     const res = await fetch(`/api/upload-testcase-file`, {
-                      method: 'POST',
+                      method: "POST",
                       headers: {
                         Authorization: `Bearer ${sessionToken}`,
                       },
@@ -739,30 +939,56 @@ export default function TestcaseManagerPage({
                     });
                     if (!res.ok) {
                       const e = await res.json().catch(() => ({}));
-                      throw new Error(e?.error || 'Upload failed');
+                      throw new Error(e?.error || "Upload failed");
                     }
                     const j = await res.json();
 
                     // build finalize payload: include detectedCases, selectedIndices and checker
-                    const selectedIndices = Object.keys(selected).filter((k) => selected[Number(k)]).map((k) => Number(k));
+                    const selectedIndices = Object.keys(selected)
+                      .filter((k) => selected[Number(k)])
+                      .map((k) => Number(k));
                     let checkerPayload: Record<string, unknown> | null = null;
-                    if (!checkerChoice || checkerChoice === 'standard') {
-                      checkerPayload = { name: 'standard' };
-                    } else if (checkerChoice === 'testlib' || checkerChoice === 'custom' || checkerChoice === 'customcpp') {
+                    if (!checkerChoice || checkerChoice === "standard") {
+                      checkerPayload = { name: "standard" };
+                    } else if (
+                      checkerChoice === "testlib" ||
+                      checkerChoice === "custom" ||
+                      checkerChoice === "customcpp"
+                    ) {
                       // uploaded file should be in checkerInfo and we send bridged-style payload with basename
                       if (checkerInfo) {
-                        const basename = String(((checkerInfo as unknown) as Record<string, unknown>).name || '').split('/').pop();
+                        const basename = String(
+                          (checkerInfo as unknown as Record<string, unknown>)
+                            .name || ""
+                        )
+                          .split("/")
+                          .pop();
                         checkerPayload = {
-                          name: 'bridged',
+                          name: "bridged",
                           key: checkerInfo.key,
                           url: checkerInfo.url,
-                          args: { ...(checkerArgs || {}), files: basename, type: checkerChoice === 'testlib' ? 'testlib' : undefined },
+                          args: {
+                            ...(checkerArgs || {}),
+                            files: basename,
+                            type:
+                              checkerChoice === "testlib"
+                                ? "testlib"
+                                : undefined,
+                          },
                         };
                       }
-                    } else if (checkerChoice === 'interact' || checkerChoice === 'interacttl') {
+                    } else if (
+                      checkerChoice === "interact" ||
+                      checkerChoice === "interacttl"
+                    ) {
                       // interactive types: if a file was uploaded, include it so backend can use basename
                       if (checkerInfo) {
-                        const basename = String(((checkerInfo as unknown) as Record<string, unknown>).name || '').split('/').pop();
+                        const basename = String(
+                          (checkerInfo as unknown as Record<string, unknown>)
+                            .name || ""
+                        )
+                          .split("/")
+                          .pop();
                         checkerPayload = {
                           name: checkerChoice,
                           key: checkerInfo.key,
@@ -772,16 +998,30 @@ export default function TestcaseManagerPage({
                       } else {
                         checkerPayload = { name: checkerChoice };
                       }
-                    } else if (checkerChoice.startsWith('floats')) {
-                      checkerPayload = { name: 'floats', args: { precision: Number(((checkerArgs as unknown) as { precision?: number }).precision ?? 6) } };
-                    } else if (checkerChoice === 'identical' || checkerChoice === 'linecount') {
+                    } else if (checkerChoice.startsWith("floats")) {
+                      checkerPayload = {
+                        name: "floats",
+                        args: {
+                          precision: Number(
+                            (checkerArgs as unknown as { precision?: number })
+                              .precision ?? 6
+                          ),
+                        },
+                      };
+                    } else if (
+                      checkerChoice === "identical" ||
+                      checkerChoice === "linecount"
+                    ) {
                       checkerPayload = { name: checkerChoice };
-                    } else if (checkerChoice === 'custom_args') {
-                      checkerPayload = { name: 'custom', args: checkerArgs || {} };
+                    } else if (checkerChoice === "custom_args") {
+                      checkerPayload = {
+                        name: "custom",
+                        args: checkerArgs || {},
+                      };
                     }
 
                     const payload = {
-                      archive: 'archive.zip',
+                      archive: "archive.zip",
                       cases: detectedCases,
                       selectedIndices,
                       checker: checkerPayload,
@@ -791,19 +1031,25 @@ export default function TestcaseManagerPage({
                       archiveUrl: j.url,
                     };
 
-                    const r = await fetch(`/api/problem/${slug}/finalize-testcase-upload`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sessionToken}` },
-                      body: JSON.stringify(payload),
-                    });
+                    const r = await fetch(
+                      `/api/problem/${slug}/finalize-testcase-upload`,
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${sessionToken}`,
+                        },
+                        body: JSON.stringify(payload),
+                      }
+                    );
                     if (!r.ok) {
                       const err = await r.json().catch(() => ({}));
-                      throw new Error(err?.error || 'Finalize failed');
+                      throw new Error(err?.error || "Finalize failed");
                     }
                     const data = await r.json();
-                    setUploadMessage(data.message || 'Finalize complete');
+                    setUploadMessage(data.message || "Finalize complete");
                   } catch (err) {
-                    setUploadMessage((err as Error).message || 'Upload error');
+                    setUploadMessage((err as Error).message || "Upload error");
                   } finally {
                     setUploading(false);
                   }
