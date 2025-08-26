@@ -65,7 +65,6 @@ export default function TestcaseManagerPage({
   // ZIP upload state
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [zipName, setZipName] = useState<string | null>(null);
-  const [zipFiles, setZipFiles] = useState<string[]>([]);
   const [detectedCases, setDetectedCases] = useState<DetectedCase[]>([]);
   // Selection state for batch creation: map of detectedCases index -> selected
   const [selected, setSelected] = useState<Record<number, boolean>>({});
@@ -75,11 +74,10 @@ export default function TestcaseManagerPage({
   const [checkerUploading, setCheckerUploading] = useState(false);
   const [checkerUploadMessage, setCheckerUploadMessage] = useState<string | null>(null);
   const [checkerInfo, setCheckerInfo] = useState<Record<string, unknown> | null>(null);
-  const [checkerArgs, setCheckerArgs] = useState<Record<string, unknown> | null>(null);
+  const [checkerArgs, setCheckerArgs] = useState<Record<string, unknown>>({});
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
-  // Grader / IO global settings (match VNOI data.html fields)
-  const [grader, setGrader] = useState<string | null>('standard');
+  // IO global settings (match LQDOJ data.html fields)
   const [ioMethod, setIoMethod] = useState<string | null>('standard');
   const [ioInputFile, setIoInputFile] = useState<string | null>(null);
   const [ioOutputFile, setIoOutputFile] = useState<string | null>(null);
@@ -386,7 +384,6 @@ export default function TestcaseManagerPage({
                     const buf = await f.arrayBuffer();
                     const zip = await JSZip.loadAsync(buf);
                     const names = Object.keys(zip.files).filter((n) => !n.endsWith("/"));
-                    setZipFiles(names);
 
                     // Lightweight auto-detection (VNOI-like): find pairs like *.in, *.out or inputN.txt, outputN.txt
                     const inputs: Record<string, string> = {};
@@ -438,23 +435,13 @@ export default function TestcaseManagerPage({
                   } catch (err) {
                     console.error('Failed to read zip archive', err);
                     setUploadMessage("Failed to read zip archive");
-                    setZipFiles([]);
                   }
                 }}
               />
             </div>
-
             {zipName && (
               <div>
                 <p className="text-sm">Selected: {zipName}</p>
-                <p className="text-sm text-muted-foreground">Contents:</p>
-                <ul className="list-disc pl-6">
-                  {zipFiles.map((f) => (
-                    <li key={f} className="text-sm">
-                      {f}
-                    </li>
-                  ))}
-                </ul>
               </div>
             )}
 
@@ -613,36 +600,94 @@ export default function TestcaseManagerPage({
                 </div>
               )}
 
-              {/* Grader / IO settings (compact) */}
+              {/* Checker + IO settings */}
               <div className="mt-4 border rounded p-3">
-                <Label className="mb-2">Grader & IO Settings</Label>
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <div className="text-sm">Grader</div>
-                      <div className="w-48">
-                        <Select value={grader || 'standard'} onValueChange={(v) => setGrader(v)}>
-                          <SelectTrigger size="sm"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="standard">Standard</SelectItem>
-                            <SelectItem value="signature">Signature</SelectItem>
-                            <SelectItem value="interactive">Interactive</SelectItem>
-                            <SelectItem value="output_only">Output Only</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                <Label className="mb-2">Checker & IO Settings</Label>
+                <div className="flex items-center gap-4">
+                  <div>
+                    <div className="text-sm">Checker</div>
+                    <div className="w-64">
+                      <Select value={checkerChoice} onValueChange={(v) => setCheckerChoice(v)}>
+                        <SelectTrigger size="sm"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="standard">Standard</SelectItem>
+                          <SelectItem value="floats">Floats</SelectItem>
+                          <SelectItem value="floatsabs">Floats (absolute)</SelectItem>
+                          <SelectItem value="floatsrel">Floats (relative)</SelectItem>
+                          <SelectItem value="rstripped">Non-trailing spaces</SelectItem>
+                          <SelectItem value="sorted">Unordered</SelectItem>
+                          <SelectItem value="identical">Byte identical</SelectItem>
+                          <SelectItem value="linecount">Line-by-line</SelectItem>
+                          <SelectItem value="custom">Custom checker (PY)</SelectItem>
+                          <SelectItem value="customcpp">Custom checker (CPP)</SelectItem>
+                          <SelectItem value="interact">Interactive</SelectItem>
+                          <SelectItem value="testlib">Testlib</SelectItem>
+                          <SelectItem value="interacttl">Interactive (Testlib)</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div>
-                      <div className="text-sm">IO Method</div>
-                      <div className="w-40">
-                        <Select value={ioMethod || 'standard'} onValueChange={(v) => setIoMethod(v)}>
-                          <SelectTrigger size="sm"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="standard">Standard</SelectItem>
-                            <SelectItem value="file">File</SelectItem>
-                          </SelectContent>
-                        </Select>
+
+                    {/* Upload UI for choices that need a file */}
+                    {(checkerChoice === 'testlib' || checkerChoice === 'custom' || checkerChoice === 'customcpp' || checkerChoice === 'interact' || checkerChoice === 'interacttl') && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <input ref={checkerFileRef} type="file" accept="*/*" onChange={async (e) => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          setCheckerUploading(true);
+                          setCheckerUploadMessage(null);
+                          try {
+                            const form = new FormData();
+                            form.append('file', f);
+                            form.append('path', `tests/${slug}/${f.name}`);
+                            const res = await fetch('/api/upload-checker', {
+                              method: 'POST',
+                              headers: {
+                                ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+                              },
+                              body: form,
+                            });
+                            if (!res.ok) throw new Error('Upload failed');
+                            const j = await res.json();
+                            setCheckerInfo({ url: j.url, key: j.key, name: f.name });
+                            setCheckerUploadMessage('Checker uploaded');
+                          } catch (err) {
+                            setCheckerUploadMessage((err as Error).message || 'Upload error');
+                          } finally {
+                            setCheckerUploading(false);
+                          }
+                        }} />
+                        <Button size="sm" onClick={() => checkerFileRef.current?.click()}>Choose file</Button>
+                        {checkerUploading && <span className="text-sm">Uploading...</span>}
+                        {checkerUploadMessage && <span className="text-sm text-muted-foreground">{checkerUploadMessage}</span>}
+                        {checkerInfo && <span className="text-sm">Uploaded: {String(((checkerInfo as unknown) as { name?: string }).name ?? '')}</span>}
                       </div>
+                    )}
+                    {/* Precision box for floats family (default 6) */}
+                    {checkerChoice && checkerChoice.startsWith('floats') && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <Label>Precision</Label>
+                        <input
+                          type="number"
+                          min={0}
+                          value={Number(((checkerArgs as unknown) as { precision?: number }).precision ?? 6)}
+                          onChange={(e) => setCheckerArgs({ ...(checkerArgs || {}), precision: Number(e.target.value) })}
+                          className="w-20 p-1 border rounded"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-sm">IO Method</div>
+                    <div className="w-40">
+                      <Select value={ioMethod || 'standard'} onValueChange={(v) => setIoMethod(v)}>
+                        <SelectTrigger size="sm"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="standard">Standard</SelectItem>
+                          <SelectItem value="file">File</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
+                  </div>
                   {ioMethod === 'file' && (
                     <div className="flex items-center gap-2">
                       <div className="w-40">
@@ -654,102 +699,6 @@ export default function TestcaseManagerPage({
                     </div>
                   )}
                 </div>
-              </div>
-
-              {/* Checker chooser / upload */}
-              <div className="mt-4">
-                <Label className="mb-2">Checker</Label>
-                <div className="flex items-center gap-4">
-                  <div className="w-72">
-                    <Select value={checkerChoice} onValueChange={(v) => setCheckerChoice(v)}>
-                      <SelectTrigger size="sm"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="standard">Standard</SelectItem>
-                        <SelectItem value="bridged">Bridged (custom file)</SelectItem>
-                        <SelectItem value="floats">Floats (relative)</SelectItem>
-                        <SelectItem value="floatsabs">Floats (absolute)</SelectItem>
-                        <SelectItem value="floatsrel">Floats (relative)</SelectItem>
-                        <SelectItem value="identical">Byte identical</SelectItem>
-                        <SelectItem value="linecount">Line-by-line</SelectItem>
-                        <SelectItem value="custom_args">Custom checker args</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                {checkerChoice === 'bridged' && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <input ref={checkerFileRef} type="file" accept="*/*" onChange={async (e) => {
-                      const f = e.target.files?.[0];
-                      if (!f) return;
-                      setCheckerUploading(true);
-                      setCheckerUploadMessage(null);
-                      try {
-                        const form = new FormData();
-                        form.append('file', f);
-                        form.append('path', `tests/${slug}/${f.name}`);
-                        const res = await fetch('/api/upload-checker', {
-                          method: 'POST',
-                          headers: {
-                            ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
-                          },
-                          body: form,
-                        });
-                        if (!res.ok) throw new Error('Upload failed');
-                        const j = await res.json();
-                        setCheckerInfo({ url: j.url, key: j.key, name: f.name });
-                        setCheckerUploadMessage('Checker uploaded');
-                      } catch (err) {
-                        setCheckerUploadMessage((err as Error).message || 'Upload error');
-                      } finally {
-                        setCheckerUploading(false);
-                      }
-                    }} />
-                    <Button size="sm" onClick={() => checkerFileRef.current?.click()}>Choose file</Button>
-                    {checkerUploading && <span className="text-sm">Uploading...</span>}
-                    {checkerUploadMessage && <span className="text-sm text-muted-foreground">{checkerUploadMessage}</span>}
-                    {checkerInfo && <span className="text-sm">Uploaded: {String(((checkerInfo as unknown) as { name?: string }).name ?? '')}</span>}
-                    <div className="ml-4 flex items-center gap-2">
-                      <div className="text-sm">Checker subtype</div>
-                      <div className="w-56">
-                        <Select value={String(((checkerArgs || {}) as Record<string, unknown>).type || 'testlib')} onValueChange={(v) => setCheckerArgs({ ...(checkerArgs || {}), type: v })}>
-                          <SelectTrigger size="sm"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="testlib">Testlib</SelectItem>
-                            <SelectItem value="themis">Themis</SelectItem>
-                            <SelectItem value="cms">CMS</SelectItem>
-                            <SelectItem value="coci">COCI</SelectItem>
-                            <SelectItem value="peg">PEG</SelectItem>
-                            <SelectItem value="default">DMOJ (default)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <label className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={!!((checkerArgs || {}) as Record<string, unknown>).treat_checker_points_as_percentage} onChange={(e) => setCheckerArgs({ ...(checkerArgs || {}), treat_checker_points_as_percentage: e.target.checked })} />
-                        Treat checker points as percentage
-                      </label>
-                    </div>
-                  </div>
-                )}
-
-                {checkerChoice === 'floats' && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <Label>Precision</Label>
-                    <input type="number" min={0} value={Number(((checkerArgs as unknown) as { precision?: number }).precision) || 6} onChange={(e) => setCheckerArgs({ ...(checkerArgs||{}), precision: Number(e.target.value) })} className="w-20 p-1 border rounded" />
-                  </div>
-                )}
-
-                {checkerChoice === 'custom' && (
-                  <div className="mt-2">
-                    <Label>Checker args (JSON)</Label>
-                    <textarea value={JSON.stringify(checkerArgs || {}, null, 2)} onChange={(e) => {
-                      try {
-                        setCheckerArgs(JSON.parse(e.target.value));
-                      } catch {
-                        // ignore parse errors while editing
-                      }
-                    }} className="w-full p-2 border rounded text-sm" />
-                  </div>
-                )}
               </div>
 
             {uploadMessage && (
@@ -797,18 +746,45 @@ export default function TestcaseManagerPage({
                     // build finalize payload: include detectedCases, selectedIndices and checker
                     const selectedIndices = Object.keys(selected).filter((k) => selected[Number(k)]).map((k) => Number(k));
                     let checkerPayload: Record<string, unknown> | null = null;
-                    if (!checkerChoice || checkerChoice === 'standard') checkerPayload = { name: 'standard' };
-                    else if (checkerChoice === 'bridged') checkerPayload = checkerInfo ? { name: 'bridged', key: checkerInfo.key, url: checkerInfo.url, args: { ...(checkerArgs || {}), files: String(((checkerInfo as unknown) as Record<string, unknown>).name || '').split('/').pop() } } : null;
-                    else if (checkerChoice.startsWith('floats')) checkerPayload = { name: checkerChoice, args: checkerArgs || { precision: 6 } };
-                    else if (checkerChoice === 'identical' || checkerChoice === 'linecount') checkerPayload = { name: checkerChoice };
-                    else if (checkerChoice === 'custom_args') checkerPayload = { name: 'custom', args: checkerArgs || {} };
+                    if (!checkerChoice || checkerChoice === 'standard') {
+                      checkerPayload = { name: 'standard' };
+                    } else if (checkerChoice === 'testlib' || checkerChoice === 'custom' || checkerChoice === 'customcpp') {
+                      // uploaded file should be in checkerInfo and we send bridged-style payload with basename
+                      if (checkerInfo) {
+                        const basename = String(((checkerInfo as unknown) as Record<string, unknown>).name || '').split('/').pop();
+                        checkerPayload = {
+                          name: 'bridged',
+                          key: checkerInfo.key,
+                          url: checkerInfo.url,
+                          args: { ...(checkerArgs || {}), files: basename, type: checkerChoice === 'testlib' ? 'testlib' : undefined },
+                        };
+                      }
+                    } else if (checkerChoice === 'interact' || checkerChoice === 'interacttl') {
+                      // interactive types: if a file was uploaded, include it so backend can use basename
+                      if (checkerInfo) {
+                        const basename = String(((checkerInfo as unknown) as Record<string, unknown>).name || '').split('/').pop();
+                        checkerPayload = {
+                          name: checkerChoice,
+                          key: checkerInfo.key,
+                          url: checkerInfo.url,
+                          args: { ...(checkerArgs || {}), files: basename },
+                        };
+                      } else {
+                        checkerPayload = { name: checkerChoice };
+                      }
+                    } else if (checkerChoice.startsWith('floats')) {
+                      checkerPayload = { name: 'floats', args: { precision: Number(((checkerArgs as unknown) as { precision?: number }).precision ?? 6) } };
+                    } else if (checkerChoice === 'identical' || checkerChoice === 'linecount') {
+                      checkerPayload = { name: checkerChoice };
+                    } else if (checkerChoice === 'custom_args') {
+                      checkerPayload = { name: 'custom', args: checkerArgs || {} };
+                    }
 
                     const payload = {
                       archive: 'archive.zip',
                       cases: detectedCases,
                       selectedIndices,
                       checker: checkerPayload,
-                      grader: grader,
                       ioMethod: ioMethod,
                       ioInputFile: ioInputFile,
                       ioOutputFile: ioOutputFile,
