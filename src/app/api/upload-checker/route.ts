@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     if (file instanceof File && typeof file.name === 'string') filename = file.name;
 
     let key = path || filename;
-    if (!key.startsWith('checkers/')) key = `checkers/${key}`;
+    if (!key.startsWith('tests/')) key = `tests/${key}`;
 
     const [{ S3Client, PutObjectCommand, GetObjectCommand }, { getSignedUrl }] = await Promise.all([
       import('@aws-sdk/client-s3'),

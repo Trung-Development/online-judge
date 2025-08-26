@@ -686,7 +686,7 @@ export default function TestcaseManagerPage({
                       try {
                         const form = new FormData();
                         form.append('file', f);
-                        form.append('path', `checkers/${slug}/${f.name}`);
+                        form.append('path', `tests/${slug}/${f.name}`);
                         const res = await fetch('/api/upload-checker', {
                           method: 'POST',
                           headers: {
