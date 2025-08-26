@@ -798,7 +798,7 @@ export default function TestcaseManagerPage({
                     const selectedIndices = Object.keys(selected).filter((k) => selected[Number(k)]).map((k) => Number(k));
                     let checkerPayload: Record<string, unknown> | null = null;
                     if (!checkerChoice || checkerChoice === 'standard') checkerPayload = { name: 'standard' };
-                    else if (checkerChoice === 'bridged') checkerPayload = checkerInfo ? { name: 'bridged', file: checkerInfo.name, url: checkerInfo.url, key: checkerInfo.key, args: checkerArgs || {} } : null;
+                    else if (checkerChoice === 'bridged') checkerPayload = checkerInfo ? { name: 'bridged', key: checkerInfo.key, url: checkerInfo.url, args: { ...(checkerArgs || {}), files: String(((checkerInfo as unknown) as Record<string, unknown>).name || '').split('/').pop() } } : null;
                     else if (checkerChoice.startsWith('floats')) checkerPayload = { name: checkerChoice, args: checkerArgs || { precision: 6 } };
                     else if (checkerChoice === 'identical' || checkerChoice === 'linecount') checkerPayload = { name: checkerChoice };
                     else if (checkerChoice === 'custom_args') checkerPayload = { name: 'custom', args: checkerArgs || {} };
@@ -808,6 +808,10 @@ export default function TestcaseManagerPage({
                       cases: detectedCases,
                       selectedIndices,
                       checker: checkerPayload,
+                      grader: grader,
+                      ioMethod: ioMethod,
+                      ioInputFile: ioInputFile,
+                      ioOutputFile: ioOutputFile,
                       archiveUrl: j.url,
                     };
 
