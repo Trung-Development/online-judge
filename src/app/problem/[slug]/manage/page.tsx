@@ -136,14 +136,21 @@ export default function ManageProblemPage() {
         // don't init if already initialized
         if (!mounted || overTypeRef.current) return;
 
-        const inst = new OverType("#overtype-editor-manage", {
+        const instRaw = new OverType("#overtype-editor-manage", {
           toolbar: true,
           showStats: true,
           value: description || "",
           textareaProps: { name: "description" },
           theme: preferredTheme,
         });
-        overTypeRef.current = inst;
+        // OverType may return [instance] or the instance itself
+        if (Array.isArray(instRaw) && (instRaw as unknown[]).length > 0) {
+          overTypeRef.current = (
+            instRaw as unknown[]
+          )[0] as import("overtype").default;
+        } else {
+          overTypeRef.current = instRaw as import("overtype").default;
+        }
 
         const onStorage = (e: StorageEvent) => {
           if (e.key === "theme") {
@@ -180,11 +187,11 @@ export default function ManageProblemPage() {
     setError(null);
     setLoading(true);
     // read editor content if present
+    let payloadDescription = description;
     try {
       const cur = overTypeRef.current as { getValue?: () => string } | null;
       if (cur && typeof cur.getValue === "function") {
-        const v = cur.getValue();
-        setDescription(v);
+        payloadDescription = cur.getValue();
       }
     } catch {}
     // client-side validation
@@ -200,25 +207,33 @@ export default function ManageProblemPage() {
     }
 
     try {
+      const bodyPayload = JSON.stringify({
+        slug,
+        name,
+        description: payloadDescription,
+        categoryId,
+        types: selectedTypes,
+        allowedLanguages,
+        timeLimit,
+        memoryLimit,
+      });
       const res = await fetch(`/api/problem/${encodeURIComponent(slugParam)}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: sessionToken ? `Bearer ${sessionToken}` : "",
         },
-        body: JSON.stringify({
-          slug,
-          name,
-          description,
-          categoryId,
-          types: selectedTypes,
-          allowedLanguages,
-          timeLimit,
-          memoryLimit,
-        }),
+        body: bodyPayload,
       });
       if (!res.ok) {
-        const j = await res.json().catch(() => null);
+        const text = await res.text().catch(() => "");
+        const j = (() => {
+          try {
+            return JSON.parse(text);
+          } catch {
+            return null;
+          }
+        })();
         throw new Error(j?.message || `Failed to save: ${res.status}`);
       }
       router.refresh();

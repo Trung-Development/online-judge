@@ -24,7 +24,7 @@ export default function CreateProblemPage() {
   const [slug, setSlug] = useState("");
   const [name, setName] = useState("");
   const [points, setPoints] = useState(100);
-  const [description, setDescription] = useState("");
+  const [description] = useState("");
   const overTypeRef = useRef<import("overtype").default | null>(null);
   // Initialize OverType editor on the client only
   useEffect(() => {
@@ -56,14 +56,21 @@ export default function CreateProblemPage() {
           }
         } catch {}
 
-        const inst = new OverType("#overtype-editor-create", {
+        const inst: unknown = new OverType("#overtype-editor-create", {
           toolbar: true,
           showStats: true,
           value: description,
           textareaProps: { name: "description" },
           theme: preferredTheme,
         });
-        overTypeRef.current = inst;
+        // OverType may return [instance] or the instance itself depending on build
+        if (Array.isArray(inst) && (inst as unknown[]).length > 0) {
+          overTypeRef.current = (
+            inst as unknown[]
+          )[0] as import("overtype").default;
+        } else {
+          overTypeRef.current = inst as import("overtype").default;
+        }
         // Ensure theme is applied at runtime by calling instance API if available
         try {
           const opts = {
@@ -141,14 +148,12 @@ export default function CreateProblemPage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    // If OverType editor is present, use its value
+    // If OverType editor is present, use its value for the request directly
+    let payloadDescription = description;
     try {
-      if (
-        overTypeRef.current &&
-        typeof overTypeRef.current.getValue === "function"
-      ) {
-        const v = overTypeRef.current.getValue();
-        setDescription(v);
+      const cur = overTypeRef.current as { getValue?: () => string } | null;
+      if (cur && typeof cur.getValue === "function") {
+        payloadDescription = cur.getValue();
       }
     } catch {}
     try {
@@ -162,7 +167,7 @@ export default function CreateProblemPage() {
           slug,
           name,
           points,
-          description,
+          description: payloadDescription,
           categoryId,
           types: selectedTypes,
           allowedLanguages: allowedLanguages,
@@ -171,7 +176,7 @@ export default function CreateProblemPage() {
         }),
       });
       if (!res.ok) {
-        const json = await res.json();
+        const json = await res.json().catch(() => null);
         setError(json?.message || `Failed: ${res.status}`);
         setLoading(false);
         return;
