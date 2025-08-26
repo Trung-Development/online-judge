@@ -32,18 +32,8 @@ export default function CreateProblemPage() {
       if (typeof window === "undefined") return;
       try {
         const OverType = (await import("overtype")).default;
-        // determine preferred theme: check localStorage -> html.dark class -> prefers-color-scheme
-        let preferredTheme = "solar";
-        try {
-          const ls = localStorage.getItem("theme");
-          if (ls) {
-            // support common names: 'dark' -> cave, 'light' -> solar, or explicit 'cave'/'solar'
-            if (ls === "dark" || ls === "cave") preferredTheme = "cave";
-            else if (ls === "light" || ls === "solar") preferredTheme = "solar";
-          } else if (document.documentElement.classList.contains("dark") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-            preferredTheme = "cave";
-          }
-        } catch {}
+        // force 'cave' theme for demo dark appearance
+        const preferredTheme = "cave";
 
         // provide a sensible dark palette override when using the dark theme
         const otThemeOverrides = {
@@ -57,7 +47,10 @@ export default function CreateProblemPage() {
         // Try to set module-level theme before instantiating the editor so styles are applied early
         try {
           const OTModule = await import("overtype");
-          const OTGlobal = ((OTModule as { default?: unknown }).default || OTModule) as unknown as { setTheme?: (s: string, o?: Record<string, string>) => void };
+          const OTGlobal = ((OTModule as { default?: unknown }).default ||
+            OTModule) as unknown as {
+            setTheme?: (s: string, o?: Record<string, string>) => void;
+          };
           if (OTGlobal && typeof OTGlobal.setTheme === "function") {
             OTGlobal.setTheme(preferredTheme, otThemeOverrides);
           }
@@ -80,12 +73,16 @@ export default function CreateProblemPage() {
             accent: "#4251de",
             border: "#333",
           } as Record<string, string>;
-          const instSafe = inst as { setTheme?: (s: string, o?: Record<string, string>) => void } | null;
+          const instSafe = inst as {
+            setTheme?: (s: string, o?: Record<string, string>) => void;
+          } | null;
           if (instSafe && typeof instSafe.setTheme === "function") {
             instSafe.setTheme!("solar", opts);
           } else {
             // fallback to module-level API if present
-            const OTGlobal = (await import("overtype")).default as unknown as { setTheme?: (s: string, o?: Record<string, string>) => void };
+            const OTGlobal = (await import("overtype")).default as unknown as {
+              setTheme?: (s: string, o?: Record<string, string>) => void;
+            };
             if (OTGlobal && typeof OTGlobal.setTheme === "function") {
               OTGlobal.setTheme!("solar", opts);
             }
@@ -95,7 +92,9 @@ export default function CreateProblemPage() {
         // listen to storage changes for theme toggle in other tabs
         const onStorage = (e: StorageEvent) => {
           if (e.key === "theme") {
-            const cur = overTypeRef.current as { showPreviewMode?: (v: boolean) => void } | null;
+            const cur = overTypeRef.current as {
+              showPreviewMode?: (v: boolean) => void;
+            } | null;
             if (cur && typeof cur.showPreviewMode === "function") {
               try {
                 // no-op placeholder: some OverType builds may expose dynamic theme setter
@@ -107,15 +106,15 @@ export default function CreateProblemPage() {
         };
         window.addEventListener("storage", onStorage);
         // remove listener on unload
-        window.addEventListener("beforeunload", () => window.removeEventListener("storage", onStorage));
+        window.addEventListener("beforeunload", () =>
+          window.removeEventListener("storage", onStorage)
+        );
       } catch {
         // ignore if lib not present
       }
     })();
     return () => {
-      const cur = overTypeRef.current as
-        | { destroy?: () => void }
-        | null;
+      const cur = overTypeRef.current as { destroy?: () => void } | null;
       if (cur && typeof cur.destroy === "function") {
         try {
           cur.destroy();
@@ -144,7 +143,10 @@ export default function CreateProblemPage() {
     setLoading(true);
     // If OverType editor is present, use its value
     try {
-      if (overTypeRef.current && typeof overTypeRef.current.getValue === "function") {
+      if (
+        overTypeRef.current &&
+        typeof overTypeRef.current.getValue === "function"
+      ) {
         const v = overTypeRef.current.getValue();
         setDescription(v);
       }
@@ -228,7 +230,10 @@ export default function CreateProblemPage() {
         <div>
           <label className="block text-sm font-medium mb-1">Description</label>
           {/* OverType editor will attach to this element in the client */}
-          <div id="overtype-editor-create" className="w-full min-h-[24rem] h-96" />
+          <div
+            id="overtype-editor-create"
+            className="w-full min-h-[24rem] h-96"
+          />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">Category</label>

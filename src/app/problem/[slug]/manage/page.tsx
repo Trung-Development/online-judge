@@ -97,85 +97,84 @@ export default function ManageProblemPage() {
       } finally {
         setLoading(false);
       }
-      })();
-      // Initialize OverType editor for manage page description
-      (async () => {
-        if (typeof window === "undefined") return;
-        try {
-            const OverType = (await import("overtype")).default;
-            // determine preferred theme: check localStorage -> html.dark class -> prefers-color-scheme
-            let preferredTheme = "solar";
-            try {
-              const ls = localStorage.getItem("theme");
-              if (ls) {
-                if (ls === "dark" || ls === "cave") preferredTheme = "cave";
-                else if (ls === "light" || ls === "solar") preferredTheme = "solar";
-              } else if (document.documentElement.classList.contains("dark") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-                preferredTheme = "cave";
-              }
-            } catch {}
-
-            const otThemeOverrides = {
-              bgPrimary: "#0a0a0a",
-              bgSecondary: "#0f1115",
-              textPrimary: "#e6eef8",
-              accent: "#6ea8fe",
-              border: "#222228",
-            } as Record<string, string>;
-
-            try {
-              const OTModule = await import("overtype");
-              const OTGlobal = ((OTModule as { default?: unknown }).default || OTModule) as unknown as { setTheme?: (s: string, o?: Record<string, string>) => void };
-              if (OTGlobal && typeof OTGlobal.setTheme === "function") {
-                OTGlobal.setTheme(preferredTheme, otThemeOverrides);
-              }
-            } catch {}
-
-            const inst = new OverType("#overtype-editor-manage", {
-              toolbar: true,
-              showStats: true,
-              value: description || "",
-              textareaProps: { name: "description" },
-              theme: preferredTheme,
-            });
-          overTypeRef.current = inst;
-          try {
-            const opts = {
-              bgPrimary: "#0a0a0a",
-              bgSecondary: "#111",
-              textPrimary: "#fff",
-              accent: "#4251de",
-              border: "#333",
-            } as Record<string, string>;
-            const instSafe = inst as { setTheme?: (s: string, o?: Record<string, string>) => void } | null;
-            if (instSafe && typeof instSafe.setTheme === "function") {
-              instSafe.setTheme!("solar", opts);
-            }
-          } catch {}
-          const onStorage = (e: StorageEvent) => {
-            if (e.key === "theme") {
-              const cur = overTypeRef.current as { showPreviewMode?: (v: boolean) => void } | null;
-              if (cur && typeof cur.showPreviewMode === "function") {
-                try {
-                  cur.showPreviewMode(false);
-                } catch {}
-              }
-            }
-          };
-          window.addEventListener("storage", onStorage);
-          window.addEventListener("beforeunload", () => window.removeEventListener("storage", onStorage));
-        } catch {}
-      })();
-      return () => {
-        const cur = overTypeRef.current as { destroy?: () => void } | null;
-        if (cur && typeof cur.destroy === "function") {
-          try {
-            cur.destroy();
-          } catch {}
-        }
-      };
-      // eslint-disable-next-line react-hooks/exhaustive-deps -- mount only
+    })();
+    // OverType init moved to separate effect below so it can use the fetched description
+    return () => {
+      // nothing to cleanup here; OverType init/cleanup handled in its own effect below
+    };
   }, [slugParam]);
+
+  // Initialize OverType once when description is available. We capture the instance
+  // locally so cleanup uses the same reference the effect created.
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (typeof window === "undefined") return;
+      try {
+        const OverType = (await import("overtype")).default;
+        // force 'cave' theme for demo dark appearance
+        const preferredTheme = "cave";
+        const otThemeOverrides = {
+          bgPrimary: "#0a0a0a",
+          bgSecondary: "#0f1115",
+          textPrimary: "#e6eef8",
+          accent: "#6ea8fe",
+          border: "#222228",
+        } as Record<string, string>;
+
+        try {
+          const OTModule = await import("overtype");
+          const OTGlobal = ((OTModule as { default?: unknown }).default ||
+            OTModule) as unknown as {
+            setTheme?: (s: string, o?: Record<string, string>) => void;
+          };
+          if (OTGlobal && typeof OTGlobal.setTheme === "function") {
+            OTGlobal.setTheme(preferredTheme, otThemeOverrides);
+          }
+        } catch {}
+
+        // don't init if already initialized
+        if (!mounted || overTypeRef.current) return;
+
+        const inst = new OverType("#overtype-editor-manage", {
+          toolbar: true,
+          showStats: true,
+          value: description || "",
+          textareaProps: { name: "description" },
+          theme: preferredTheme,
+        });
+        overTypeRef.current = inst;
+
+        const onStorage = (e: StorageEvent) => {
+          if (e.key === "theme") {
+            const cur = overTypeRef.current as {
+              showPreviewMode?: (v: boolean) => void;
+            } | null;
+            if (cur && typeof cur.showPreviewMode === "function") {
+              try {
+                cur.showPreviewMode(false);
+              } catch {}
+            }
+          }
+        };
+        window.addEventListener("storage", onStorage);
+        window.addEventListener("beforeunload", () =>
+          window.removeEventListener("storage", onStorage)
+        );
+      } catch {}
+    })();
+    return () => {
+      mounted = false;
+      const cur = overTypeRef.current as { destroy?: () => void } | null;
+      if (cur && typeof cur.destroy === "function") {
+        try {
+          cur.destroy();
+        } catch {}
+      }
+      overTypeRef.current = null;
+    };
+    // run once when description is set (or initially empty for create flow)
+  }, [description]);
 
   const handleSave = async () => {
     setError(null);
@@ -190,12 +189,12 @@ export default function ManageProblemPage() {
     } catch {}
     // client-side validation
     if (!(timeLimit > 0) || timeLimit > 60) {
-      setError('Time limit must be > 0 and ≤ 60 seconds');
+      setError("Time limit must be > 0 and ≤ 60 seconds");
       setLoading(false);
       return;
     }
     if (!(memoryLimit > 0)) {
-      setError('Memory limit must be > 0 MB');
+      setError("Memory limit must be > 0 MB");
       setLoading(false);
       return;
     }
@@ -294,7 +293,10 @@ export default function ManageProblemPage() {
 
         <div>
           <label className="block text-sm font-medium mb-1">Description</label>
-          <div id="overtype-editor-manage" className="w-full min-h-[24rem] h-96" />
+          <div
+            id="overtype-editor-manage"
+            className="w-full min-h-[24rem] h-96"
+          />
         </div>
 
         <div>
@@ -347,15 +349,33 @@ export default function ManageProblemPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Time limit (seconds)</label>
-          <Input type="number" step="0.01" value={String(timeLimit)} onChange={(e) => setTimeLimit(parseFloat(e.target.value || '0'))} />
-          <p className="text-xs text-muted-foreground">Maximum 60s. Decimal values allowed (e.g. 0.5).</p>
+          <label className="block text-sm font-medium mb-1">
+            Time limit (seconds)
+          </label>
+          <Input
+            type="number"
+            step="0.01"
+            value={String(timeLimit)}
+            onChange={(e) => setTimeLimit(parseFloat(e.target.value || "0"))}
+          />
+          <p className="text-xs text-muted-foreground">
+            Maximum 60s. Decimal values allowed (e.g. 0.5).
+          </p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Memory limit (MB)</label>
-          <Input type="number" step="0.1" value={String(memoryLimit)} onChange={(e) => setMemoryLimit(parseFloat(e.target.value || '0'))} />
-          <p className="text-xs text-muted-foreground">Value in MB. 1024 MB = 1 GB. Decimal values allowed.</p>
+          <label className="block text-sm font-medium mb-1">
+            Memory limit (MB)
+          </label>
+          <Input
+            type="number"
+            step="0.1"
+            value={String(memoryLimit)}
+            onChange={(e) => setMemoryLimit(parseFloat(e.target.value || "0"))}
+          />
+          <p className="text-xs text-muted-foreground">
+            Value in MB. 1024 MB = 1 GB. Decimal values allowed.
+          </p>
         </div>
 
         {error && <div className="text-red-600">{error}</div>}
