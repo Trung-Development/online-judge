@@ -28,6 +28,7 @@ import {
   faSpinner,
   faExclamationTriangle,
   faCheckCircle,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import JSZip from "jszip";
 
@@ -73,8 +74,10 @@ export default function TestcaseManagerPage({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [zipName, setZipName] = useState<string | null>(null);
   const [detectedCases, setDetectedCases] = useState<DetectedCase[]>([]);
-  // Selection state for batch creation: map of detectedCases index -> selected
-  const [selected, setSelected] = useState<Record<number, boolean>>({});
+  const [allZipFiles, setAllZipFiles] = useState<string[]>([]);
+  const [batchStarts, setBatchStarts] = useState<string>("");
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   // Checker chooser state (mirror VNOI CHECKERS and allow custom args key)
   const [checkerChoice, setCheckerChoice] = useState<string>("standard");
   const checkerFileRef = useRef<HTMLInputElement | null>(null);
@@ -401,6 +404,9 @@ export default function TestcaseManagerPage({
                       (n) => !n.endsWith("/")
                     );
 
+                    // Store all files for selectors
+                    setAllZipFiles(names);
+
                     // Lightweight auto-detection (VNOI-like): find pairs like *.in, *.out or inputN.txt, outputN.txt
                     const inputs: Record<string, string> = {};
                     const outputs: Record<string, string> = {};
@@ -495,215 +501,270 @@ export default function TestcaseManagerPage({
             {detectedCases.length > 0 && (
               <div className="mt-4">
                 <Label className="mb-2">Detected testcases</Label>
-                {/* Group by top-level folder (VNOI style). Empty string represents root files. */}
-                <div className="space-y-4">
-                  {/** compute folder groups */}
-                  {Object.entries(
-                    detectedCases.reduce<Record<string, number[]>>(
-                      (acc, _c, idx) => {
-                        const p = detectedCases[idx].input || "";
-                        const folder = p.includes("/") ? p.split("/")[0] : "";
-                        (acc[folder] = acc[folder] || []).push(idx);
-                        return acc;
-                      },
-                      {}
-                    )
-                  ).map(([folder, indices]) => (
-                    <div key={folder} className="border rounded p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            checked={indices.every((i) => !!selected[i])}
-                            onCheckedChange={(val) => {
-                              const checked = !!val;
-                              setSelected((s) => {
-                                const ns = { ...s };
-                                indices.forEach((i) => (ns[i] = checked));
-                                return ns;
-                              });
+                <div className="space-y-2">
+                  {detectedCases.map((c, i) => (
+                    <div
+                      key={i}
+                      className={`flex items-center gap-2 p-2 border rounded ${
+                        dragOverIdx === i ? "bg-blue-100" : ""
+                      }`}
+                      draggable
+                      onDragStart={() => setDraggedIdx(i)}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragOverIdx(i);
+                      }}
+                      onDrop={() => {
+                        if (draggedIdx === null || draggedIdx === i) return;
+                        const nc = [...detectedCases];
+                        const [removed] = nc.splice(draggedIdx, 1);
+                        nc.splice(i, 0, removed);
+                        setDetectedCases(nc);
+                        setDraggedIdx(null);
+                        setDragOverIdx(null);
+                      }}
+                      onDragEnd={() => {
+                        setDraggedIdx(null);
+                        setDragOverIdx(null);
+                      }}
+                      style={{ cursor: "grab" }}
+                    >
+                      {/* Drag handle */}
+                      <span
+                        className="px-2 cursor-grab text-gray-500"
+                        title="Drag to reorder"
+                        style={{ userSelect: "none" }}
+                      >
+                        <FontAwesomeIcon icon={faArrowLeft} rotation={90} />
+                        <FontAwesomeIcon
+                          icon={faArrowLeft}
+                          rotation={270}
+                          className="-ml-2"
+                        />
+                      </span>
+                      <span className="font-mono text-xs w-6 text-center">
+                        {i + 1}
+                      </span>
+                      {c.type !== "S" && c.type !== "E" && (
+                        <>
+                          <Select
+                            value={c.input}
+                            onValueChange={(v) => {
+                              const nc = [...detectedCases];
+                              nc[i] = { ...nc[i], input: v };
+                              setDetectedCases(nc);
                             }}
-                          />
-                          <span className="font-medium">
-                            {folder || "root"}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            ({indices.length} files)
-                          </span>
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="bg-yellow-50 text-yellow-800"
-                              onClick={() => {
-                                // Toggle selection for this folder
-                                const all = indices.every((i) => !!selected[i]);
-                                setSelected((s) => {
-                                  const ns = { ...s };
-                                  indices.forEach((i) => (ns[i] = !all));
-                                  return ns;
-                                });
-                              }}
-                            >
-                              Toggle
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="bg-green-50 text-green-700"
-                              onClick={() => {
-                                // Group selected indices in this folder into a batch (preserve first case IO)
-                                const sel = indices
-                                  .filter((i) => !!selected[i])
-                                  .sort((a, b) => a - b);
-                                if (sel.length < 2) return;
-                                setDetectedCases((dc) => {
-                                  const nc = [...dc];
-                                  const first = sel[0];
-                                  // preserve first's input/output but mark as batch start
-                                  const preservedInput = nc[first]?.input ?? "";
-                                  const preservedOutput =
-                                    nc[first]?.output ?? "";
-                                  nc[first] = {
-                                    ...nc[first],
-                                    type: "S",
-                                    input: preservedInput,
-                                    output: preservedOutput,
-                                  };
-                                  if (!nc[first].points) nc[first].points = 1;
-                                  // middle -> C with null points and clear input/output
-                                  for (let j = 1; j < sel.length; j++) {
-                                    const idx = sel[j];
-                                    nc[idx] = {
-                                      ...nc[idx],
-                                      type: j === sel.length - 1 ? "E" : "C",
-                                      points:
-                                        j === sel.length - 1
-                                          ? nc[idx].points
-                                          : null,
-                                      input: "",
-                                      output: "",
-                                    };
-                                  }
-                                  return nc;
-                                });
-                              }}
-                            >
-                              Group into Batch
-                            </Button>
-                          </div>
-                        </div>
+                          >
+                            <SelectTrigger className="w-48">
+                              <SelectValue placeholder="Select input file" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allZipFiles.map((file) => (
+                                <SelectItem key={file} value={file}>
+                                  {file}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select
+                            value={c.output ?? "__none__"}
+                            onValueChange={(v) => {
+                              const nc = [...detectedCases];
+                              nc[i] = {
+                                ...nc[i],
+                                output: v === "__none__" ? undefined : v,
+                              };
+                              setDetectedCases(nc);
+                            }}
+                          >
+                            <SelectTrigger className="w-48">
+                              <SelectValue placeholder="Select output file" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__none__">
+                                No output file
+                              </SelectItem>
+                              {allZipFiles.map((file) => (
+                                <SelectItem key={file} value={file}>
+                                  {file}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </>
+                      )}
+                      <Select
+                        value={c.type || "C"}
+                        onValueChange={(v) => {
+                          const nc = [...detectedCases];
+                          nc[i] = { ...nc[i], type: v };
+                          setDetectedCases(nc);
+                        }}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="C">Case (C)</SelectItem>
+                          <SelectItem value="S">Batch start (S)</SelectItem>
+                          <SelectItem value="E">Batch end (E)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <input
+                        type="number"
+                        min={0}
+                        value={c.points ?? ""}
+                        placeholder="points"
+                        onChange={(e) => {
+                          const nc = [...detectedCases];
+                          nc[i] = {
+                            ...nc[i],
+                            points: e.target.value
+                              ? Number(e.target.value)
+                              : null,
+                          };
+                          setDetectedCases(nc);
+                        }}
+                        className="w-20 text-sm p-1 border rounded"
+                      />
+                      <div className="flex items-center gap-1 text-sm">
+                        <Checkbox
+                          checked={!!c.is_pretest}
+                          onCheckedChange={(v) => {
+                            const nc = [...detectedCases];
+                            nc[i] = { ...nc[i], is_pretest: !!v };
+                            setDetectedCases(nc);
+                          }}
+                        />
+                        <span className="text-sm">Pretest</span>
                       </div>
-
-                      <div className="space-y-2">
-                        {indices.map((i) => {
-                          const c = detectedCases[i];
-                          return (
-                            <div key={i} className="flex items-center gap-2">
-                              <Checkbox
-                                checked={!!selected[i]}
-                                onCheckedChange={(v) =>
-                                  setSelected((s) => ({ ...s, [i]: !!v }))
-                                }
-                              />
-                              <input
-                                className="w-48 text-sm p-1 border rounded"
-                                value={c.input}
-                                onChange={(e) => {
-                                  const nc = [...detectedCases];
-                                  nc[i] = { ...nc[i], input: e.target.value };
-                                  setDetectedCases(nc);
-                                }}
-                              />
-                              <input
-                                className="w-48 text-sm p-1 border rounded"
-                                value={c.output ?? ""}
-                                onChange={(e) => {
-                                  const nc = [...detectedCases];
-                                  nc[i] = { ...nc[i], output: e.target.value };
-                                  setDetectedCases(nc);
-                                }}
-                              />
-                              <Select
-                                value={c.type || "C"}
-                                onValueChange={(v) => {
-                                  const nc = [...detectedCases];
-                                  nc[i] = { ...nc[i], type: v };
-                                  setDetectedCases(nc);
-                                }}
-                              >
-                                <SelectTrigger size="sm">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="C">Case (C)</SelectItem>
-                                  <SelectItem value="S">
-                                    Batch start (S)
-                                  </SelectItem>
-                                  <SelectItem value="E">
-                                    Batch end (E)
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <input
-                                type="number"
-                                min={0}
-                                value={c.points ?? ""}
-                                placeholder="points"
-                                onChange={(e) => {
-                                  const nc = [...detectedCases];
-                                  nc[i] = {
-                                    ...nc[i],
-                                    points: e.target.value
-                                      ? Number(e.target.value)
-                                      : null,
-                                  };
-                                  setDetectedCases(nc);
-                                }}
-                                className="w-20 text-sm p-1 border rounded"
-                              />
-                              <div className="flex items-center gap-1 text-sm">
-                                <Checkbox
-                                  checked={!!c.is_pretest}
-                                  onCheckedChange={(v) => {
-                                    const nc = [...detectedCases];
-                                    nc[i] = { ...nc[i], is_pretest: !!v };
-                                    setDetectedCases(nc);
-                                  }}
-                                />
-                                <span className="text-sm">Pretest</span>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-600"
-                                onClick={() => {
-                                  const nc = detectedCases.filter(
-                                    (_, idx) => idx !== i
-                                  );
-                                  setDetectedCases(nc);
-                                  // remove selection for shifted indices
-                                  setSelected((s) => {
-                                    const ns: Record<number, boolean> = {};
-                                    Object.keys(s).forEach((k) => {
-                                      const ki = Number(k);
-                                      if (ki < i) ns[ki] = s[ki];
-                                      else if (ki > i) ns[ki - 1] = s[ki];
-                                    });
-                                    return ns;
-                                  });
-                                }}
-                              >
-                                Delete
-                              </Button>
-                            </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600"
+                        onClick={() => {
+                          const nc = detectedCases.filter(
+                            (_, idx) => idx !== i
                           );
-                        })}
-                      </div>
+                          setDetectedCases(nc);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-green-600"
+                        onClick={() => {
+                          const newCase: DetectedCase = {
+                            input: "",
+                            output: "",
+                            type: "C",
+                            points: 1,
+                            is_pretest: false,
+                          };
+                          const nc = [...detectedCases];
+                          nc.splice(i + 1, 0, newCase);
+                          setDetectedCases(nc);
+                        }}
+                        title="Add testcase after"
+                      >
+                        <FontAwesomeIcon icon={faPlus} />
+                      </Button>
                     </div>
                   ))}
                 </div>
+
+                {/* Add new testcase button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => {
+                    const newCase: DetectedCase = {
+                      input: "",
+                      output: "",
+                      type: "C",
+                      points: 1,
+                      is_pretest: false,
+                    };
+                    setDetectedCases([...detectedCases, newCase]);
+                  }}
+                >
+                  Add Testcase
+                </Button>
+
+                {/* Batch configuration */}
+                <Card className="mt-4">
+                  <CardHeader>
+                    <CardTitle className="text-base">
+                      Batch Configuration
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div>
+                      <Label className="text-sm">Batch start positions:</Label>
+                      <Input
+                        value={batchStarts}
+                        onChange={(e) => setBatchStarts(e.target.value)}
+                        placeholder="e.g., 1, 5, 9"
+                        className="mt-1"
+                        autoComplete="off"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Leave empty if not using batches. If you want to divide
+                      into three batches [1, 4], [5, 8], [9, 10], enter: 1, 5, 9
+                    </p>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => {
+                        // Parse batchStarts string into array of indices
+                        const starts = batchStarts
+                          .split(",")
+                          .map((s) => parseInt(s.trim(), 10))
+                          .filter((n) => !isNaN(n) && n > 0);
+                        if (starts.length === 0) return;
+                        // Always sort and deduplicate
+                        const batchIndices = Array.from(new Set(starts)).sort(
+                          (a, b) => a - b
+                        );
+                        const origCases = [...detectedCases];
+                        const newCases: DetectedCase[] = [];
+                        for (let b = 0; b < batchIndices.length; b++) {
+                          const start = batchIndices[b] - 1;
+                          const end =
+                            b + 1 < batchIndices.length
+                              ? batchIndices[b + 1] - 2
+                              : origCases.length - 1;
+                          if (start > origCases.length - 1) break;
+                          // Insert S
+                          newCases.push({ ...origCases[start], type: "S" });
+                          // Insert only the testcase at start
+                          newCases.push({ ...origCases[start], type: "C" });
+                          // Insert remaining cases in batch
+                          for (
+                            let i = start + 1;
+                            i <= end && i < origCases.length;
+                            i++
+                          ) {
+                            newCases.push({ ...origCases[i], type: "C" });
+                          }
+                          // Insert E
+                          newCases.push({
+                            ...origCases[end >= start ? end : start],
+                            type: "E",
+                          });
+                        }
+                        setDetectedCases(newCases);
+                      }}
+                    >
+                      Apply Batch
+                    </Button>
+                  </CardContent>
+                </Card>
               </div>
             )}
 
@@ -943,10 +1004,7 @@ export default function TestcaseManagerPage({
                     }
                     const j = await res.json();
 
-                    // build finalize payload: include detectedCases, selectedIndices and checker
-                    const selectedIndices = Object.keys(selected)
-                      .filter((k) => selected[Number(k)])
-                      .map((k) => Number(k));
+                    // build finalize payload: include detectedCases and checker
                     let checkerPayload: Record<string, unknown> | null = null;
                     if (!checkerChoice || checkerChoice === "standard") {
                       checkerPayload = { name: "standard" };
@@ -1023,7 +1081,7 @@ export default function TestcaseManagerPage({
                     const payload = {
                       archive: "archive.zip",
                       cases: detectedCases,
-                      selectedIndices,
+                      batchStarts: batchStarts,
                       checker: checkerPayload,
                       ioMethod: ioMethod,
                       ioInputFile: ioInputFile,
