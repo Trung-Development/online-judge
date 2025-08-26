@@ -102,22 +102,42 @@ export default function ManageProblemPage() {
       (async () => {
         if (typeof window === "undefined") return;
         try {
-          const OverType = (await import("overtype")).default;
-        
-          try {
-            const OTModule = await import("overtype");
-            const OTGlobal = ((OTModule as { default?: unknown }).default || OTModule) as unknown as { setTheme?: (s: string) => void };
-            if (OTGlobal && typeof OTGlobal.setTheme === "function") {
-              OTGlobal.setTheme("solar");
-            }
-          } catch {}
-          const inst = new OverType("#overtype-editor-manage", {
-            toolbar: true,
-            showStats: true,
-            value: description,
-            textareaProps: { name: "description" },
-            theme: "solar",
-          });
+            const OverType = (await import("overtype")).default;
+            // determine preferred theme: check localStorage -> html.dark class -> prefers-color-scheme
+            let preferredTheme = "solar";
+            try {
+              const ls = localStorage.getItem("theme");
+              if (ls) {
+                if (ls === "dark" || ls === "cave") preferredTheme = "cave";
+                else if (ls === "light" || ls === "solar") preferredTheme = "solar";
+              } else if (document.documentElement.classList.contains("dark") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+                preferredTheme = "cave";
+              }
+            } catch {}
+
+            const otThemeOverrides = {
+              bgPrimary: "#0a0a0a",
+              bgSecondary: "#0f1115",
+              textPrimary: "#e6eef8",
+              accent: "#6ea8fe",
+              border: "#222228",
+            } as Record<string, string>;
+
+            try {
+              const OTModule = await import("overtype");
+              const OTGlobal = ((OTModule as { default?: unknown }).default || OTModule) as unknown as { setTheme?: (s: string, o?: Record<string, string>) => void };
+              if (OTGlobal && typeof OTGlobal.setTheme === "function") {
+                OTGlobal.setTheme(preferredTheme, otThemeOverrides);
+              }
+            } catch {}
+
+            const inst = new OverType("#overtype-editor-manage", {
+              toolbar: true,
+              showStats: true,
+              value: description || "",
+              textareaProps: { name: "description" },
+              theme: preferredTheme,
+            });
           overTypeRef.current = inst;
           try {
             const opts = {

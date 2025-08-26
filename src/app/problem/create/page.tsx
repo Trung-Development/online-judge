@@ -32,14 +32,35 @@ export default function CreateProblemPage() {
       if (typeof window === "undefined") return;
       try {
         const OverType = (await import("overtype")).default;
-        // determine theme: prefer localStorage 'theme', then html.dark, then prefers-color-scheme
-        // attempt to set demo theme globally if supported
+        // determine preferred theme: check localStorage -> html.dark class -> prefers-color-scheme
+        let preferredTheme = "solar";
+        try {
+          const ls = localStorage.getItem("theme");
+          if (ls) {
+            // support common names: 'dark' -> cave, 'light' -> solar, or explicit 'cave'/'solar'
+            if (ls === "dark" || ls === "cave") preferredTheme = "cave";
+            else if (ls === "light" || ls === "solar") preferredTheme = "solar";
+          } else if (document.documentElement.classList.contains("dark") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            preferredTheme = "cave";
+          }
+        } catch {}
+
+        // provide a sensible dark palette override when using the dark theme
+        const otThemeOverrides = {
+          bgPrimary: "#0a0a0a",
+          bgSecondary: "#0f1115",
+          textPrimary: "#e6eef8",
+          accent: "#6ea8fe",
+          border: "#222228",
+        } as Record<string, string>;
+
+        // Try to set module-level theme before instantiating the editor so styles are applied early
         try {
           const OTModule = await import("overtype");
-            const OTGlobal = ((OTModule as { default?: unknown }).default || OTModule) as unknown as { setTheme?: (s: string) => void };
-            if (OTGlobal && typeof OTGlobal.setTheme === "function") {
-              OTGlobal.setTheme("solar");
-            }
+          const OTGlobal = ((OTModule as { default?: unknown }).default || OTModule) as unknown as { setTheme?: (s: string, o?: Record<string, string>) => void };
+          if (OTGlobal && typeof OTGlobal.setTheme === "function") {
+            OTGlobal.setTheme(preferredTheme, otThemeOverrides);
+          }
         } catch {}
 
         const inst = new OverType("#overtype-editor-create", {
@@ -47,7 +68,7 @@ export default function CreateProblemPage() {
           showStats: true,
           value: description,
           textareaProps: { name: "description" },
-          theme: "solar",
+          theme: preferredTheme,
         });
         overTypeRef.current = inst;
         // Ensure theme is applied at runtime by calling instance API if available
