@@ -29,6 +29,7 @@ import {
   faExclamationTriangle,
   faCheckCircle,
   faPlus,
+  faGripLines,
 } from "@fortawesome/free-solid-svg-icons";
 import JSZip from "jszip";
 
@@ -92,6 +93,97 @@ export default function TestcaseManagerPage({
   const [checkerArgs, setCheckerArgs] = useState<Record<string, unknown>>({});
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+    // Deletion / undo state
+    // pendingDeletes stores timeout ids keyed by a temporary uid for the removal action
+    const [pendingDeletes, setPendingDeletes] = useState<Record<string, number>>({});
+    // toast controls and animation state
+    const [toast, setToast] = useState<{
+      open: boolean;
+      message: string;
+      caseIdx: number | null;
+      anim: "in" | "out" | null;
+      uid: string | null; // uid of the pending deletion
+    }>({ open: false, message: "", caseIdx: null, anim: null, uid: null });
+    const [restoredIdx, setRestoredIdx] = useState<number | null>(null);
+    // Keep a backup of last-removed case so we can restore on undo
+    const lastRemovedRef = useRef<{ idx: number; item: DetectedCase } | null>(null);
+
+    const scheduleRemoval = (idx: number) => {
+      // Immediately remove from UI and keep a backup so Undo can restore
+      const item = detectedCases[idx];
+      lastRemovedRef.current = { idx, item };
+
+      setDetectedCases((prev) => prev.filter((_, i) => i !== idx));
+
+      // show toast sliding in
+      const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      setToast({ open: true, message: `Testcase ${idx + 1} removed`, caseIdx: idx, anim: "in", uid });
+
+      const timeoutId = window.setTimeout(() => {
+        // begin slide-out animation then finalize
+        setToast((t) => (t.uid === uid ? { ...t, anim: "out" } : t));
+        // wait for animation (200ms) then finalize
+        const finalizeTimer = window.setTimeout(() => {
+          finalizeRemoval(uid);
+        }, 220);
+        setPendingDeletes((p) => ({ ...p, [uid]: finalizeTimer }));
+      }, 3000);
+
+      // store initial timeout so we can cancel finalize when Undo is pressed
+      setPendingDeletes((p) => ({ ...p, [uid]: timeoutId }));
+    };
+
+    const undoRemoval = (uid: string | null) => {
+      if (!uid) return;
+      // cancel any scheduled timeouts (both initial and finalize)
+      const t = pendingDeletes[uid];
+      if (t) {
+        clearTimeout(t);
+      }
+      // also clear any nested finalize timer stored under same uid
+      setPendingDeletes((p) => {
+        const np = { ...p };
+        if (np[uid]) {
+          clearTimeout(np[uid]);
+          delete np[uid];
+        }
+        return np;
+      });
+
+      // restore immediately from backup
+      const last = lastRemovedRef.current;
+      if (last) {
+        setDetectedCases((prev) => {
+          const out = [...prev];
+          // if index is out of range, push to end
+          const insertAt = Math.min(Math.max(0, last.idx), out.length);
+          out.splice(insertAt, 0, last.item);
+          return out;
+        });
+        setRestoredIdx(last.idx);
+        // clear backup
+        lastRemovedRef.current = null;
+        // hide toast immediately
+        setToast({ open: false, message: "", caseIdx: null, anim: null, uid: null });
+        setTimeout(() => setRestoredIdx(null), 400);
+      }
+    };
+
+    const finalizeRemoval = (uid: string) => {
+      // clear any pending timers for this uid and remove backup
+      setPendingDeletes((p) => {
+        const np = { ...p };
+        if (np[uid]) {
+          clearTimeout(np[uid]);
+          delete np[uid];
+        }
+        return np;
+      });
+      // clear backup (we won't restore)
+      lastRemovedRef.current = null;
+      // hide toast
+      setToast({ open: false, message: "", caseIdx: null, anim: null, uid: null });
+    };
   // IO global settings (match LQDOJ data.html fields)
   const [ioMethod, setIoMethod] = useState<string | null>("standard");
   const [ioInputFile, setIoInputFile] = useState<string | null>(null);
@@ -505,9 +597,9 @@ export default function TestcaseManagerPage({
                   {detectedCases.map((c, i) => (
                     <div
                       key={i}
-                      className={`flex items-center gap-2 p-2 border rounded ${
+                      className={`flex flex-wrap items-center gap-2 p-2 border rounded ${
                         dragOverIdx === i ? "bg-blue-100" : ""
-                      }`}
+                      } ${restoredIdx === i ? "animate-pulse" : ""}`}
                       draggable
                       onDragStart={() => setDraggedIdx(i)}
                       onDragOver={(e) => {
@@ -531,66 +623,56 @@ export default function TestcaseManagerPage({
                     >
                       {/* Drag handle */}
                       <span
-                        className="px-2 cursor-grab text-gray-500"
+                        className="px-2 cursor-grab text-gray-500 flex-shrink-0"
                         title="Drag to reorder"
                         style={{ userSelect: "none" }}
                       >
-                        <FontAwesomeIcon icon={faArrowLeft} rotation={90} />
-                        <FontAwesomeIcon
-                          icon={faArrowLeft}
-                          rotation={270}
-                          className="-ml-2"
-                        />
+                        <FontAwesomeIcon icon={faGripLines} />
                       </span>
-                      <span className="font-mono text-xs w-6 text-center">
+                      <span className="font-mono text-xs w-6 text-center flex-shrink-0">
                         {i + 1}
                       </span>
                       {c.type !== "S" && c.type !== "E" && (
                         <>
-                          <Select
-                            value={c.input}
-                            onValueChange={(v) => {
-                              const nc = [...detectedCases];
-                              nc[i] = { ...nc[i], input: v };
-                              setDetectedCases(nc);
-                            }}
-                          >
-                            <SelectTrigger className="w-48">
-                              <SelectValue placeholder="Select input file" />
-                            </SelectTrigger>
-                            <SelectContent>
+                          <div className="min-w-0">
+                            <input
+                              list={`files-input-${i}`}
+                              value={c.input ?? ""}
+                              onChange={(e) => {
+                                const nc = [...detectedCases];
+                                nc[i] = { ...nc[i], input: e.target.value };
+                                setDetectedCases(nc);
+                              }}
+                              className="w-48 max-w-[40vw] p-1 border rounded min-w-0"
+                              placeholder="Select input file"
+                            />
+                            <datalist id={`files-input-${i}`}>
                               {allZipFiles.map((file) => (
-                                <SelectItem key={file} value={file}>
-                                  {file}
-                                </SelectItem>
+                                <option key={file} value={file} />
                               ))}
-                            </SelectContent>
-                          </Select>
-                          <Select
-                            value={c.output ?? "__none__"}
-                            onValueChange={(v) => {
-                              const nc = [...detectedCases];
-                              nc[i] = {
-                                ...nc[i],
-                                output: v === "__none__" ? undefined : v,
-                              };
-                              setDetectedCases(nc);
-                            }}
-                          >
-                            <SelectTrigger className="w-48">
-                              <SelectValue placeholder="Select output file" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="__none__">
-                                No output file
-                              </SelectItem>
+                            </datalist>
+                          </div>
+                          <div className="min-w-0">
+                            <input
+                              list={`files-output-${i}`}
+                              value={c.output ?? ""}
+                              onChange={(e) => {
+                                const nc = [...detectedCases];
+                                nc[i] = {
+                                  ...nc[i],
+                                  output: e.target.value ? e.target.value : undefined,
+                                };
+                                setDetectedCases(nc);
+                              }}
+                              className="w-48 max-w-[40vw] p-1 border rounded min-w-0"
+                              placeholder="Select output file (leave empty for none)"
+                            />
+                            <datalist id={`files-output-${i}`}>
                               {allZipFiles.map((file) => (
-                                <SelectItem key={file} value={file}>
-                                  {file}
-                                </SelectItem>
+                                <option key={file} value={file} />
                               ))}
-                            </SelectContent>
-                          </Select>
+                            </datalist>
+                          </div>
                         </>
                       )}
                       <Select
@@ -638,23 +720,19 @@ export default function TestcaseManagerPage({
                         />
                         <span className="text-sm">Pretest</span>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-600"
-                        onClick={() => {
-                          const nc = detectedCases.filter(
-                            (_, idx) => idx !== i
-                          );
-                          setDetectedCases(nc);
-                        }}
+                      {/* Replace Delete with undoable 'x' (larger) */}
+                      <button
+                        aria-label={`Remove testcase ${i + 1}`}
+                        title="Remove"
+                        className="w-7 h-7 flex items-center justify-center rounded-full bg-red-50 text-red-600 hover:bg-red-100 border border-red-100"
+                        onClick={() => scheduleRemoval(i)}
                       >
-                        Delete
-                      </Button>
+                        <span className="text-lg leading-none">×</span>
+                      </button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-green-600"
+                        className="text-green-600 w-7 h-7 p-0"
                         onClick={() => {
                           const newCase: DetectedCase = {
                             input: "",
@@ -1121,6 +1199,55 @@ export default function TestcaseManagerPage({
           </div>
         </CardContent>
       </Card>
+      {/* Toast area */}
+      {toast.open && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className="max-w-xs bg-white border border-gray-200 rounded-xl shadow-lg p-3">
+            <div className="flex items-center gap-3">
+              <p className="text-sm text-gray-700">{toast.message}</p>
+              <div className="ms-auto flex items-center gap-2">
+                <button
+                  className="text-sm text-blue-600"
+                  onClick={() => undoRemoval(toast.uid)}
+                >
+                  Undo
+                </button>
+                <button
+                  className="text-sm text-gray-500"
+                  onClick={() => {
+                    // If we have a uid for the pending deletion, cancel the initial timeout
+                    // and run the slide-out animation, then finalize immediately (after animation).
+                    const uid = toast.uid;
+                    if (uid) {
+                      // Cancel any scheduled timers (initial or finalize) stored for this uid
+                      setPendingDeletes((p) => {
+                        const np = { ...p } as Record<string, number>;
+                        if (np[uid]) {
+                          try {
+                            clearTimeout(np[uid]);
+                          } catch {}
+                          delete np[uid];
+                        }
+                        return np;
+                      });
+
+                      // Trigger slide-out animation
+                      setToast((t) => (t.uid === uid ? { ...t, anim: "out" } : t));
+
+                      // Finalize after the animation completes
+                      setTimeout(() => finalizeRemoval(uid), 220);
+                    } else {
+                      setToast({ open: false, message: "", caseIdx: null, anim: null, uid: null });
+                    }
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Info Card */}
       <Card className="mt-6">
         <CardContent className="flex items-start gap-4">
