@@ -225,6 +225,19 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
         const submissionData = await response.json();
         console.log(submissionData)
         setSubmission(submissionData);
+
+        // Auto-expand latest batch if any
+        if (submissionData.testCases && submissionData.testCases.length > 0) {
+          type TestCaseType = SubmissionDetail['testCases'][number];
+          const batchNums = submissionData.testCases
+            .map((tc: TestCaseType) => tc.batchNumber)
+            .filter((b: number | null | undefined): b is number => b !== null && b !== undefined)
+            .map((b: number) => Number(b));
+          if (batchNums.length > 0) {
+            const maxBatch = Math.max(...batchNums);
+            setExpandedBatches(prev => ({ ...prev, [`batch-${maxBatch}`]: true }));
+          }
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
@@ -260,7 +273,21 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data && isActive) {
-            setSubmission(result.data);
+            const newData = result.data;
+            setSubmission(newData);
+
+            // When polling updates include batches, auto-open newest batch if not already open
+            if (newData.testCases && newData.testCases.length > 0) {
+              type TestCaseType = SubmissionDetail['testCases'][number];
+              const batchNums = newData.testCases
+                .map((tc: TestCaseType) => tc.batchNumber)
+                .filter((b: number | null | undefined): b is number => b !== null && b !== undefined)
+                .map((b: number) => Number(b));
+              if (batchNums.length > 0) {
+                const maxBatch = Math.max(...batchNums);
+                setExpandedBatches(prev => ({ ...prev, [`batch-${maxBatch}`]: true }));
+              }
+            }
             
             // Continue polling if verdict is not final
             if (!hasFinalVerdict(result.data.verdict)) {
