@@ -96,8 +96,12 @@ export async function getUsersList(): Promise<IUsersListData[]> {
 
   const response = await fetch(new URL("/client/users/all", apiBase).toString(), {
     method: "GET",
+    // request fresh data, do not allow any caching at the Next.js fetch layer
+    cache: 'no-store',
     headers: {
       "Content-Type": "application/json",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      Pragma: "no-cache",
     },
   });
 
