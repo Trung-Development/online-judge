@@ -261,7 +261,8 @@ export default function CreateProblemPage() {
               ))}
             </SelectContent>
           </Select>
-          <div>
+
+          <div className="mt-4">
             <label className="block text-sm font-medium mb-1">
               PDF Statement (optional)
             </label>
@@ -295,12 +296,12 @@ export default function CreateProblemPage() {
                   }
                 }}
               />
-              <label
-                htmlFor="pdf-statement-upload"
-                className="inline-flex items-center px-3 py-2 border rounded cursor-pointer bg-primary text-primary-foreground"
+              <Button
+                onClick={() => document.getElementById("pdf-statement-upload")?.click()}
+                className="inline-flex items-center px-3 py-2"
               >
                 {pdfUploading ? "Uploading..." : pdfFileName || "Choose PDF"}
-              </label>
+              </Button>
               {pdfUuid && (
                 <div className="text-sm text-muted-foreground">Uploaded</div>
               )}
