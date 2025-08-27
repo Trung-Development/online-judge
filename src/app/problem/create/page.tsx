@@ -114,7 +114,7 @@ export default function CreateProblemPage() {
         window.addEventListener("storage", onStorage);
         // remove listener on unload
         window.addEventListener("beforeunload", () =>
-          window.removeEventListener("storage", onStorage),
+          window.removeEventListener("storage", onStorage)
         );
       } catch {
         // ignore if lib not present
@@ -135,7 +135,7 @@ export default function CreateProblemPage() {
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [allowedLanguages, setAllowedLanguages] = useState<string[]>([]);
   const [categories, setCategories] = useState<{ id: number; name: string }[]>(
-    [],
+    []
   );
   const [typesOptions, setTypesOptions] = useState<
     { id: number; name: string }[]
@@ -143,6 +143,9 @@ export default function CreateProblemPage() {
   const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [pdfFileName, setPdfFileName] = useState<string | null>(null);
+  const [pdfUploading, setPdfUploading] = useState(false);
+  const [pdfUuid, setPdfUuid] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,6 +171,7 @@ export default function CreateProblemPage() {
           name,
           points,
           description: payloadDescription,
+          pdfUuid,
           categoryId,
           types: selectedTypes,
           allowedLanguages: allowedLanguages,
@@ -257,6 +261,51 @@ export default function CreateProblemPage() {
               ))}
             </SelectContent>
           </Select>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              PDF Statement (optional)
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                accept="application/pdf"
+                id="pdf-statement-upload"
+                className="sr-only"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  if (!f) return;
+                  setPdfFileName(f.name);
+                  setPdfUploading(true);
+                  try {
+                    const form = new FormData();
+                    form.append("file", f);
+                    // When creating a new problem, slug may not exist yet; upload to temp
+                    form.append("slug", slug || "temp");
+                    const res = await fetch("/api/pdf-upload", {
+                      method: "POST",
+                      body: form,
+                    });
+                    if (!res.ok) throw new Error("Upload failed");
+                    const j = await res.json();
+                    if (j.pdfUuid) setPdfUuid(j.pdfUuid);
+                  } catch (err) {
+                    console.error("PDF upload error", err);
+                  } finally {
+                    setPdfUploading(false);
+                  }
+                }}
+              />
+              <label
+                htmlFor="pdf-statement-upload"
+                className="inline-flex items-center px-3 py-2 border rounded cursor-pointer bg-primary text-primary-foreground"
+              >
+                {pdfUploading ? "Uploading..." : pdfFileName || "Choose PDF"}
+              </label>
+              {pdfUuid && (
+                <div className="text-sm text-muted-foreground">Uploaded</div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div>

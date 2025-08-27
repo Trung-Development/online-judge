@@ -29,7 +29,7 @@ export default function ManageProblemPage() {
 
   const canEdit = hasPermission(
     user?.perms,
-    FEUserPermissions.EDIT_PROBLEM_TESTS,
+    FEUserPermissions.EDIT_PROBLEM_TESTS
   );
 
   const [loading, setLoading] = useState(false);
@@ -39,6 +39,9 @@ export default function ManageProblemPage() {
   const [slug, setSlug] = useState(slugParam);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [pdfFileName, setPdfFileName] = useState<string | null>(null);
+  const [pdfUploading, setPdfUploading] = useState(false);
+  const [pdfUuidState, setPdfUuidState] = useState<string | null>(null);
   const overTypeRef = useRef<import("overtype").default | null>(null);
   const [timeLimit, setTimeLimit] = useState<number>(1);
   const [memoryLimit, setMemoryLimit] = useState<number>(256);
@@ -48,7 +51,7 @@ export default function ManageProblemPage() {
     { id: number; name: string }[]
   >([]);
   const [categories, setCategories] = useState<{ id: number; name: string }[]>(
-    [],
+    []
   );
   const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
 
@@ -68,7 +71,7 @@ export default function ManageProblemPage() {
         setTypesOptions(typesRes);
 
         const probRes = await fetch(
-          `/api/problem/${encodeURIComponent(slugParam)}`,
+          `/api/problem/${encodeURIComponent(slugParam)}`
         );
         if (!probRes.ok) {
           setError("Failed to load problem");
@@ -78,9 +81,15 @@ export default function ManageProblemPage() {
         const prob = await probRes.json();
         setName(prob.name || "");
         setDescription(prob.description || "");
+        // PDF UUID provided by backend (if any)
+        if (prob.pdfUuid) {
+          setPdfUuidState(prob.pdfUuid);
+          // derive filename for display
+          setPdfFileName(`${prob.pdfUuid}.pdf`);
+        }
         setTimeLimit(typeof prob.timeLimit === "number" ? prob.timeLimit : 1);
         setMemoryLimit(
-          typeof prob.memoryLimit === "number" ? prob.memoryLimit : 256,
+          typeof prob.memoryLimit === "number" ? prob.memoryLimit : 256
         );
         setCategoryId(prob.categoryId ?? undefined);
         setAllowedLanguages(prob.allowedLanguages || []);
@@ -166,7 +175,7 @@ export default function ManageProblemPage() {
         };
         window.addEventListener("storage", onStorage);
         window.addEventListener("beforeunload", () =>
-          window.removeEventListener("storage", onStorage),
+          window.removeEventListener("storage", onStorage)
         );
       } catch {}
     })();
@@ -211,6 +220,7 @@ export default function ManageProblemPage() {
         slug,
         name,
         description: payloadDescription,
+        pdfUuid: pdfUuidState,
         categoryId,
         types: selectedTypes,
         allowedLanguages,
@@ -312,6 +322,67 @@ export default function ManageProblemPage() {
             id="overtype-editor-manage"
             className="w-full min-h-[24rem] h-96"
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            PDF Statement (optional)
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              accept="application/pdf"
+              id="pdf-statement-upload-manage"
+              className="sr-only"
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                setPdfFileName(f.name);
+                setPdfUploading(true);
+                try {
+                  const form = new FormData();
+                  form.append("file", f);
+                  // use the actual slug for manage uploads
+                  form.append("slug", slugParam || slug);
+                  const res = await fetch("/api/pdf-upload", {
+                    method: "POST",
+                    body: form,
+                  });
+                  if (!res.ok) throw new Error("Upload failed");
+                  const j = await res.json();
+                  if (j.pdfUuid) {
+                    setPdfUuidState(j.pdfUuid);
+                    setPdfFileName(f.name);
+                  }
+                } catch (err) {
+                  console.error("PDF upload error", err);
+                } finally {
+                  setPdfUploading(false);
+                }
+              }}
+            />
+            <label
+              htmlFor="pdf-statement-upload-manage"
+              className="inline-flex items-center px-3 py-2 border rounded cursor-pointer bg-primary text-primary-foreground"
+            >
+              {pdfUploading
+                ? "Uploading..."
+                : pdfFileName || (pdfUuidState ? "Uploaded" : "Choose PDF")}
+            </label>
+            {pdfUuidState && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  // Clear attachment client-side; backend will be updated on save
+                  setPdfUuidState(null);
+                  setPdfFileName(null);
+                }}
+              >
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
 
         <div>

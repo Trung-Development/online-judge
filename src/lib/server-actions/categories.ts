@@ -1,54 +1,21 @@
-import { env } from "../env";
-
-export async function getCategoriesNames(token?: string): Promise<string[]> {
+export async function getCategoriesNames(): Promise<string[]> {
   try {
-    const baseUrl = env.API_ENDPOINT;
-    const url = new URL("/client/categories/names", baseUrl);
-
-    const headers = new Headers();
-    if (token && token.length > 0)
-      headers.append("Authorization", `Bearer ${token}`);
-
-    const response = await fetch(url.toString(), {
-      headers,
-      next: {
-        revalidate: 60, // Revalidate after 60 seconds
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch categories names: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching categories names:", error);
+    const res = await fetch('/api/categories/names', { next: { revalidate: 60 } });
+    if (!res.ok) throw new Error(`Failed to fetch categories names: ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    console.error('Error fetching categories names:', e);
     return [];
   }
 }
 
-export async function getCategories(
-  token?: string,
-): Promise<{ id: number; name: string }[]> {
+export async function getCategories(): Promise<{ id: number; name: string }[]> {
   try {
-    const baseUrl = env.API_ENDPOINT;
-    const url = new URL("/client/categories/all", baseUrl);
-
-    const headers = new Headers();
-    if (token && token.length > 0)
-      headers.append("Authorization", `Bearer ${token}`);
-
-    const response = await fetch(url.toString(), {
-      headers,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch categories: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching categories:", error);
+    const res = await fetch('/api/categories/all');
+    if (!res.ok) throw new Error(`Failed to fetch categories: ${res.status}`);
+    return await res.json();
+  } catch (e) {
+    console.error('Error fetching categories:', e);
     return [];
   }
 }

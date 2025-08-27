@@ -104,7 +104,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
           {problem.pdf && (
             <div className="w-full mb-6" style={{ height: "auto" }}>
               <PDFViewer
-                src={`/pdf/${problem.pdf}`}
+                src={`/pdf/${slug}/${problem.pdf}`}
                 title={`${problem.name} PDF Statement`}
               />
             </div>
