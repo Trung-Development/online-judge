@@ -216,7 +216,7 @@ export async function setAuthSession(
       const encrypted = await encryptString(JSON.stringify(session));
       cookieStore.set(COOKIE_NAME, encrypted, COOKIE_OPTIONS);
     } catch (e) {
-      console.warn(
+      console.info(
         "Failed to encrypt session cookie, falling back to plaintext cookie:",
         e,
       );
