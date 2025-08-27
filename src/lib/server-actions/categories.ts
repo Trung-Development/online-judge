@@ -5,7 +5,8 @@ export async function getCategoriesNames(): Promise<string[]> {
       ? new URL("/client/categories/names", process.env.API_ENDPOINT).toString()
       : "/api/categories/names";
     const res = await fetch(url, { next: { revalidate: 60 } });
-    if (!res.ok) throw new Error(`Failed to fetch categories names: ${res.status}`);
+    if (!res.ok)
+      throw new Error(`Failed to fetch categories names: ${res.status}`);
     return await res.json();
   } catch (e) {
     console.error("Error fetching categories names:", e);

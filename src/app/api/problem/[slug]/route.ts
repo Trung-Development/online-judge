@@ -43,14 +43,23 @@ export async function PUT(
     // PDF object from storage to avoid orphaned files.
     try {
       const current = await getProblem(slug, token);
-  const prevPdfUuid = current && typeof current === "object" && "pdfUuid" in current ? (current as { pdfUuid?: string }).pdfUuid : null;
+      const prevPdfUuid =
+        current && typeof current === "object" && "pdfUuid" in current
+          ? (current as { pdfUuid?: string }).pdfUuid
+          : null;
       const hasPdfKey = Object.prototype.hasOwnProperty.call(body, "pdfUuid");
       const incomingPdf = hasPdfKey ? body.pdfUuid : undefined;
-      const isCleared = prevPdfUuid && (incomingPdf === null || incomingPdf === undefined || incomingPdf === "");
+      const isCleared =
+        prevPdfUuid &&
+        (incomingPdf === null ||
+          incomingPdf === undefined ||
+          incomingPdf === "");
 
       if (isCleared) {
         try {
-          const { S3Client, DeleteObjectCommand } = await import("@aws-sdk/client-s3");
+          const { S3Client, DeleteObjectCommand } = await import(
+            "@aws-sdk/client-s3"
+          );
           const s3 = new S3Client({
             region: env.STORAGE_REGION || "auto",
             endpoint: env.STORAGE_ENDPOINT,
@@ -61,7 +70,9 @@ export async function PUT(
             forcePathStyle: false,
           });
           const key = `pdf/${slug}/${prevPdfUuid}.pdf`;
-          await s3.send(new DeleteObjectCommand({ Bucket: env.STORAGE_BUCKET, Key: key }));
+          await s3.send(
+            new DeleteObjectCommand({ Bucket: env.STORAGE_BUCKET, Key: key }),
+          );
         } catch (e) {
           console.error("Failed to delete previous PDF from storage", e);
           // Non-fatal: continue to update problem record

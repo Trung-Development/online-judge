@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     if (!contentType.startsWith("multipart/form-data")) {
       return NextResponse.json(
         { error: "INVALID_CONTENT_TYPE" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
           Key: key,
           Body: body,
           ContentType: "application/pdf",
-        })
+        }),
       );
 
       // Construct URL (signed generation left to callers) — return s3:// path

@@ -114,7 +114,7 @@ export default function CreateProblemPage() {
         window.addEventListener("storage", onStorage);
         // remove listener on unload
         window.addEventListener("beforeunload", () =>
-          window.removeEventListener("storage", onStorage)
+          window.removeEventListener("storage", onStorage),
         );
       } catch {
         // ignore if lib not present
@@ -135,7 +135,7 @@ export default function CreateProblemPage() {
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [allowedLanguages, setAllowedLanguages] = useState<string[]>([]);
   const [categories, setCategories] = useState<{ id: number; name: string }[]>(
-    []
+    [],
   );
   const [typesOptions, setTypesOptions] = useState<
     { id: number; name: string }[]
