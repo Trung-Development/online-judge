@@ -1,10 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
+import { getAuthSession } from "@/lib/auth";
+import { UserPermissions, hasPermission } from "@/lib/permissions";
 
 export const runtime = "edge";
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getAuthSession();
+    if (!session)
+      return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
+
+    // Allow users who can create problems, or who can edit problem tests (manage)
+    const perms = session.user?.perms;
+    const allowed =
+      hasPermission(perms, UserPermissions.CREATE_NEW_PROBLEM) ||
+      hasPermission(perms, UserPermissions.MODIFY_ALL_PROBLEMS);
+    if (!allowed)
+      return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
+
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.startsWith("multipart/form-data")) {
       return NextResponse.json(
