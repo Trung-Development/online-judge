@@ -29,7 +29,7 @@ export default function ManageProblemPage() {
 
   const canEdit = hasPermission(
     user?.perms,
-    FEUserPermissions.EDIT_PROBLEM_TESTS,
+    FEUserPermissions.EDIT_PROBLEM_TESTS
   );
 
   const [loading, setLoading] = useState(false);
@@ -51,7 +51,7 @@ export default function ManageProblemPage() {
     { id: number; name: string }[]
   >([]);
   const [categories, setCategories] = useState<{ id: number; name: string }[]>(
-    [],
+    []
   );
   const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
 
@@ -71,7 +71,7 @@ export default function ManageProblemPage() {
         setTypesOptions(typesRes);
 
         const probRes = await fetch(
-          `/api/problem/${encodeURIComponent(slugParam)}`,
+          `/api/problem/${encodeURIComponent(slugParam)}`
         );
         if (!probRes.ok) {
           setError("Failed to load problem");
@@ -89,7 +89,7 @@ export default function ManageProblemPage() {
         }
         setTimeLimit(typeof prob.timeLimit === "number" ? prob.timeLimit : 1);
         setMemoryLimit(
-          typeof prob.memoryLimit === "number" ? prob.memoryLimit : 256,
+          typeof prob.memoryLimit === "number" ? prob.memoryLimit : 256
         );
         setCategoryId(prob.categoryId ?? undefined);
         setAllowedLanguages(prob.allowedLanguages || []);
@@ -145,6 +145,12 @@ export default function ManageProblemPage() {
         // don't init if already initialized
         if (!mounted || overTypeRef.current) return;
 
+        // Give the DOM a tick to settle (helps if other inputs or JS modified layout)
+        await new Promise((r) => setTimeout(r, 0));
+
+        // ensure the target element is present before instantiating
+        if (!document.querySelector("#overtype-editor-manage")) return;
+
         const instRaw = new OverType("#overtype-editor-manage", {
           toolbar: true,
           showStats: true,
@@ -175,7 +181,7 @@ export default function ManageProblemPage() {
         };
         window.addEventListener("storage", onStorage);
         window.addEventListener("beforeunload", () =>
-          window.removeEventListener("storage", onStorage),
+          window.removeEventListener("storage", onStorage)
         );
       } catch {}
     })();
