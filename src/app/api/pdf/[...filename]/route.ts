@@ -15,11 +15,15 @@ const s3 = new S3Client({
 
 export async function GET(
   req: NextRequest,
-  context: { params: Promise<{ filename: string }> },
+  context: { params: Promise<{ filename: string[] }> },
 ) {
-  let { filename } = await context.params;
+  const parts = await context.params;
+  // Join all segments; filename may include slashes
+  let filename = parts.filename.join("/");
   // Remove .pdf extension if present
-  filename = filename.replace(/\.pdf$/i, "");
+  if (filename.toLowerCase().endsWith(".pdf")) {
+    filename = filename.slice(0, -4);
+  }
 
   try {
     console.log(`Fetching PDF for filename: ${filename}`);
