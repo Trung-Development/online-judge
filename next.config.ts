@@ -13,15 +13,15 @@ const nextConfig: NextConfig = {
     config.module.rules.unshift({
       test: /\.(ts|tsx|js|jsx)$/,
       include: [
-        /src/,  // Only process files in src directory
+        /src/, // Only process files in src directory
       ],
       exclude: /node_modules/,
       use: {
-        loader: 'esbuild-loader',
+        loader: "esbuild-loader",
         options: {
-          loader: 'tsx',
-          target: dev ? 'es2017' : 'es2015',
-          jsx: 'automatic',
+          loader: "tsx",
+          target: dev ? "es2017" : "es2015",
+          jsx: "automatic",
         },
       },
     });

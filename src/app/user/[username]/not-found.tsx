@@ -40,9 +40,7 @@ export default function NotFound() {
                 </div>
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold">
-              User not found
-            </CardTitle>
+            <CardTitle className="text-2xl font-bold">User not found</CardTitle>
             <CardDescription className="text-lg mt-2">
               We cannot find the user {username}
             </CardDescription>

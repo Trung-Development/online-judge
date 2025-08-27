@@ -94,16 +94,19 @@ export async function getUsersList(): Promise<IUsersListData[]> {
     throw new Error("API base URL is not defined");
   }
 
-  const response = await fetch(new URL("/client/users/all", apiBase).toString(), {
-    method: "GET",
-    // request fresh data, do not allow any caching at the Next.js fetch layer
-    cache: 'no-store',
-    headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-cache, no-store, must-revalidate",
-      Pragma: "no-cache",
+  const response = await fetch(
+    new URL("/client/users/all", apiBase).toString(),
+    {
+      method: "GET",
+      // request fresh data, do not allow any caching at the Next.js fetch layer
+      cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
     },
-  });
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to fetch users list: ${response.statusText}`);

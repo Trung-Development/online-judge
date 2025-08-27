@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { User } from "@/lib/auth";
 import { env } from "@/lib/env";
 
@@ -88,7 +94,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     setUser(null);
     setSessionToken(null);
-    
+
     // Redirect to login page
     window.location.href = "/accounts/login";
   }, [sessionToken]);
@@ -108,9 +114,5 @@ export function AuthProvider({ children }: AuthProviderProps) {
     refreshSession,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

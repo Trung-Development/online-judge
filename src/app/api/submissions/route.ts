@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       if (!problemSlug || !language) {
         return NextResponse.json(
           { error: "Problem slug and language are required" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
             }),
           },
           body: forward,
-        }
+        },
       );
     } else {
       const body = await request.json();
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       if (!problemSlug || !language || !sourceCode) {
         return NextResponse.json(
           { error: "Problem slug, language, and source code are required" },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
             }),
           },
           body: JSON.stringify(submissionPayload),
-        }
+        },
       );
     }
 
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       const errorData = await response.json().catch(() => ({}));
       return NextResponse.json(
         { error: errorData.message || "Failed to submit solution" },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
     console.error("Submission API error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -134,14 +134,14 @@ export async function GET(request: NextRequest) {
     if (isNaN(page) || page < 1) {
       return NextResponse.json(
         { error: "Invalid page parameter" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (isNaN(limit) || limit < 1 || limit > 100) {
       return NextResponse.json(
         { error: "Invalid limit parameter (must be 1-100)" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -162,14 +162,14 @@ export async function GET(request: NextRequest) {
             Authorization: `Bearer ${session.sessionToken}`,
           }),
         },
-      }
+      },
     );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       return NextResponse.json(
         { error: errorData.message || "Failed to fetch submissions" },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
@@ -179,7 +179,7 @@ export async function GET(request: NextRequest) {
     console.error("Submissions fetch API error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

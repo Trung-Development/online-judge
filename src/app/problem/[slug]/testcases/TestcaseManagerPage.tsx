@@ -93,97 +93,119 @@ export default function TestcaseManagerPage({
   const [checkerArgs, setCheckerArgs] = useState<Record<string, unknown>>({});
   const [uploading, setUploading] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
-    // Deletion / undo state
-    // pendingDeletes stores timeout ids keyed by a temporary uid for the removal action
-    const [pendingDeletes, setPendingDeletes] = useState<Record<string, number>>({});
-    // toast controls and animation state
-    const [toast, setToast] = useState<{
-      open: boolean;
-      message: string;
-      caseIdx: number | null;
-      anim: "in" | "out" | null;
-      uid: string | null; // uid of the pending deletion
-    }>({ open: false, message: "", caseIdx: null, anim: null, uid: null });
-    const [restoredIdx, setRestoredIdx] = useState<number | null>(null);
-    // Keep a backup of last-removed case so we can restore on undo
-    const lastRemovedRef = useRef<{ idx: number; item: DetectedCase } | null>(null);
+  // Deletion / undo state
+  // pendingDeletes stores timeout ids keyed by a temporary uid for the removal action
+  const [pendingDeletes, setPendingDeletes] = useState<Record<string, number>>(
+    {},
+  );
+  // toast controls and animation state
+  const [toast, setToast] = useState<{
+    open: boolean;
+    message: string;
+    caseIdx: number | null;
+    anim: "in" | "out" | null;
+    uid: string | null; // uid of the pending deletion
+  }>({ open: false, message: "", caseIdx: null, anim: null, uid: null });
+  const [restoredIdx, setRestoredIdx] = useState<number | null>(null);
+  // Keep a backup of last-removed case so we can restore on undo
+  const lastRemovedRef = useRef<{ idx: number; item: DetectedCase } | null>(
+    null,
+  );
 
-    const scheduleRemoval = (idx: number) => {
-      // Immediately remove from UI and keep a backup so Undo can restore
-      const item = detectedCases[idx];
-      lastRemovedRef.current = { idx, item };
+  const scheduleRemoval = (idx: number) => {
+    // Immediately remove from UI and keep a backup so Undo can restore
+    const item = detectedCases[idx];
+    lastRemovedRef.current = { idx, item };
 
-      setDetectedCases((prev) => prev.filter((_, i) => i !== idx));
+    setDetectedCases((prev) => prev.filter((_, i) => i !== idx));
 
-      // show toast sliding in
-      const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      setToast({ open: true, message: `Testcase ${idx + 1} removed`, caseIdx: idx, anim: "in", uid });
+    // show toast sliding in
+    const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    setToast({
+      open: true,
+      message: `Testcase ${idx + 1} removed`,
+      caseIdx: idx,
+      anim: "in",
+      uid,
+    });
 
-      const timeoutId = window.setTimeout(() => {
-        // begin slide-out animation then finalize
-        setToast((t) => (t.uid === uid ? { ...t, anim: "out" } : t));
-        // wait for animation (200ms) then finalize
-        const finalizeTimer = window.setTimeout(() => {
-          finalizeRemoval(uid);
-        }, 220);
-        setPendingDeletes((p) => ({ ...p, [uid]: finalizeTimer }));
-      }, 3000);
+    const timeoutId = window.setTimeout(() => {
+      // begin slide-out animation then finalize
+      setToast((t) => (t.uid === uid ? { ...t, anim: "out" } : t));
+      // wait for animation (200ms) then finalize
+      const finalizeTimer = window.setTimeout(() => {
+        finalizeRemoval(uid);
+      }, 220);
+      setPendingDeletes((p) => ({ ...p, [uid]: finalizeTimer }));
+    }, 3000);
 
-      // store initial timeout so we can cancel finalize when Undo is pressed
-      setPendingDeletes((p) => ({ ...p, [uid]: timeoutId }));
-    };
+    // store initial timeout so we can cancel finalize when Undo is pressed
+    setPendingDeletes((p) => ({ ...p, [uid]: timeoutId }));
+  };
 
-    const undoRemoval = (uid: string | null) => {
-      if (!uid) return;
-      // cancel any scheduled timeouts (both initial and finalize)
-      const t = pendingDeletes[uid];
-      if (t) {
-        clearTimeout(t);
+  const undoRemoval = (uid: string | null) => {
+    if (!uid) return;
+    // cancel any scheduled timeouts (both initial and finalize)
+    const t = pendingDeletes[uid];
+    if (t) {
+      clearTimeout(t);
+    }
+    // also clear any nested finalize timer stored under same uid
+    setPendingDeletes((p) => {
+      const np = { ...p };
+      if (np[uid]) {
+        clearTimeout(np[uid]);
+        delete np[uid];
       }
-      // also clear any nested finalize timer stored under same uid
-      setPendingDeletes((p) => {
-        const np = { ...p };
-        if (np[uid]) {
-          clearTimeout(np[uid]);
-          delete np[uid];
-        }
-        return np;
-      });
+      return np;
+    });
 
-      // restore immediately from backup
-      const last = lastRemovedRef.current;
-      if (last) {
-        setDetectedCases((prev) => {
-          const out = [...prev];
-          // if index is out of range, push to end
-          const insertAt = Math.min(Math.max(0, last.idx), out.length);
-          out.splice(insertAt, 0, last.item);
-          return out;
-        });
-        setRestoredIdx(last.idx);
-        // clear backup
-        lastRemovedRef.current = null;
-        // hide toast immediately
-        setToast({ open: false, message: "", caseIdx: null, anim: null, uid: null });
-        setTimeout(() => setRestoredIdx(null), 400);
-      }
-    };
-
-    const finalizeRemoval = (uid: string) => {
-      // clear any pending timers for this uid and remove backup
-      setPendingDeletes((p) => {
-        const np = { ...p };
-        if (np[uid]) {
-          clearTimeout(np[uid]);
-          delete np[uid];
-        }
-        return np;
+    // restore immediately from backup
+    const last = lastRemovedRef.current;
+    if (last) {
+      setDetectedCases((prev) => {
+        const out = [...prev];
+        // if index is out of range, push to end
+        const insertAt = Math.min(Math.max(0, last.idx), out.length);
+        out.splice(insertAt, 0, last.item);
+        return out;
       });
-      // clear backup (we won't restore)
+      setRestoredIdx(last.idx);
+      // clear backup
       lastRemovedRef.current = null;
-      // hide toast
-      setToast({ open: false, message: "", caseIdx: null, anim: null, uid: null });
-    };
+      // hide toast immediately
+      setToast({
+        open: false,
+        message: "",
+        caseIdx: null,
+        anim: null,
+        uid: null,
+      });
+      setTimeout(() => setRestoredIdx(null), 400);
+    }
+  };
+
+  const finalizeRemoval = (uid: string) => {
+    // clear any pending timers for this uid and remove backup
+    setPendingDeletes((p) => {
+      const np = { ...p };
+      if (np[uid]) {
+        clearTimeout(np[uid]);
+        delete np[uid];
+      }
+      return np;
+    });
+    // clear backup (we won't restore)
+    lastRemovedRef.current = null;
+    // hide toast
+    setToast({
+      open: false,
+      message: "",
+      caseIdx: null,
+      anim: null,
+      uid: null,
+    });
+  };
   // IO global settings (match LQDOJ data.html fields)
   const [ioInputFile, setIoInputFile] = useState<string | null>(null);
   const [ioOutputFile, setIoOutputFile] = useState<string | null>(null);
@@ -196,7 +218,7 @@ export default function TestcaseManagerPage({
       problem.author || [],
       problem.curator || [],
       problem.tester || [],
-      user.id
+      user.id,
     );
 
   // Redirect if user doesn't have permission
@@ -232,18 +254,18 @@ export default function TestcaseManagerPage({
         const errorData = await response.json();
         if (errorData.error === "INSUFFICIENT_PERMISSIONS")
           throw new Error(
-            "You are not authorized to perform this operation. Please try again later."
+            "You are not authorized to perform this operation. Please try again later.",
           );
         if (errorData.error === "PROBLEM_NOT_FOUND")
           throw new Error(
-            "The problem you are trying to access does not exist. Please check the URL and try again."
+            "The problem you are trying to access does not exist. Please check the URL and try again.",
           );
         if (errorData.error === "PROBLEM_LOCKED")
           throw new Error(
-            "Modifications to this problem are restricted. Please contact an administrator for further assistance."
+            "Modifications to this problem are restricted. Please contact an administrator for further assistance.",
           );
         throw new Error(
-          errorData.error || "Failed to update test case visibility"
+          errorData.error || "Failed to update test case visibility",
         );
       } else {
         problem.testcaseDataVisibility = visibility;
@@ -343,7 +365,7 @@ export default function TestcaseManagerPage({
                 checked={visibility === "AUTHOR_ONLY"}
                 onChange={(e) =>
                   setVisibility(
-                    e.target.value as "AUTHOR_ONLY" | "AC_ONLY" | "EVERYONE"
+                    e.target.value as "AUTHOR_ONLY" | "AC_ONLY" | "EVERYONE",
                   )
                 }
                 className="mt-1"
@@ -376,7 +398,7 @@ export default function TestcaseManagerPage({
                 checked={visibility === "AC_ONLY"}
                 onChange={(e) =>
                   setVisibility(
-                    e.target.value as "AUTHOR_ONLY" | "AC_ONLY" | "EVERYONE"
+                    e.target.value as "AUTHOR_ONLY" | "AC_ONLY" | "EVERYONE",
                   )
                 }
                 className="mt-1"
@@ -409,7 +431,7 @@ export default function TestcaseManagerPage({
                 checked={visibility === "EVERYONE"}
                 onChange={(e) =>
                   setVisibility(
-                    e.target.value as "AUTHOR_ONLY" | "AC_ONLY" | "EVERYONE"
+                    e.target.value as "AUTHOR_ONLY" | "AC_ONLY" | "EVERYONE",
                   )
                 }
                 className="mt-1"
@@ -492,7 +514,7 @@ export default function TestcaseManagerPage({
                     const buf = await f.arrayBuffer();
                     const zip = await JSZip.loadAsync(buf);
                     const names = Object.keys(zip.files).filter(
-                      (n) => !n.endsWith("/")
+                      (n) => !n.endsWith("/"),
                     );
 
                     // Store all files for selectors
@@ -659,7 +681,9 @@ export default function TestcaseManagerPage({
                                 const nc = [...detectedCases];
                                 nc[i] = {
                                   ...nc[i],
-                                  output: e.target.value ? e.target.value : undefined,
+                                  output: e.target.value
+                                    ? e.target.value
+                                    : undefined,
                                 };
                                 setDetectedCases(nc);
                               }}
@@ -806,7 +830,7 @@ export default function TestcaseManagerPage({
                         if (starts.length === 0) return;
                         // Always sort and deduplicate
                         const batchIndices = Array.from(new Set(starts)).sort(
-                          (a, b) => a - b
+                          (a, b) => a - b,
                         );
                         const origCases = [...detectedCases];
                         const newCases: DetectedCase[] = [];
@@ -930,7 +954,7 @@ export default function TestcaseManagerPage({
                             setCheckerUploadMessage("Checker uploaded");
                           } catch (err) {
                             setCheckerUploadMessage(
-                              (err as Error).message || "Upload error"
+                              (err as Error).message || "Upload error",
                             );
                           } finally {
                             setCheckerUploading(false);
@@ -956,7 +980,7 @@ export default function TestcaseManagerPage({
                           Uploaded:{" "}
                           {String(
                             (checkerInfo as unknown as { name?: string })
-                              .name ?? ""
+                              .name ?? "",
                           )}
                         </span>
                       )}
@@ -988,7 +1012,7 @@ export default function TestcaseManagerPage({
                         min={0}
                         value={Number(
                           (checkerArgs as unknown as { precision?: number })
-                            .precision ?? 6
+                            .precision ?? 6,
                         )}
                         onChange={(e) =>
                           setCheckerArgs({
@@ -1083,7 +1107,7 @@ export default function TestcaseManagerPage({
                       if (checkerInfo) {
                         const basename = String(
                           (checkerInfo as unknown as Record<string, unknown>)
-                            .name || ""
+                            .name || "",
                         )
                           .split("/")
                           .pop();
@@ -1109,7 +1133,7 @@ export default function TestcaseManagerPage({
                       if (checkerInfo) {
                         const basename = String(
                           (checkerInfo as unknown as Record<string, unknown>)
-                            .name || ""
+                            .name || "",
                         )
                           .split("/")
                           .pop();
@@ -1128,7 +1152,7 @@ export default function TestcaseManagerPage({
                         args: {
                           precision: Number(
                             (checkerArgs as unknown as { precision?: number })
-                              .precision ?? 6
+                              .precision ?? 6,
                           ),
                         },
                       };
@@ -1163,7 +1187,7 @@ export default function TestcaseManagerPage({
                           Authorization: `Bearer ${sessionToken}`,
                         },
                         body: JSON.stringify(payload),
-                      }
+                      },
                     );
                     if (!r.ok) {
                       const err = await r.json().catch(() => ({}));
@@ -1219,12 +1243,20 @@ export default function TestcaseManagerPage({
                       });
 
                       // Trigger slide-out animation
-                      setToast((t) => (t.uid === uid ? { ...t, anim: "out" } : t));
+                      setToast((t) =>
+                        t.uid === uid ? { ...t, anim: "out" } : t,
+                      );
 
                       // Finalize after the animation completes
                       setTimeout(() => finalizeRemoval(uid), 220);
                     } else {
-                      setToast({ open: false, message: "", caseIdx: null, anim: null, uid: null });
+                      setToast({
+                        open: false,
+                        message: "",
+                        caseIdx: null,
+                        anim: null,
+                        uid: null,
+                      });
                     }
                   }}
                 >

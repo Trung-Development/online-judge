@@ -1,52 +1,54 @@
 import { env } from "../env";
 
 export async function getTypesNames(token?: string): Promise<string[]> {
-    try {
-        const baseUrl = env.API_ENDPOINT;
-        const url = new URL("/client/types/names", baseUrl);
+  try {
+    const baseUrl = env.API_ENDPOINT;
+    const url = new URL("/client/types/names", baseUrl);
 
-        const headers = new Headers();
-        if (token && token.length > 0)
-            headers.append("Authorization", `Bearer ${token}`);
+    const headers = new Headers();
+    if (token && token.length > 0)
+      headers.append("Authorization", `Bearer ${token}`);
 
-        const response = await fetch(url.toString(), {
-            headers,
-            next: {
-                revalidate: 60, // Revalidate after 60 seconds
-            },
-        });
+    const response = await fetch(url.toString(), {
+      headers,
+      next: {
+        revalidate: 60, // Revalidate after 60 seconds
+      },
+    });
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch types names: ${response.status}`);
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error("Error fetching types names:", error);
-        return [];
+    if (!response.ok) {
+      throw new Error(`Failed to fetch types names: ${response.status}`);
     }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching types names:", error);
+    return [];
+  }
 }
 
-export async function getTypes(token?: string): Promise<{ id: number; name: string }[]> {
-    try {
-        const baseUrl = env.API_ENDPOINT;
-        const url = new URL("/client/types/all", baseUrl);
+export async function getTypes(
+  token?: string,
+): Promise<{ id: number; name: string }[]> {
+  try {
+    const baseUrl = env.API_ENDPOINT;
+    const url = new URL("/client/types/all", baseUrl);
 
-        const headers = new Headers();
-        if (token && token.length > 0)
-            headers.append("Authorization", `Bearer ${token}`);
+    const headers = new Headers();
+    if (token && token.length > 0)
+      headers.append("Authorization", `Bearer ${token}`);
 
-        const response = await fetch(url.toString(), {
-            headers,
-        });
+    const response = await fetch(url.toString(), {
+      headers,
+    });
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch types: ${response.status}`);
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error("Error fetching types:", error);
-        return [];
+    if (!response.ok) {
+      throw new Error(`Failed to fetch types: ${response.status}`);
     }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching types:", error);
+    return [];
+  }
 }

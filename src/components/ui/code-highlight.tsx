@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { codeToHtml } from 'shiki';
-import { getShikiLanguage, getLanguageDisplayName } from '@/lib/highlight';
-import { Button } from '@/components/ui/button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCopy, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { useState, useEffect } from "react";
+import { codeToHtml } from "shiki";
+import { getShikiLanguage, getLanguageDisplayName } from "@/lib/highlight";
+import { Button } from "@/components/ui/button";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCopy, faCheck } from "@fortawesome/free-solid-svg-icons";
 
 interface CodeHighlightProps {
   code: string;
@@ -15,14 +15,14 @@ interface CodeHighlightProps {
   showCopyButton?: boolean;
 }
 
-export function CodeHighlight({ 
-  code, 
-  language, 
-  className = '', 
-  showLanguage = true, 
-  showCopyButton = true 
+export function CodeHighlight({
+  code,
+  language,
+  className = "",
+  showLanguage = true,
+  showCopyButton = true,
 }: CodeHighlightProps) {
-  const [highlightedCode, setHighlightedCode] = useState<string>('');
+  const [highlightedCode, setHighlightedCode] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
@@ -32,7 +32,7 @@ export function CodeHighlight({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Failed to copy code:', error);
+      console.error("Failed to copy code:", error);
     }
   };
 
@@ -41,26 +41,41 @@ export function CodeHighlight({
       try {
         setIsLoading(true);
         const shikiLang = getShikiLanguage(language);
-        console.log('Highlighting code with language:', language, '→', shikiLang);
-        
+        console.log(
+          "Highlighting code with language:",
+          language,
+          "→",
+          shikiLang,
+        );
+
         const html = await codeToHtml(code, {
           lang: shikiLang,
-          theme: 'github-dark',
-          transformers: [{
-            pre(node) {
-              // Remove default background and add custom classes
-              node.properties = node.properties || {};
-              node.properties.style = '';
-              node.properties.class = 'overflow-x-auto text-sm leading-relaxed p-0 m-0 bg-transparent';
-            }
-          }]
+          theme: "github-dark",
+          transformers: [
+            {
+              pre(node) {
+                // Remove default background and add custom classes
+                node.properties = node.properties || {};
+                node.properties.style = "";
+                node.properties.class =
+                  "overflow-x-auto text-sm leading-relaxed p-0 m-0 bg-transparent";
+              },
+            },
+          ],
         });
-        
+
         setHighlightedCode(html);
       } catch (error) {
-        console.error('Failed to highlight code:', error, 'Language:', language);
+        console.error(
+          "Failed to highlight code:",
+          error,
+          "Language:",
+          language,
+        );
         // Fallback to plain pre/code
-        setHighlightedCode(`<pre class="overflow-x-auto text-sm leading-relaxed p-0 m-0 bg-transparent"><code>${code}</code></pre>`);
+        setHighlightedCode(
+          `<pre class="overflow-x-auto text-sm leading-relaxed p-0 m-0 bg-transparent"><code>${code}</code></pre>`,
+        );
       } finally {
         setIsLoading(false);
       }
@@ -96,7 +111,9 @@ export function CodeHighlight({
   }
 
   return (
-    <div className={`bg-gray-900 rounded-md border overflow-hidden ${className}`}>
+    <div
+      className={`bg-gray-900 rounded-md border overflow-hidden ${className}`}
+    >
       {(showLanguage || showCopyButton) && (
         <div className="flex items-center justify-between px-4 py-2 border-b bg-gray-800">
           {showLanguage && (
@@ -105,21 +122,21 @@ export function CodeHighlight({
             </span>
           )}
           {showCopyButton && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleCopy}
               className="h-8 w-8 p-0 hover:bg-gray-700"
             >
-              <FontAwesomeIcon 
-                icon={copied ? faCheck : faCopy} 
-                className={`w-3 h-3 ${copied ? 'text-green-400' : 'text-gray-300'}`}
+              <FontAwesomeIcon
+                icon={copied ? faCheck : faCopy}
+                className={`w-3 h-3 ${copied ? "text-green-400" : "text-gray-300"}`}
               />
             </Button>
           )}
         </div>
       )}
-      <div 
+      <div
         className="p-4 bg-gray-900 text-white [&_pre]:bg-transparent [&_pre]:p-0 [&_pre]:m-0"
         dangerouslySetInnerHTML={{ __html: highlightedCode }}
       />

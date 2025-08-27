@@ -6,7 +6,7 @@ export const runtime = "edge";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
     const session = await getAuthSession();
@@ -18,7 +18,7 @@ export async function POST(
 
     const backendUrl = new URL(
       `/client/problems/${encodeURIComponent(slug)}/finalize-testcase-upload`,
-      env.API_ENDPOINT
+      env.API_ENDPOINT,
     ).toString();
 
     // Allow passing checker metadata and selected indices
@@ -56,7 +56,7 @@ export async function POST(
       const e = await res.json().catch(() => null);
       return NextResponse.json(
         { error: e?.message || "FINALIZE_FAILED" },
-        { status: res.status }
+        { status: res.status },
       );
     }
 

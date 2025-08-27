@@ -21,12 +21,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { IProblemData, ProblemStatus } from "@/lib/server-actions/problems";
-import { hasPermission, UserPermissions as FEUserPermissions } from "@/lib/permissions";
+import {
+  hasPermission,
+  UserPermissions as FEUserPermissions,
+} from "@/lib/permissions";
 import { useAuth } from "@/components/AuthProvider";
 import { useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { MultiSelect } from "@/components/ui/multi-select";
 
 const PROBLEMS_PER_PAGE = 50;
@@ -36,11 +45,11 @@ type SortOrder = "asc" | "desc" | null;
 
 interface ProblemsPageProps {
   initialProblems: IProblemData[];
-  initialCategories: string[],
+  initialCategories: string[];
   initialTypes: {
     value: string;
     label: string;
-  }[]
+  }[];
 }
 
 function getStatusIcon(status?: ProblemStatus) {
@@ -56,7 +65,11 @@ function getStatusIcon(status?: ProblemStatus) {
   return result;
 }
 
-export default function ProblemsPage({ initialProblems, initialCategories, initialTypes }: ProblemsPageProps) {
+export default function ProblemsPage({
+  initialProblems,
+  initialCategories,
+  initialTypes,
+}: ProblemsPageProps) {
   const { sessionToken, user } = useAuth();
   const searchParams = useSearchParams();
   const [filteredProblems, setFilteredProblems] =
@@ -64,7 +77,9 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
   const [searchTerm, setSearchTerm] = useState("");
   const [types, setTypes] = useState<string[]>([]);
   const [chosenCategory, setChosenCategory] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState(searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1);
+  const [currentPage, setCurrentPage] = useState(
+    searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1,
+  );
   const [showEditorialOnly, setShowEditorialOnly] = useState(false);
   const [hideSolved, setHideSolved] = useState(false);
   const [showTypes, setShowTypes] = useState(false);
@@ -169,7 +184,7 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
         return 0;
       });
     },
-    [sortField, sortOrder]
+    [sortField, sortOrder],
   );
 
   const totalPages = Math.ceil(filteredProblems.length / PROBLEMS_PER_PAGE);
@@ -185,7 +200,7 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
       filtered = filtered.filter(
         (problem) =>
           problem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          problem.code.toLowerCase().includes(searchTerm.toLowerCase())
+          problem.code.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -200,16 +215,17 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
     }
 
     // Category filter
-    if (chosenCategory != '') {
+    if (chosenCategory != "") {
       filtered = filtered.filter(
-        (problem) => problem.category.toLowerCase() === chosenCategory.toLowerCase()
+        (problem) =>
+          problem.category.toLowerCase() === chosenCategory.toLowerCase(),
       );
     }
 
     // Types filter
     if (types.length > 0) {
       filtered = filtered.filter((problem) =>
-        problem.type.some((type) => types.includes(type))
+        problem.type.some((type) => types.includes(type)),
       );
     }
 
@@ -229,7 +245,7 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
     currentPage,
     totalPages,
     chosenCategory,
-    types
+    types,
   ]);
 
   const calculateAcceptanceRate = (stats: IProblemData["stats"]) => {
@@ -250,13 +266,13 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
 
   const handleRandomProblem = () => {
     if (filteredProblems.length === 0) return;
-    
+
     // Get a random problem from the filtered list
     const randomIndex = Math.floor(Math.random() * filteredProblems.length);
     const randomProblem = filteredProblems[randomIndex];
-    
+
     // Open in new tab
-    window.open(`/problem/${randomProblem.code}`, '_blank');
+    window.open(`/problem/${randomProblem.code}`, "_blank");
   };
 
   return (
@@ -264,16 +280,20 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold mb-4">Problems list</h1>
-          {isAuthenticated && hasPermission(user?.perms, FEUserPermissions.CREATE_NEW_PROBLEM) && (
-            <div className="ml-4">
-              <Link href="/problem/create">
-                <Button className="ml-2">
-                  <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                  Create problem
-                </Button>
-              </Link>
-            </div>
-          )}
+          {isAuthenticated &&
+            hasPermission(
+              user?.perms,
+              FEUserPermissions.CREATE_NEW_PROBLEM,
+            ) && (
+              <div className="ml-4">
+                <Link href="/problem/create">
+                  <Button className="ml-2">
+                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                    Create problem
+                  </Button>
+                </Link>
+              </div>
+            )}
         </div>
         <hr className="mb-6" />
         {/* Filters */}
@@ -281,11 +301,15 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
           <CardHeader className="pb-5 border-b">
             <div className="flex flex-col gap-1">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                <FontAwesomeIcon icon={faFilter} className="w-5 h-5 text-primary" />
+                <FontAwesomeIcon
+                  icon={faFilter}
+                  className="w-5 h-5 text-primary"
+                />
                 Filters
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Refine your search by name, category, type, or editorial availability
+                Refine your search by name, category, type, or editorial
+                availability
               </p>
             </div>
           </CardHeader>
@@ -315,21 +339,29 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
                   Category
                 </Label>
                 <div className="flex gap-2">
-                <Select onValueChange={(e) => setChosenCategory(e)} value={chosenCategory}>
-                  <SelectTrigger className="rounded-lg">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {initialCategories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {chosenCategory && (<Button variant={"outline"} onClick={() => setChosenCategory("")}>
-                  Clear
-                </Button>)}
+                  <Select
+                    onValueChange={(e) => setChosenCategory(e)}
+                    value={chosenCategory}
+                  >
+                    <SelectTrigger className="rounded-lg">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {initialCategories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {chosenCategory && (
+                    <Button
+                      variant={"outline"}
+                      onClick={() => setChosenCategory("")}
+                    >
+                      Clear
+                    </Button>
+                  )}
                 </div>
               </div>
 
@@ -352,32 +384,40 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
             {/* Toggles */}
             <div className="border-t pt-4 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Show problems with editorial only</span>
+                <span className="text-sm font-medium">
+                  Show problems with editorial only
+                </span>
                 <button
                   type="button"
                   onClick={() => setShowEditorialOnly(!showEditorialOnly)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showEditorialOnly ? "bg-primary" : "bg-muted"
-                    }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    showEditorialOnly ? "bg-primary" : "bg-muted"
+                  }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showEditorialOnly ? "translate-x-6" : "translate-x-1"
-                      }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      showEditorialOnly ? "translate-x-6" : "translate-x-1"
+                    }`}
                   />
                 </button>
               </div>
 
               {isAuthenticated && (
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Hide solved problems</span>
+                  <span className="text-sm font-medium">
+                    Hide solved problems
+                  </span>
                   <button
                     type="button"
                     onClick={() => setHideSolved(!hideSolved)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${hideSolved ? "bg-primary" : "bg-muted"
-                      }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      hideSolved ? "bg-primary" : "bg-muted"
+                    }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${hideSolved ? "translate-x-6" : "translate-x-1"
-                        }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        hideSolved ? "translate-x-6" : "translate-x-1"
+                      }`}
                     />
                   </button>
                 </div>
@@ -388,12 +428,14 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
                 <button
                   type="button"
                   onClick={() => setShowTypes(!showTypes)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showTypes ? "bg-primary" : "bg-muted"
-                    }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    showTypes ? "bg-primary" : "bg-muted"
+                  }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showTypes ? "translate-x-6" : "translate-x-1"
-                      }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      showTypes ? "translate-x-6" : "translate-x-1"
+                    }`}
                   />
                 </button>
               </div>
@@ -410,7 +452,8 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
                 🎲 Random Problem
                 {filteredProblems.length > 0 && (
                   <span className="ml-2 text-xs text-muted-foreground">
-                    (from {filteredProblems.length} result{filteredProblems.length != 1 ? "s" : ""})
+                    (from {filteredProblems.length} result
+                    {filteredProblems.length != 1 ? "s" : ""})
                   </span>
                 )}
               </Button>
@@ -446,8 +489,9 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
                   </th>
                 )}
                 <th
-                  className={`h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 ${!isAuthenticated ? "first:rounded-tl-md" : ""
-                    } cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100`}
+                  className={`h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 ${
+                    !isAuthenticated ? "first:rounded-tl-md" : ""
+                  } cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100`}
                   onClick={() => handleSort("slug")}
                 >
                   <div className="flex items-center gap-2">
@@ -542,10 +586,11 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
                 currentProblems.map((problem) => (
                   <tr
                     key={problem.code}
-                    className={`border-b transition-colors ${problem.isDeleted // The problem is deleted
-                      ? "bg-muted/100 opacity-50 pointer-events-none"
-                      : "hover:bg-muted/50"
-                      }`}
+                    className={`border-b transition-colors ${
+                      problem.isDeleted // The problem is deleted
+                        ? "bg-muted/100 opacity-50 pointer-events-none"
+                        : "hover:bg-muted/50"
+                    }`}
                   >
                     {isAuthenticated && (
                       <td
@@ -561,9 +606,11 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
                         <span className="flex items-center justify-center h-full w-full">
                           <FontAwesomeIcon
                             icon={getStatusIcon(problem.status).icon}
-                            className={`w-4 h-4 text-${getStatusIcon(problem.status).color
-                              }-600 dark:text-${getStatusIcon(problem.status).color
-                              }-400`}
+                            className={`w-4 h-4 text-${
+                              getStatusIcon(problem.status).color
+                            }-600 dark:text-${
+                              getStatusIcon(problem.status).color
+                            }-400`}
                           />
                         </span>
                       </td>
@@ -601,16 +648,17 @@ export default function ProblemsPage({ initialProblems, initialCategories, initi
                     </td>
                     <td className="p-4 align-middle text-center border-r border-border w-16">
                       <span
-                        className={`font-medium ${!problem.stats
-                          ? "text-muted-foreground"
-                          : calculateAcceptanceRate(problem.stats) === null
+                        className={`font-medium ${
+                          !problem.stats
                             ? "text-muted-foreground"
-                            : calculateAcceptanceRate(problem.stats)! >= 50
-                              ? "text-green-600 dark:text-green-400"
-                              : calculateAcceptanceRate(problem.stats)! >= 25
-                                ? "text-yellow-600 dark:text-yellow-400"
-                                : "text-red-600 dark:text-red-400"
-                          }`}
+                            : calculateAcceptanceRate(problem.stats) === null
+                              ? "text-muted-foreground"
+                              : calculateAcceptanceRate(problem.stats)! >= 50
+                                ? "text-green-600 dark:text-green-400"
+                                : calculateAcceptanceRate(problem.stats)! >= 25
+                                  ? "text-yellow-600 dark:text-yellow-400"
+                                  : "text-red-600 dark:text-red-400"
+                        }`}
                       >
                         {problem.stats
                           ? formatAcceptanceRate(problem.stats)

@@ -6,7 +6,7 @@ export const runtime = "edge";
 export async function GET() {
   try {
     const session = await getAuthSession();
-    
+
     if (!session) {
       return NextResponse.json({ user: null, sessionToken: null });
     }

@@ -8,9 +8,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faFilter, faPlay, faPause } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faFilter,
+  faPlay,
+  faPause,
+} from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "@/components/AuthProvider";
 import { Metadata } from "next";
 import { Config } from "@/config";
@@ -64,9 +75,11 @@ export default function SubmissionsPage() {
   const isMySubmissions = typeof searchParams.get("mySubmissions") == "string";
 
   // Filter states - Initialize from URL params immediately
-  const [problemFilter, setProblemFilter] = useState(searchParams.get("problemSlug") || "");
+  const [problemFilter, setProblemFilter] = useState(
+    searchParams.get("problemSlug") || "",
+  );
   const [authorFilter, setAuthorFilter] = useState(
-    searchParams.get("author") || ""
+    searchParams.get("author") || "",
   );
   const [verdictFilter, setVerdictFilter] = useState("");
   const [isPolling, setIsPolling] = useState(true);
@@ -76,7 +89,7 @@ export default function SubmissionsPage() {
   const itemsPerPage = 20;
 
   const problemSlug = searchParams.get("problemSlug");
-  console.log(typeof searchParams.get("mySubmissions") == "string")
+  console.log(typeof searchParams.get("mySubmissions") == "string");
 
   const verdictColors: { [key: string]: string } = {
     AC: "bg-green-100 text-green-800 border-green-300",
@@ -110,49 +123,58 @@ export default function SubmissionsPage() {
     SK: "Skipped",
   };
 
-  const fetchSubmissions = React.useCallback(async (silent: boolean = false) => {
-    try {
-      if (!silent) setLoading(true);
+  const fetchSubmissions = React.useCallback(
+    async (silent: boolean = false) => {
+      try {
+        if (!silent) setLoading(true);
 
-      // Fetch submissions in batches since API limits to 100 per request
-      let allSubs: Submission[] = [];
-      let page = 1;
-      let hasMore = true;
+        // Fetch submissions in batches since API limits to 100 per request
+        let allSubs: Submission[] = [];
+        let page = 1;
+        let hasMore = true;
 
-      while (hasMore && page <= 10) { // Limit to 10 pages (1000 submissions max)
-        const params = new URLSearchParams({
-          page: page.toString(),
-          limit: "100", // Maximum allowed by API
-        });
+        while (hasMore && page <= 10) {
+          // Limit to 10 pages (1000 submissions max)
+          const params = new URLSearchParams({
+            page: page.toString(),
+            limit: "100", // Maximum allowed by API
+          });
 
-        const url = `/api/submissions?${params}`;
-        console.log(`Fetching submissions page ${page} from:`, url);
+          const url = `/api/submissions?${params}`;
+          console.log(`Fetching submissions page ${page} from:`, url);
 
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch submissions (page ${page}): ${response.status} ${response.statusText}`);
+          const response = await fetch(url);
+          if (!response.ok) {
+            throw new Error(
+              `Failed to fetch submissions (page ${page}): ${response.status} ${response.statusText}`,
+            );
+          }
+
+          const result: SubmissionsResponse = await response.json();
+          const pageData = result.data || [];
+
+          allSubs = [...allSubs, ...pageData];
+
+          // Check if we have more pages
+          hasMore =
+            pageData.length === 100 &&
+            page < (result.pagination?.totalPages || 0);
+          page++;
         }
 
-        const result: SubmissionsResponse = await response.json();
-        const pageData = result.data || [];
-
-        allSubs = [...allSubs, ...pageData];
-
-        // Check if we have more pages
-        hasMore = pageData.length === 100 && page < (result.pagination?.totalPages || 0);
-        page++;
+        console.log(`Fetched ${allSubs.length} total submissions`);
+        setAllSubmissions(allSubs);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching submissions:", err);
+        if (!silent)
+          setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        if (!silent) setLoading(false);
       }
-
-      console.log(`Fetched ${allSubs.length} total submissions`);
-      setAllSubmissions(allSubs);
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching submissions:", err);
-      if (!silent) setError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Client-side filtering logic
   const filteredSubmissions = React.useMemo(() => {
@@ -160,22 +182,27 @@ export default function SubmissionsPage() {
 
     // Problem filter
     if (problemFilter.trim()) {
-      filtered = filtered.filter(sub =>
-        sub.problem.slug.toLowerCase().includes(problemFilter.toLowerCase()) ||
-        sub.problem.name.toLowerCase().includes(problemFilter.toLowerCase())
+      filtered = filtered.filter(
+        (sub) =>
+          sub.problem.slug
+            .toLowerCase()
+            .includes(problemFilter.toLowerCase()) ||
+          sub.problem.name.toLowerCase().includes(problemFilter.toLowerCase()),
       );
     }
 
     // Author filter
     if (authorFilter.trim()) {
-      filtered = filtered.filter(sub =>
-        sub.author?.username?.toLowerCase().includes(authorFilter.toLowerCase())
+      filtered = filtered.filter((sub) =>
+        sub.author?.username
+          ?.toLowerCase()
+          .includes(authorFilter.toLowerCase()),
       );
     }
 
     // Verdict filter
     if (verdictFilter && verdictFilter !== "all") {
-      filtered = filtered.filter(sub => sub.verdict === verdictFilter);
+      filtered = filtered.filter((sub) => sub.verdict === verdictFilter);
     }
 
     return filtered;
@@ -185,7 +212,7 @@ export default function SubmissionsPage() {
   const totalPages = Math.ceil(filteredSubmissions.length / itemsPerPage);
   const paginatedSubmissions = filteredSubmissions.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   // Separate effect to handle setting username when "me" is used
@@ -244,7 +271,8 @@ export default function SubmissionsPage() {
     } catch {
       return "Invalid Date";
     }
-  }; const getPageTitle = () => {
+  };
+  const getPageTitle = () => {
     if (problemSlug && isMySubmissions) {
       return `My Submissions for Problem ${problemSlug}`;
     } else if (problemSlug) {
@@ -276,7 +304,11 @@ export default function SubmissionsPage() {
             <p className="text-red-600 mb-4">{error}</p>
             {!isAuthenticated && isMySubmissions && (
               <Button asChild>
-                <Link href={`/accounts/login?callbackUrl=${encodeURIComponent('/submissions?mySubmissions')}`}>Login</Link>
+                <Link
+                  href={`/accounts/login?callbackUrl=${encodeURIComponent("/submissions?mySubmissions")}`}
+                >
+                  Login
+                </Link>
               </Button>
             )}
           </CardContent>
@@ -294,7 +326,10 @@ export default function SubmissionsPage() {
             {problemSlug && (
               <Button variant="ghost" size="sm" asChild>
                 <Link href={`/problem/${problemSlug}`}>
-                  <FontAwesomeIcon icon={faArrowLeft} className="w-4 h-4 mr-2" />
+                  <FontAwesomeIcon
+                    icon={faArrowLeft}
+                    className="w-4 h-4 mr-2"
+                  />
                   Back to Problem
                 </Link>
               </Button>
@@ -308,7 +343,10 @@ export default function SubmissionsPage() {
               onClick={() => setIsPolling(!isPolling)}
               className={isPolling ? "bg-green-50 border-green-300" : ""}
             >
-              <FontAwesomeIcon icon={isPolling ? faPause : faPlay} className="w-4 h-4 mr-2" />
+              <FontAwesomeIcon
+                icon={isPolling ? faPause : faPlay}
+                className="w-4 h-4 mr-2"
+              />
               {isPolling ? "Pause Auto-refresh" : "Start Auto-refresh"}
             </Button>
             <span className="text-sm text-muted-foreground">
@@ -355,8 +393,11 @@ export default function SubmissionsPage() {
                   value={authorFilter}
                   onChange={(e) => setAuthorFilter(e.target.value)}
                   readOnly={isMySubmissions}
-                  className={`rounded-md ${isMySubmissions ? "bg-muted text-muted-foreground cursor-not-allowed" : ""
-                    }`}
+                  className={`rounded-md ${
+                    isMySubmissions
+                      ? "bg-muted text-muted-foreground cursor-not-allowed"
+                      : ""
+                  }`}
                 />
                 {isMySubmissions && (
                   <p className="text-xs text-muted-foreground mt-1">
@@ -418,7 +459,10 @@ export default function SubmissionsPage() {
                   </thead>
                   <tbody>
                     {paginatedSubmissions.map((submission) => (
-                      <tr key={submission.id} className="border-b hover:bg-muted/50">
+                      <tr
+                        key={submission.id}
+                        className="border-b hover:bg-muted/50"
+                      >
                         <td className="p-4">
                           <Link
                             href={`/problem/${submission.problem.slug}/submission/${submission.id}`}
@@ -444,24 +488,35 @@ export default function SubmissionsPage() {
                               {submission.author.username}
                             </Link>
                           ) : (
-                            <span className="text-muted-foreground">Unknown</span>
+                            <span className="text-muted-foreground">
+                              Unknown
+                            </span>
                           )}
                         </td>
-                        <td className="p-4 font-mono text-sm">{submission.language}</td>
+                        <td className="p-4 font-mono text-sm">
+                          {submission.language}
+                        </td>
                         <td className="p-4">
                           <Badge
                             variant="outline"
                             className={verdictColors[submission.verdict] || ""}
                           >
-                            {verdictNames[submission.verdict] || submission.verdict}
+                            {verdictNames[submission.verdict] ||
+                              submission.verdict}
                           </Badge>
                         </td>
-                        <td className="p-4">{submission.points}/{submission.problem.points}</td>
-                        <td className="p-4 font-mono text-sm">
-                          {submission.maxTime ? formatTime(submission.maxTime) : "-"}
+                        <td className="p-4">
+                          {submission.points}/{submission.problem.points}
                         </td>
                         <td className="p-4 font-mono text-sm">
-                          {submission.maxMemory ? formatMemory(submission.maxMemory) : "-"}
+                          {submission.maxTime
+                            ? formatTime(submission.maxTime)
+                            : "-"}
+                        </td>
+                        <td className="p-4 font-mono text-sm">
+                          {submission.maxMemory
+                            ? formatMemory(submission.maxMemory)
+                            : "-"}
                         </td>
                         <td className="p-4 text-sm text-muted-foreground">
                           {formatDate(submission.createdAt)}

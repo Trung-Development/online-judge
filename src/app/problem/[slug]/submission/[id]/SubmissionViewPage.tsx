@@ -56,7 +56,7 @@ interface SubmissionDetail {
     time: number;
     memory: number;
     position: number;
-  batchNumber?: number | null;
+    batchNumber?: number | null;
     output?: string;
     feedback?: string;
     input?: string;
@@ -68,34 +68,42 @@ interface SubmissionDetail {
   };
   judge: {
     name: string;
-  }
+  };
 }
 
-export default function SubmissionViewPage({ problem, slug, submissionId }: SubmissionViewPageProps) {
+export default function SubmissionViewPage({
+  problem,
+  slug,
+  submissionId,
+}: SubmissionViewPageProps) {
   const { sessionToken } = useAuth();
   // const router = useRouter();
-  
+
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // State for collapsible test case sections
-  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
+  const [expandedSections, setExpandedSections] = useState<{
+    [key: string]: boolean;
+  }>({});
   // State for collapsible batch sections
-  const [expandedBatches, setExpandedBatches] = useState<{[key: string]: boolean}>({});
+  const [expandedBatches, setExpandedBatches] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   // Helper function to toggle expanded sections
   const toggleSection = (testCaseId: number, sectionType: string) => {
     const key = `${testCaseId}-${sectionType}`;
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: !prev[key],
     }));
   };
 
   const toggleBatch = (batchId: string | number) => {
     const key = `batch-${batchId}`;
-    setExpandedBatches(prev => ({ ...prev, [key]: !prev[key] }));
+    setExpandedBatches((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   // Check if a section is expanded
@@ -106,7 +114,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
 
   // Get language display name
   const getLanguageLabel = (langValue: string) => {
-    const lang = languages.find(l => l.value === langValue);
+    const lang = languages.find((l) => l.value === langValue);
     return lang ? lang.label : langValue;
   };
 
@@ -121,12 +129,27 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
       case "MLE":
       case "RTE":
       case "CE":
-        return <FontAwesomeIcon icon={faExclamationTriangle} className="text-yellow-600" />;
+        return (
+          <FontAwesomeIcon
+            icon={faExclamationTriangle}
+            className="text-yellow-600"
+          />
+        );
       case "RN":
       case "QU":
-        return <FontAwesomeIcon icon={faSpinner} className="text-blue-600 animate-spin" />;
+        return (
+          <FontAwesomeIcon
+            icon={faSpinner}
+            className="text-blue-600 animate-spin"
+          />
+        );
       default:
-        return <FontAwesomeIcon icon={faExclamationTriangle} className="text-gray-600" />;
+        return (
+          <FontAwesomeIcon
+            icon={faExclamationTriangle}
+            className="text-gray-600"
+          />
+        );
     }
   };
 
@@ -187,21 +210,23 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
   // Helper function to clean error messages from ANSI escape codes and HTML entities
   const cleanErrorMessage = (message: string): string => {
     if (!message) return message;
-    
-    return message
-      // Remove ANSI escape sequences (like [01m[K, [m[K, etc.)
-      .replace(/\[[\d;]*[mK]/g, '')
-      // Remove other ANSI escape codes
-      .replace(/\x1b\[[0-9;]*[mGKH]/g, '')
-      // Decode HTML entities
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      // Clean up extra whitespace
-      .replace(/\s+/g, ' ')
-      .trim();
+
+    return (
+      message
+        // Remove ANSI escape sequences (like [01m[K, [m[K, etc.)
+        .replace(/\[[\d;]*[mK]/g, "")
+        // Remove other ANSI escape codes
+        .replace(/\x1b\[[0-9;]*[mGKH]/g, "")
+        // Decode HTML entities
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&amp;/g, "&")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        // Clean up extra whitespace
+        .replace(/\s+/g, " ")
+        .trim()
+    );
   };
 
   // Load submission data
@@ -209,33 +234,48 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
     const loadSubmission = async () => {
       try {
         setLoading(true);
-        
+
         const response = await fetch(`/api/submissions/${submissionId}`, {
           method: "GET",
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          if(errorData.error == 'SUBMISSION_NOT_FOUND' || errorData.error == 'INVALID_SUBMISSION') throw new Error("No submission with the provided ID found. Please double check your spelling or try again later.")
-          if(errorData.error == 'SUBMISSION_NOT_VIEWABLE') throw new Error("You do not have permission to view this submission. Please check your access rights or contact an administrator.");
+          if (
+            errorData.error == "SUBMISSION_NOT_FOUND" ||
+            errorData.error == "INVALID_SUBMISSION"
+          )
+            throw new Error(
+              "No submission with the provided ID found. Please double check your spelling or try again later.",
+            );
+          if (errorData.error == "SUBMISSION_NOT_VIEWABLE")
+            throw new Error(
+              "You do not have permission to view this submission. Please check your access rights or contact an administrator.",
+            );
 
           throw new Error(errorData.error || "Failed to load submission");
         }
 
         const submissionData = await response.json();
-        console.log(submissionData)
+        console.log(submissionData);
         setSubmission(submissionData);
 
         // Auto-expand latest batch if any
         if (submissionData.testCases && submissionData.testCases.length > 0) {
-          type TestCaseType = SubmissionDetail['testCases'][number];
+          type TestCaseType = SubmissionDetail["testCases"][number];
           const batchNums = submissionData.testCases
             .map((tc: TestCaseType) => tc.batchNumber)
-            .filter((b: number | null | undefined): b is number => b !== null && b !== undefined)
+            .filter(
+              (b: number | null | undefined): b is number =>
+                b !== null && b !== undefined,
+            )
             .map((b: number) => Number(b));
           if (batchNums.length > 0) {
             const maxBatch = Math.max(...batchNums);
-            setExpandedBatches(prev => ({ ...prev, [`batch-${maxBatch}`]: true }));
+            setExpandedBatches((prev) => ({
+              ...prev,
+              [`batch-${maxBatch}`]: true,
+            }));
           }
         }
       } catch (err) {
@@ -251,19 +291,31 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
   // Helper function to check if submission has final verdict
   const hasFinalVerdict = (verdict: string) => {
     // Final verdicts are those that won't change anymore
-    const finalVerdicts = ['AC', 'WA', 'TLE', 'MLE', 'RTE', 'CE', 'PE', 'OLE', 'AB', 'IR', 'ISE'];
+    const finalVerdicts = [
+      "AC",
+      "WA",
+      "TLE",
+      "MLE",
+      "RTE",
+      "CE",
+      "PE",
+      "OLE",
+      "AB",
+      "IR",
+      "ISE",
+    ];
     return finalVerdicts.includes(verdict);
   };
 
   // Polling for submission updates (only when needed)
   useEffect(() => {
     // if (!sessionToken) return;
-    
+
     let isActive = true;
 
     const pollSubmission = async () => {
       if (!isActive) return;
-      
+
       try {
         const response = await fetch(`/api/submissions/${submissionId}`, {
           headers: {
@@ -278,17 +330,23 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
 
             // When polling updates include batches, auto-open newest batch if not already open
             if (newData.testCases && newData.testCases.length > 0) {
-              type TestCaseType = SubmissionDetail['testCases'][number];
+              type TestCaseType = SubmissionDetail["testCases"][number];
               const batchNums = newData.testCases
                 .map((tc: TestCaseType) => tc.batchNumber)
-                .filter((b: number | null | undefined): b is number => b !== null && b !== undefined)
+                .filter(
+                  (b: number | null | undefined): b is number =>
+                    b !== null && b !== undefined,
+                )
                 .map((b: number) => Number(b));
               if (batchNums.length > 0) {
                 const maxBatch = Math.max(...batchNums);
-                setExpandedBatches(prev => ({ ...prev, [`batch-${maxBatch}`]: true }));
+                setExpandedBatches((prev) => ({
+                  ...prev,
+                  [`batch-${maxBatch}`]: true,
+                }));
               }
             }
-            
+
             // Continue polling if verdict is not final
             if (!hasFinalVerdict(result.data.verdict)) {
               scheduleNextPoll();
@@ -296,7 +354,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
           }
         }
       } catch (error) {
-        console.error('Error polling submission:', error);
+        console.error("Error polling submission:", error);
         if (isActive) {
           scheduleNextPoll(); // Retry on error
         }
@@ -305,7 +363,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
 
     const scheduleNextPoll = () => {
       if (!isActive) return;
-      
+
       // Poll every 0.5 seconds (500ms)
       setTimeout(() => {
         if (isActive) {
@@ -347,7 +405,10 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
     return (
       <div className="max-w-7xl mx-auto py-8 px-4">
         <div className="text-center">
-          <FontAwesomeIcon icon={faSpinner} className="animate-spin w-8 h-8 text-muted-foreground mb-4" />
+          <FontAwesomeIcon
+            icon={faSpinner}
+            className="animate-spin w-8 h-8 text-muted-foreground mb-4"
+          />
           <p className="text-muted-foreground">Loading submission...</p>
         </div>
       </div>
@@ -359,9 +420,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
       <div className="max-w-7xl mx-auto py-8 px-4">
         <Alert variant="destructive">
           <FontAwesomeIcon icon={faTimes} />
-          <AlertDescription>
-            {error || "Submission not found"}
-          </AlertDescription>
+          <AlertDescription>{error || "Submission not found"}</AlertDescription>
         </Alert>
       </div>
     );
@@ -407,38 +466,49 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <span className="font-medium text-muted-foreground">Points:</span>
+                  <span className="font-medium text-muted-foreground">
+                    Points:
+                  </span>
                   <div className="text-lg font-bold">
                     {submission.points}/{problem.points}
                   </div>
                 </div>
-                
-                {submission.maxTime !== undefined && submission.maxTime !== null && (
-                  <div>
-                    <span className="font-medium text-muted-foreground">Max Time:</span>
-                    <div className="text-lg font-bold">
-                      {submission.maxTime.toFixed(3)}s
+
+                {submission.maxTime !== undefined &&
+                  submission.maxTime !== null && (
+                    <div>
+                      <span className="font-medium text-muted-foreground">
+                        Max Time:
+                      </span>
+                      <div className="text-lg font-bold">
+                        {submission.maxTime.toFixed(3)}s
+                      </div>
                     </div>
-                  </div>
-                )}
-                
-                {submission.maxMemory !== undefined && submission.maxMemory !== null && (
-                  <div>
-                    <span className="font-medium text-muted-foreground">Max Memory:</span>
-                    <div className="text-lg font-bold">
-                      {formatMemory(submission.maxMemory)}
+                  )}
+
+                {submission.maxMemory !== undefined &&
+                  submission.maxMemory !== null && (
+                    <div>
+                      <span className="font-medium text-muted-foreground">
+                        Max Memory:
+                      </span>
+                      <div className="text-lg font-bold">
+                        {formatMemory(submission.maxMemory)}
+                      </div>
                     </div>
-                  </div>
-                )}
-                
-                {submission.compileTime !== undefined && submission.compileTime !== null && (
-                  <div>
-                    <span className="font-medium text-muted-foreground">Compile Time:</span>
-                    <div className="text-lg font-bold">
-                      {submission.compileTime.toFixed(3)}s
+                  )}
+
+                {submission.compileTime !== undefined &&
+                  submission.compileTime !== null && (
+                    <div>
+                      <span className="font-medium text-muted-foreground">
+                        Compile Time:
+                      </span>
+                      <div className="text-lg font-bold">
+                        {submission.compileTime.toFixed(3)}s
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </div>
 
               {/* Error Message */}
@@ -464,138 +534,72 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                    <div className="space-y-3">
-                      {/* Group test cases by batchNumber (null/undefined => unbatched) */}
-                      {(() => {
-                        type TestCaseType = SubmissionDetail['testCases'][number];
-                        const groups: { [key: string]: TestCaseType[] } = {};
-                        submission.testCases.forEach((tc: TestCaseType) => {
-                          const key = tc.batchNumber != null ? `batch-${tc.batchNumber}` : 'unbatched';
-                          if (!groups[key]) groups[key] = [];
-                          groups[key].push(tc);
-                        });
+                <div className="space-y-3">
+                  {/* Group test cases by batchNumber (null/undefined => unbatched) */}
+                  {(() => {
+                    type TestCaseType = SubmissionDetail["testCases"][number];
+                    const groups: { [key: string]: TestCaseType[] } = {};
+                    submission.testCases.forEach((tc: TestCaseType) => {
+                      const key =
+                        tc.batchNumber != null
+                          ? `batch-${tc.batchNumber}`
+                          : "unbatched";
+                      if (!groups[key]) groups[key] = [];
+                      groups[key].push(tc);
+                    });
 
-                        // If there's only the unbatched group, render as before
-                        const groupKeys = Object.keys(groups);
-                        if (groupKeys.length === 1 && groupKeys[0] === 'unbatched') {
-                          return submission.testCases.map((testCase, i) => {
-                    // Check if there's any detailed data to show
-                    const hasDetailedData = (testCase.input && testCase.input.trim()) || 
-                                          (testCase.expected && testCase.expected.trim()) || 
-                                          (testCase.output && testCase.output.trim()) || 
-                                          (testCase.feedback && testCase.feedback.trim());
+                    // If there's only the unbatched group, render as before
+                    const groupKeys = Object.keys(groups);
+                    if (
+                      groupKeys.length === 1 &&
+                      groupKeys[0] === "unbatched"
+                    ) {
+                      return submission.testCases.map((testCase, i) => {
+                        // Check if there's any detailed data to show
+                        const hasDetailedData =
+                          (testCase.input && testCase.input.trim()) ||
+                          (testCase.expected && testCase.expected.trim()) ||
+                          (testCase.output && testCase.output.trim()) ||
+                          (testCase.feedback && testCase.feedback.trim());
 
-                    return (
-                      <div key={testCase.id} className="border rounded-lg p-4">
-                        {/* Test case header with conditional expand/collapse button */}
-                        <div 
-                          className={`flex items-center justify-between ${hasDetailedData ? 'cursor-pointer' : ''}`}
-                          onClick={hasDetailedData ? () => toggleSection(testCase.id, 'details') : undefined}
-                        >
-                          <div className="flex items-center gap-2">
-                            {getVerdictIcon(testCase.verdict)}
-                            <span className="font-medium">Case #{i+1}</span>
-                            <Badge className={getVerdictColor(testCase.verdict)}>
-                              {getVerdictText(testCase.verdict)}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="text-sm text-muted-foreground">
-                              {testCase.points}/{problem.points} point{testCase.points !== 1 ? 's' : ''}
-                            </div>
-                            {hasDetailedData && (
-                              <FontAwesomeIcon 
-                                icon={isSectionExpanded(testCase.id, 'details') ? faChevronDown : faChevronRight} 
-                                className="w-4 h-4 text-muted-foreground" 
-                              />
-                            )}
-                          </div>
-                        </div>
-                        {/* Basic timing and memory info (always visible) */}
-                        <div className="grid grid-cols-2 gap-4 text-sm mt-2">
-                          <div>
-                            <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
-                          </div>
-                          <div>
-                            <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'}
-                          </div>
-                        </div>
-
-                        {/* Collapsible detailed section - only show if there's data */}
-                        {hasDetailedData && isSectionExpanded(testCase.id, 'details') && (
-                          <div className="mt-4 pt-3 border-t">
-                            <div className="space-y-3">
-                              {testCase.input && testCase.input.trim() && (
-                                <div>
-                                  <div className="text-sm font-medium mb-1">Input:</div>
-                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                    {testCase.input.length > 1000 ? testCase.input.substring(0, 1000) + '\n... [truncated]' : testCase.input}
-                                  </pre>
-                                </div>
-                              )}
-                              
-                              {testCase.expected && testCase.expected.trim() && (
-                                <div>
-                                  <div className="text-sm font-medium mb-1">Expected:</div>
-                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                    {testCase.expected.length > 1000 ? testCase.expected.substring(0, 1000) + '\n... [truncated]' : testCase.expected}
-                                  </pre>
-                                </div>
-                              )}
-                              
-                              {testCase.output && testCase.output.trim() && (
-                                <div>
-                                  <div className="text-sm font-medium mb-1">Actual:</div>
-                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                    {testCase.output.length > 1000 ? testCase.output.substring(0, 1000) + '\n... [truncated]' : testCase.output}
-                                  </pre>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Show feedback */}
-                            {testCase.feedback && testCase.feedback.trim() && (
-                              <div className="mt-3">
-                                <div className="text-sm font-medium mb-1">Feedback:</div>
-                                <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
-                                  {testCase.feedback}
-                                </pre>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                      });
-                    }
-
-                    // Otherwise render batches as collapsible boxes
-                    return groupKeys.map((gk) => {
-                      if (gk === 'unbatched') {
-                        // Render unbatched cases as a regular list
-                        return groups[gk].map((testCase: TestCaseType, idx: number) => (
-                          <div key={testCase.id} className="border rounded-lg p-4">
-                            {/* reuse existing single-case rendering - copy of code below */}
+                        return (
+                          <div
+                            key={testCase.id}
+                            className="border rounded-lg p-4"
+                          >
                             {/* Test case header with conditional expand/collapse button */}
-                            <div 
-                              className={`flex items-center justify-between ${( (testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim()) ) ? 'cursor-pointer' : ''}`}
-                              onClick={( (testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim()) ) ? () => toggleSection(testCase.id, 'details') : undefined}
+                            <div
+                              className={`flex items-center justify-between ${hasDetailedData ? "cursor-pointer" : ""}`}
+                              onClick={
+                                hasDetailedData
+                                  ? () => toggleSection(testCase.id, "details")
+                                  : undefined
+                              }
                             >
                               <div className="flex items-center gap-2">
                                 {getVerdictIcon(testCase.verdict)}
-                                <span className="font-medium">Case #{idx+1}</span>
-                                <Badge className={getVerdictColor(testCase.verdict)}>
+                                <span className="font-medium">
+                                  Case #{i + 1}
+                                </span>
+                                <Badge
+                                  className={getVerdictColor(testCase.verdict)}
+                                >
                                   {getVerdictText(testCase.verdict)}
                                 </Badge>
                               </div>
                               <div className="flex items-center gap-2">
                                 <div className="text-sm text-muted-foreground">
-                                  {testCase.points}/{problem.points} point{testCase.points !== 1 ? 's' : ''}
+                                  {testCase.points}/{problem.points} point
+                                  {testCase.points !== 1 ? "s" : ""}
                                 </div>
-                                {((testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim())) && (
-                                  <FontAwesomeIcon 
-                                    icon={isSectionExpanded(testCase.id, 'details') ? faChevronDown : faChevronRight} 
-                                    className="w-4 h-4 text-muted-foreground" 
+                                {hasDetailedData && (
+                                  <FontAwesomeIcon
+                                    icon={
+                                      isSectionExpanded(testCase.id, "details")
+                                        ? faChevronDown
+                                        : faChevronRight
+                                    }
+                                    className="w-4 h-4 text-muted-foreground"
                                   />
                                 )}
                               </div>
@@ -603,156 +607,477 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                             {/* Basic timing and memory info (always visible) */}
                             <div className="grid grid-cols-2 gap-4 text-sm mt-2">
                               <div>
-                                <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
+                                <span className="font-medium">Time:</span>{" "}
+                                {testCase.time &&
+                                typeof testCase.time === "number"
+                                  ? testCase.time.toFixed(3)
+                                  : "0.000"}
+                                s
                               </div>
                               <div>
-                                <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'}
+                                <span className="font-medium">Memory:</span>{" "}
+                                {testCase.memory &&
+                                typeof testCase.memory === "number"
+                                  ? formatMemory(testCase.memory)
+                                  : "0.0MB"}
                               </div>
                             </div>
 
                             {/* Collapsible detailed section - only show if there's data */}
-                            {((testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim())) && isSectionExpanded(testCase.id, 'details') && (
-                              <div className="mt-4 pt-3 border-t">
-                                <div className="space-y-3">
-                                  {testCase.input && testCase.input.trim() && (
-                                    <div>
-                                      <div className="text-sm font-medium mb-1">Input:</div>
-                                      <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                        {testCase.input.length > 1000 ? testCase.input.substring(0, 1000) + '\n... [truncated]' : testCase.input}
-                                      </pre>
-                                    </div>
-                                  )}
-                                  
-                                  {testCase.expected && testCase.expected.trim() && (
-                                    <div>
-                                      <div className="text-sm font-medium mb-1">Expected:</div>
-                                      <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                        {testCase.expected.length > 1000 ? testCase.expected.substring(0, 1000) + '\n... [truncated]' : testCase.expected}
-                                      </pre>
-                                    </div>
-                                  )}
-                                  
-                                  {testCase.output && testCase.output.trim() && (
-                                    <div>
-                                      <div className="text-sm font-medium mb-1">Actual:</div>
-                                      <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                        {testCase.output.length > 1000 ? testCase.output.substring(0, 1000) + '\n... [truncated]' : testCase.output}
-                                      </pre>
-                                    </div>
+                            {hasDetailedData &&
+                              isSectionExpanded(testCase.id, "details") && (
+                                <div className="mt-4 pt-3 border-t">
+                                  <div className="space-y-3">
+                                    {testCase.input &&
+                                      testCase.input.trim() && (
+                                        <div>
+                                          <div className="text-sm font-medium mb-1">
+                                            Input:
+                                          </div>
+                                          <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                            {testCase.input.length > 1000
+                                              ? testCase.input.substring(
+                                                  0,
+                                                  1000,
+                                                ) + "\n... [truncated]"
+                                              : testCase.input}
+                                          </pre>
+                                        </div>
+                                      )}
+
+                                    {testCase.expected &&
+                                      testCase.expected.trim() && (
+                                        <div>
+                                          <div className="text-sm font-medium mb-1">
+                                            Expected:
+                                          </div>
+                                          <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                            {testCase.expected.length > 1000
+                                              ? testCase.expected.substring(
+                                                  0,
+                                                  1000,
+                                                ) + "\n... [truncated]"
+                                              : testCase.expected}
+                                          </pre>
+                                        </div>
+                                      )}
+
+                                    {testCase.output &&
+                                      testCase.output.trim() && (
+                                        <div>
+                                          <div className="text-sm font-medium mb-1">
+                                            Actual:
+                                          </div>
+                                          <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                            {testCase.output.length > 1000
+                                              ? testCase.output.substring(
+                                                  0,
+                                                  1000,
+                                                ) + "\n... [truncated]"
+                                              : testCase.output}
+                                          </pre>
+                                        </div>
+                                      )}
+                                  </div>
+
+                                  {/* Show feedback */}
+                                  {testCase.feedback &&
+                                    testCase.feedback.trim() && (
+                                      <div className="mt-3">
+                                        <div className="text-sm font-medium mb-1">
+                                          Feedback:
+                                        </div>
+                                        <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
+                                          {testCase.feedback}
+                                        </pre>
+                                      </div>
+                                    )}
+                                </div>
+                              )}
+                          </div>
+                        );
+                      });
+                    }
+
+                    // Otherwise render batches as collapsible boxes
+                    return groupKeys.map((gk) => {
+                      if (gk === "unbatched") {
+                        // Render unbatched cases as a regular list
+                        return groups[gk].map(
+                          (testCase: TestCaseType, idx: number) => (
+                            <div
+                              key={testCase.id}
+                              className="border rounded-lg p-4"
+                            >
+                              {/* reuse existing single-case rendering - copy of code below */}
+                              {/* Test case header with conditional expand/collapse button */}
+                              <div
+                                className={`flex items-center justify-between ${(testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim()) ? "cursor-pointer" : ""}`}
+                                onClick={
+                                  (testCase.input && testCase.input.trim()) ||
+                                  (testCase.expected &&
+                                    testCase.expected.trim()) ||
+                                  (testCase.output && testCase.output.trim()) ||
+                                  (testCase.feedback &&
+                                    testCase.feedback.trim())
+                                    ? () =>
+                                        toggleSection(testCase.id, "details")
+                                    : undefined
+                                }
+                              >
+                                <div className="flex items-center gap-2">
+                                  {getVerdictIcon(testCase.verdict)}
+                                  <span className="font-medium">
+                                    Case #{idx + 1}
+                                  </span>
+                                  <Badge
+                                    className={getVerdictColor(
+                                      testCase.verdict,
+                                    )}
+                                  >
+                                    {getVerdictText(testCase.verdict)}
+                                  </Badge>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <div className="text-sm text-muted-foreground">
+                                    {testCase.points}/{problem.points} point
+                                    {testCase.points !== 1 ? "s" : ""}
+                                  </div>
+                                  {((testCase.input && testCase.input.trim()) ||
+                                    (testCase.expected &&
+                                      testCase.expected.trim()) ||
+                                    (testCase.output &&
+                                      testCase.output.trim()) ||
+                                    (testCase.feedback &&
+                                      testCase.feedback.trim())) && (
+                                    <FontAwesomeIcon
+                                      icon={
+                                        isSectionExpanded(
+                                          testCase.id,
+                                          "details",
+                                        )
+                                          ? faChevronDown
+                                          : faChevronRight
+                                      }
+                                      className="w-4 h-4 text-muted-foreground"
+                                    />
                                   )}
                                 </div>
-                                
-                                {/* Show feedback */}
-                                {testCase.feedback && testCase.feedback.trim() && (
-                                  <div className="mt-3">
-                                    <div className="text-sm font-medium mb-1">Feedback:</div>
-                                    <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
-                                      {testCase.feedback}
-                                    </pre>
-                                  </div>
-                                )}
                               </div>
-                            )}
-                          </div>
-                        ))
-                      }
+                              {/* Basic timing and memory info (always visible) */}
+                              <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+                                <div>
+                                  <span className="font-medium">Time:</span>{" "}
+                                  {testCase.time &&
+                                  typeof testCase.time === "number"
+                                    ? testCase.time.toFixed(3)
+                                    : "0.000"}
+                                  s
+                                </div>
+                                <div>
+                                  <span className="font-medium">Memory:</span>{" "}
+                                  {testCase.memory &&
+                                  typeof testCase.memory === "number"
+                                    ? formatMemory(testCase.memory)
+                                    : "0.0MB"}
+                                </div>
+                              </div>
 
-                      const batchNum = gk.replace('batch-', '');
-                      const batchKey = `batch-${batchNum}`;
-                      const batchCases: TestCaseType[] = groups[gk];
-
-                      return (
-                        <div key={batchKey} className="border rounded-lg">
-                          <div 
-                            className="p-3 flex items-center justify-between cursor-pointer"
-                            onClick={() => toggleBatch(batchNum)}
-                          >
-                            <div className="flex items-center gap-3">
-                              <Badge className="bg-gray-100 text-gray-800">Batch #{batchNum}</Badge>
-                              <div className="text-sm text-muted-foreground">{batchCases.reduce((a,b)=>a+(b.points||0),0)}/{batchCases.reduce((a,b)=>a+(b.points||0),0) /* placeholder for total */} points</div>
-                            </div>
-                            <FontAwesomeIcon icon={expandedBatches[batchKey] ? faChevronDown : faChevronRight} />
-                          </div>
-
-                          {expandedBatches[batchKey] && (
-                            <div className="p-4 space-y-3">
-                              {batchCases.map((testCase: TestCaseType, idx: number) => (
-                                <div key={testCase.id} className="border rounded-lg p-4">
-                                  <div className={`flex items-center justify-between ${((testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim())) ? 'cursor-pointer' : ''}`}
-                                    onClick={((testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim())) ? () => toggleSection(testCase.id, 'details') : undefined}
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      {getVerdictIcon(testCase.verdict)}
-                                      <span className="font-medium">Case #{idx+1}</span>
-                                      <Badge className={getVerdictColor(testCase.verdict)}>
-                                        {getVerdictText(testCase.verdict)}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <div className="text-sm text-muted-foreground">
-                                        {testCase.points}/{problem.points} point{testCase.points !== 1 ? 's' : ''}
-                                      </div>
-                                      {((testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim())) && (
-                                        <FontAwesomeIcon 
-                                          icon={isSectionExpanded(testCase.id, 'details') ? faChevronDown : faChevronRight} 
-                                          className="w-4 h-4 text-muted-foreground" 
-                                        />
-                                      )}
-                                    </div>
-                                  </div>
-
-                                  <div className="grid grid-cols-2 gap-4 text-sm mt-2">
-                                    <div>
-                                      <span className="font-medium">Time:</span> {testCase.time && typeof testCase.time === 'number' ? testCase.time.toFixed(3) : '0.000'}s
-                                    </div>
-                                    <div>
-                                      <span className="font-medium">Memory:</span> {testCase.memory && typeof testCase.memory === 'number' ? formatMemory(testCase.memory) : '0.0MB'}
-                                    </div>
-                                  </div>
-
-                                  {((testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim())) && isSectionExpanded(testCase.id, 'details') && (
-                                    <div className="mt-4 pt-3 border-t">
-                                      <div className="space-y-3">
-                                        {testCase.input && testCase.input.trim() && (
+                              {/* Collapsible detailed section - only show if there's data */}
+                              {((testCase.input && testCase.input.trim()) ||
+                                (testCase.expected &&
+                                  testCase.expected.trim()) ||
+                                (testCase.output && testCase.output.trim()) ||
+                                (testCase.feedback &&
+                                  testCase.feedback.trim())) &&
+                                isSectionExpanded(testCase.id, "details") && (
+                                  <div className="mt-4 pt-3 border-t">
+                                    <div className="space-y-3">
+                                      {testCase.input &&
+                                        testCase.input.trim() && (
                                           <div>
-                                            <div className="text-sm font-medium mb-1">Input:</div>
+                                            <div className="text-sm font-medium mb-1">
+                                              Input:
+                                            </div>
                                             <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                              {testCase.input.length > 1000 ? testCase.input.substring(0, 1000) + '\n... [truncated]' : testCase.input}
+                                              {testCase.input.length > 1000
+                                                ? testCase.input.substring(
+                                                    0,
+                                                    1000,
+                                                  ) + "\n... [truncated]"
+                                                : testCase.input}
                                             </pre>
                                           </div>
                                         )}
 
-                                        {testCase.expected && testCase.expected.trim() && (
+                                      {testCase.expected &&
+                                        testCase.expected.trim() && (
                                           <div>
-                                            <div className="text-sm font-medium mb-1">Expected:</div>
+                                            <div className="text-sm font-medium mb-1">
+                                              Expected:
+                                            </div>
                                             <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                              {testCase.expected.length > 1000 ? testCase.expected.substring(0, 1000) + '\n... [truncated]' : testCase.expected}
+                                              {testCase.expected.length > 1000
+                                                ? testCase.expected.substring(
+                                                    0,
+                                                    1000,
+                                                  ) + "\n... [truncated]"
+                                                : testCase.expected}
                                             </pre>
                                           </div>
                                         )}
 
-                                        {testCase.output && testCase.output.trim() && (
+                                      {testCase.output &&
+                                        testCase.output.trim() && (
                                           <div>
-                                            <div className="text-sm font-medium mb-1">Actual:</div>
+                                            <div className="text-sm font-medium mb-1">
+                                              Actual:
+                                            </div>
                                             <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
-                                              {testCase.output.length > 1000 ? testCase.output.substring(0, 1000) + '\n... [truncated]' : testCase.output}
+                                              {testCase.output.length > 1000
+                                                ? testCase.output.substring(
+                                                    0,
+                                                    1000,
+                                                  ) + "\n... [truncated]"
+                                                : testCase.output}
                                             </pre>
                                           </div>
                                         )}
-                                      </div>
+                                    </div>
 
-                                      {testCase.feedback && testCase.feedback.trim() && (
+                                    {/* Show feedback */}
+                                    {testCase.feedback &&
+                                      testCase.feedback.trim() && (
                                         <div className="mt-3">
-                                          <div className="text-sm font-medium mb-1">Feedback:</div>
+                                          <div className="text-sm font-medium mb-1">
+                                            Feedback:
+                                          </div>
                                           <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
                                             {testCase.feedback}
                                           </pre>
                                         </div>
                                       )}
+                                  </div>
+                                )}
+                            </div>
+                          ),
+                        );
+                      }
+
+                      const batchNum = gk.replace("batch-", "");
+                      const batchKey = `batch-${batchNum}`;
+                      const batchCases: TestCaseType[] = groups[gk];
+
+                      return (
+                        <div key={batchKey} className="border rounded-lg">
+                          <div
+                            className="p-3 flex items-center justify-between cursor-pointer"
+                            onClick={() => toggleBatch(batchNum)}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Badge className="bg-gray-100 text-gray-800">
+                                Batch #{batchNum}
+                              </Badge>
+                              <div className="text-sm text-muted-foreground">
+                                {batchCases.reduce(
+                                  (a, b) => a + (b.points || 0),
+                                  0,
+                                )}
+                                /
+                                {
+                                  batchCases.reduce(
+                                    (a, b) => a + (b.points || 0),
+                                    0,
+                                  ) /* placeholder for total */
+                                }{" "}
+                                points
+                              </div>
+                            </div>
+                            <FontAwesomeIcon
+                              icon={
+                                expandedBatches[batchKey]
+                                  ? faChevronDown
+                                  : faChevronRight
+                              }
+                            />
+                          </div>
+
+                          {expandedBatches[batchKey] && (
+                            <div className="p-4 space-y-3">
+                              {batchCases.map(
+                                (testCase: TestCaseType, idx: number) => (
+                                  <div
+                                    key={testCase.id}
+                                    className="border rounded-lg p-4"
+                                  >
+                                    <div
+                                      className={`flex items-center justify-between ${(testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim()) ? "cursor-pointer" : ""}`}
+                                      onClick={
+                                        (testCase.input &&
+                                          testCase.input.trim()) ||
+                                        (testCase.expected &&
+                                          testCase.expected.trim()) ||
+                                        (testCase.output &&
+                                          testCase.output.trim()) ||
+                                        (testCase.feedback &&
+                                          testCase.feedback.trim())
+                                          ? () =>
+                                              toggleSection(
+                                                testCase.id,
+                                                "details",
+                                              )
+                                          : undefined
+                                      }
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        {getVerdictIcon(testCase.verdict)}
+                                        <span className="font-medium">
+                                          Case #{idx + 1}
+                                        </span>
+                                        <Badge
+                                          className={getVerdictColor(
+                                            testCase.verdict,
+                                          )}
+                                        >
+                                          {getVerdictText(testCase.verdict)}
+                                        </Badge>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <div className="text-sm text-muted-foreground">
+                                          {testCase.points}/{problem.points}{" "}
+                                          point
+                                          {testCase.points !== 1 ? "s" : ""}
+                                        </div>
+                                        {((testCase.input &&
+                                          testCase.input.trim()) ||
+                                          (testCase.expected &&
+                                            testCase.expected.trim()) ||
+                                          (testCase.output &&
+                                            testCase.output.trim()) ||
+                                          (testCase.feedback &&
+                                            testCase.feedback.trim())) && (
+                                          <FontAwesomeIcon
+                                            icon={
+                                              isSectionExpanded(
+                                                testCase.id,
+                                                "details",
+                                              )
+                                                ? faChevronDown
+                                                : faChevronRight
+                                            }
+                                            className="w-4 h-4 text-muted-foreground"
+                                          />
+                                        )}
+                                      </div>
                                     </div>
-                                  )}
-                                </div>
-                              ))}
+
+                                    <div className="grid grid-cols-2 gap-4 text-sm mt-2">
+                                      <div>
+                                        <span className="font-medium">
+                                          Time:
+                                        </span>{" "}
+                                        {testCase.time &&
+                                        typeof testCase.time === "number"
+                                          ? testCase.time.toFixed(3)
+                                          : "0.000"}
+                                        s
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">
+                                          Memory:
+                                        </span>{" "}
+                                        {testCase.memory &&
+                                        typeof testCase.memory === "number"
+                                          ? formatMemory(testCase.memory)
+                                          : "0.0MB"}
+                                      </div>
+                                    </div>
+
+                                    {((testCase.input &&
+                                      testCase.input.trim()) ||
+                                      (testCase.expected &&
+                                        testCase.expected.trim()) ||
+                                      (testCase.output &&
+                                        testCase.output.trim()) ||
+                                      (testCase.feedback &&
+                                        testCase.feedback.trim())) &&
+                                      isSectionExpanded(
+                                        testCase.id,
+                                        "details",
+                                      ) && (
+                                        <div className="mt-4 pt-3 border-t">
+                                          <div className="space-y-3">
+                                            {testCase.input &&
+                                              testCase.input.trim() && (
+                                                <div>
+                                                  <div className="text-sm font-medium mb-1">
+                                                    Input:
+                                                  </div>
+                                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                                    {testCase.input.length >
+                                                    1000
+                                                      ? testCase.input.substring(
+                                                          0,
+                                                          1000,
+                                                        ) + "\n... [truncated]"
+                                                      : testCase.input}
+                                                  </pre>
+                                                </div>
+                                              )}
+
+                                            {testCase.expected &&
+                                              testCase.expected.trim() && (
+                                                <div>
+                                                  <div className="text-sm font-medium mb-1">
+                                                    Expected:
+                                                  </div>
+                                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                                    {testCase.expected.length >
+                                                    1000
+                                                      ? testCase.expected.substring(
+                                                          0,
+                                                          1000,
+                                                        ) + "\n... [truncated]"
+                                                      : testCase.expected}
+                                                  </pre>
+                                                </div>
+                                              )}
+
+                                            {testCase.output &&
+                                              testCase.output.trim() && (
+                                                <div>
+                                                  <div className="text-sm font-medium mb-1">
+                                                    Actual:
+                                                  </div>
+                                                  <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
+                                                    {testCase.output.length >
+                                                    1000
+                                                      ? testCase.output.substring(
+                                                          0,
+                                                          1000,
+                                                        ) + "\n... [truncated]"
+                                                      : testCase.output}
+                                                  </pre>
+                                                </div>
+                                              )}
+                                          </div>
+
+                                          {testCase.feedback &&
+                                            testCase.feedback.trim() && (
+                                              <div className="mt-3">
+                                                <div className="text-sm font-medium mb-1">
+                                                  Feedback:
+                                                </div>
+                                                <pre className="text-xs bg-red-50 text-red-800 p-2 rounded overflow-x-auto">
+                                                  {testCase.feedback}
+                                                </pre>
+                                              </div>
+                                            )}
+                                        </div>
+                                      )}
+                                  </div>
+                                ),
+                              )}
                             </div>
                           )}
                         </div>
@@ -766,52 +1091,62 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
 
           {/* Source Code or Download for Scratch */}
           {(() => {
-            const uploaded = (submission as unknown) as { uploadedFile?: string; uploadedFileUrl?: string };
-            const hasUploaded = !!(uploaded.uploadedFile || uploaded.uploadedFileUrl);
-            return (submission.language === 'SCRATCH' || hasUploaded) ? (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FontAwesomeIcon icon={faCode} />
-                  Submission File
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {(uploaded.uploadedFileUrl || uploaded.uploadedFile) ? (
-                  <div className="space-y-2">
-                    <a
-                      href={uploaded.uploadedFileUrl || uploaded.uploadedFile}
-                      className="inline-block w-full text-center px-4 py-2 border rounded bg-primary text-primary-foreground"
-                      download
-                    >
-                      Download Submission File
-                    </a>
-                    <div className="text-sm text-muted-foreground">If the download does not start, right click and open in a new tab.</div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-muted-foreground">No uploaded file available for this submission.</div>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            submission.code && submission.code.trim() !== "" && (
+            const uploaded = submission as unknown as {
+              uploadedFile?: string;
+              uploadedFileUrl?: string;
+            };
+            const hasUploaded = !!(
+              uploaded.uploadedFile || uploaded.uploadedFileUrl
+            );
+            return submission.language === "SCRATCH" || hasUploaded ? (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FontAwesomeIcon icon={faCode} />
-                    Source Code
+                    Submission File
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CodeHighlight 
-                    code={submission.code}
-                    language={submission.language}
-                  />
+                  {uploaded.uploadedFileUrl || uploaded.uploadedFile ? (
+                    <div className="space-y-2">
+                      <a
+                        href={uploaded.uploadedFileUrl || uploaded.uploadedFile}
+                        className="inline-block w-full text-center px-4 py-2 border rounded bg-primary text-primary-foreground"
+                        download
+                      >
+                        Download Submission File
+                      </a>
+                      <div className="text-sm text-muted-foreground">
+                        If the download does not start, right click and open in
+                        a new tab.
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">
+                      No uploaded file available for this submission.
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            )
-          )
-            })()}
+            ) : (
+              submission.code && submission.code.trim() !== "" && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FontAwesomeIcon icon={faCode} />
+                      Source Code
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CodeHighlight
+                      code={submission.code}
+                      language={submission.language}
+                    />
+                  </CardContent>
+                </Card>
+              )
+            );
+          })()}
         </div>
 
         {/* Sidebar */}
@@ -823,10 +1158,13 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2">
-                <FontAwesomeIcon icon={faUser} className="text-muted-foreground w-4" />
+                <FontAwesomeIcon
+                  icon={faUser}
+                  className="text-muted-foreground w-4"
+                />
                 <span className="font-medium">Author:</span>
                 {submission.author ? (
-                  <Link 
+                  <Link
                     href={`/user/${submission.author.username}`}
                     className="text-primary hover:underline"
                   >
@@ -836,45 +1174,60 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                   <span className="text-muted-foreground">Unknown</span>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-2">
-                <FontAwesomeIcon icon={faCalendar} className="text-muted-foreground w-4" />
+                <FontAwesomeIcon
+                  icon={faCalendar}
+                  className="text-muted-foreground w-4"
+                />
                 <span className="font-medium">Submitted:</span>
                 <span className="text-sm">
                   {formatDate(submission.createdAt)}
                 </span>
               </div>
-              
+
               {submission.judgingStartedAt && (
                 <div className="flex items-center gap-2">
-                  <FontAwesomeIcon icon={faPlay} className="text-muted-foreground w-4" />
+                  <FontAwesomeIcon
+                    icon={faPlay}
+                    className="text-muted-foreground w-4"
+                  />
                   <span className="font-medium">Started:</span>
                   <span className="text-sm">
                     {formatDate(submission.judgingStartedAt)}
                   </span>
                 </div>
               )}
-              
+
               {submission.judgingEndedAt && (
                 <div className="flex items-center gap-2">
-                  <FontAwesomeIcon icon={faStop} className="text-muted-foreground w-4" />
+                  <FontAwesomeIcon
+                    icon={faStop}
+                    className="text-muted-foreground w-4"
+                  />
                   <span className="font-medium">Completed:</span>
                   <span className="text-sm">
                     {formatDate(submission.judgingEndedAt)}
                   </span>
                 </div>
               )}
-              
+
               <div className="flex items-center gap-2">
-                <FontAwesomeIcon icon={faCode} className="text-muted-foreground w-4" />
+                <FontAwesomeIcon
+                  icon={faCode}
+                  className="text-muted-foreground w-4"
+                />
                 <span className="font-medium">Language:</span>
                 <span className="text-sm">
                   {getLanguageLabel(submission.language)}
                 </span>
               </div>
-              
+
               <div className="flex items-center gap-2">
-                <FontAwesomeIcon icon={faEye} className="text-muted-foreground w-4" />
+                <FontAwesomeIcon
+                  icon={faEye}
+                  className="text-muted-foreground w-4"
+                />
                 <span className="font-medium">Visibility:</span>
                 <span className="text-sm">
                   {submission.isLocked ? "Private" : "Public"}
@@ -883,11 +1236,12 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
 
               {submission?.judge?.name && (
                 <div className="flex items-center gap-2">
-                  <FontAwesomeIcon icon={faServer} className="text-muted-foreground w-4" />
+                  <FontAwesomeIcon
+                    icon={faServer}
+                    className="text-muted-foreground w-4"
+                  />
                   <span className="font-medium">Judge:</span>
-                  <span className="text-sm">
-                    {submission.judge.name}
-                  </span>
+                  <span className="text-sm">{submission.judge.name}</span>
                 </div>
               )}
             </CardContent>

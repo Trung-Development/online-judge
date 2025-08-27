@@ -77,7 +77,11 @@ export function Navbar() {
 
   // Indicator state for animated highlight
   const navListRef = React.useRef<HTMLUListElement | null>(null);
-  const [indicator, setIndicator] = React.useState({ left: 0, width: 0, opacity: 0 });
+  const [indicator, setIndicator] = React.useState({
+    left: 0,
+    width: 0,
+    opacity: 0,
+  });
 
   const updateIndicator = (el: HTMLElement | null) => {
     if (!el || !navListRef.current) {
@@ -88,14 +92,18 @@ export function Navbar() {
     const containerRect = container.getBoundingClientRect();
     const rect = el.getBoundingClientRect();
     // account for horizontal scroll inside the container
-    const left = Math.round(rect.left - containerRect.left + container.scrollLeft);
+    const left = Math.round(
+      rect.left - containerRect.left + container.scrollLeft,
+    );
     const width = Math.round(rect.width);
     setIndicator({ left, width, opacity: 1 });
   };
 
   const computeActiveLink = () => {
     if (!navListRef.current) return null;
-    const links = Array.from(navListRef.current.querySelectorAll<HTMLElement>('[data-nav]'));
+    const links = Array.from(
+      navListRef.current.querySelectorAll<HTMLElement>("[data-nav]"),
+    );
     if (links.length === 0) return null;
 
     // pick the best matching href (longest prefix match)
@@ -116,22 +124,28 @@ export function Navbar() {
       }
     });
     if (best.el) return best.el;
-  // fallback: if we have a link with href exactly matching pathname
-  // otherwise return null (don't default to the first link) so we don't
-  // highlight Home on unrelated routes like /accounts/security
-  return links.find((el) => el.getAttribute("data-href") === pathname) || null;
+    // fallback: if we have a link with href exactly matching pathname
+    // otherwise return null (don't default to the first link) so we don't
+    // highlight Home on unrelated routes like /accounts/security
+    return (
+      links.find((el) => el.getAttribute("data-href") === pathname) || null
+    );
   };
 
   React.useLayoutEffect(() => {
     // update on path change
     const active = computeActiveLink();
     // use rAF to avoid layout thrashing
-    const raf = requestAnimationFrame(() => updateIndicator(active as HTMLElement | null));
+    const raf = requestAnimationFrame(() =>
+      updateIndicator(active as HTMLElement | null),
+    );
 
     // update on resize
     const onResize = () => {
       const active2 = computeActiveLink();
-      requestAnimationFrame(() => updateIndicator(active2 as HTMLElement | null));
+      requestAnimationFrame(() =>
+        updateIndicator(active2 as HTMLElement | null),
+      );
     };
     window.addEventListener("resize", onResize);
     return () => {
@@ -164,8 +178,14 @@ export function Navbar() {
           <div className="hidden lg:block h-8 w-px bg-zinc-500 mx-6"></div>
 
           {/* Navigation Menu - hidden on mobile */}
-          <NavigationMenu viewport={false} className="hidden lg:flex bg-zinc-900 text-zinc-100">
-            <NavigationMenuList ref={navListRef} className="bg-zinc-900 text-zinc-100 justify-start relative isolate z-0">
+          <NavigationMenu
+            viewport={false}
+            className="hidden lg:flex bg-zinc-900 text-zinc-100"
+          >
+            <NavigationMenuList
+              ref={navListRef}
+              className="bg-zinc-900 text-zinc-100 justify-start relative isolate z-0"
+            >
               {/* Animated indicator - rounded pill behind links */}
               <div
                 aria-hidden
@@ -184,7 +204,20 @@ export function Navbar() {
                   asChild
                   className={`${navigationMenuTriggerStyle()} !bg-transparent !text-zinc-100 !hover:bg-transparent hover:text-zinc-100 focus:!text-zinc-100 data-[active=true]:!bg-transparent data-[active=true]:!hover:bg-transparent data-[active=true]:!text-zinc-100 data-[state=open]:!text-zinc-100`}
                 >
-                  <Link href="/" data-nav data-href="/" className="relative inline-block px-3 py-2 z-30 !text-zinc-100" onMouseEnter={(e) => updateIndicator(e.currentTarget as HTMLElement)} onMouseLeave={() => updateIndicator(computeActiveLink() as HTMLElement | null)}>Home</Link>
+                  <Link
+                    href="/"
+                    data-nav
+                    data-href="/"
+                    className="relative inline-block px-3 py-2 z-30 !text-zinc-100"
+                    onMouseEnter={(e) =>
+                      updateIndicator(e.currentTarget as HTMLElement)
+                    }
+                    onMouseLeave={() =>
+                      updateIndicator(computeActiveLink() as HTMLElement | null)
+                    }
+                  >
+                    Home
+                  </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
@@ -194,7 +227,20 @@ export function Navbar() {
                   asChild
                   className={`${navigationMenuTriggerStyle()} !bg-transparent !text-zinc-100 !hover:bg-transparent hover:text-zinc-100 focus:!text-zinc-100 data-[active=true]:!bg-transparent data-[active=true]:!hover:bg-transparent data-[active=true]:!text-zinc-100 data-[state=open]:!text-zinc-100`}
                 >
-                  <Link href="/problems" data-nav data-href="/problems" className="relative inline-block px-3 py-2 z-30 !text-zinc-100" onMouseEnter={(e) => updateIndicator(e.currentTarget as HTMLElement)} onMouseLeave={() => updateIndicator(computeActiveLink() as HTMLElement | null)}>Problems</Link>
+                  <Link
+                    href="/problems"
+                    data-nav
+                    data-href="/problems"
+                    className="relative inline-block px-3 py-2 z-30 !text-zinc-100"
+                    onMouseEnter={(e) =>
+                      updateIndicator(e.currentTarget as HTMLElement)
+                    }
+                    onMouseLeave={() =>
+                      updateIndicator(computeActiveLink() as HTMLElement | null)
+                    }
+                  >
+                    Problems
+                  </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
@@ -204,7 +250,20 @@ export function Navbar() {
                   asChild
                   className={`${navigationMenuTriggerStyle()} !bg-transparent !text-zinc-100 !hover:bg-transparent hover:text-zinc-100 focus:!text-zinc-100 data-[active=true]:!bg-transparent data-[active=true]:!hover:bg-transparent data-[active=true]:!text-zinc-100 data-[state=open]:!text-zinc-100`}
                 >
-                  <Link href="/submissions" data-nav data-href="/submissions" className="relative inline-block px-3 py-2 z-30 !text-zinc-100" onMouseEnter={(e) => updateIndicator(e.currentTarget as HTMLElement)} onMouseLeave={() => updateIndicator(computeActiveLink() as HTMLElement | null)}>Submissions</Link>
+                  <Link
+                    href="/submissions"
+                    data-nav
+                    data-href="/submissions"
+                    className="relative inline-block px-3 py-2 z-30 !text-zinc-100"
+                    onMouseEnter={(e) =>
+                      updateIndicator(e.currentTarget as HTMLElement)
+                    }
+                    onMouseLeave={() =>
+                      updateIndicator(computeActiveLink() as HTMLElement | null)
+                    }
+                  >
+                    Submissions
+                  </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
@@ -214,7 +273,20 @@ export function Navbar() {
                   asChild
                   className={`${navigationMenuTriggerStyle()} !bg-transparent !text-zinc-100 !hover:bg-transparent hover:text-zinc-100 focus:!text-zinc-100 data-[active=true]:!bg-transparent data-[active=true]:!hover:bg-transparent data-[active=true]:!text-zinc-100 data-[state=open]:!text-zinc-100`}
                 >
-                  <Link href="/users" data-nav data-href="/users" className="relative inline-block px-3 py-2 z-30 !text-zinc-100" onMouseEnter={(e) => updateIndicator(e.currentTarget as HTMLElement)} onMouseLeave={() => updateIndicator(computeActiveLink() as HTMLElement | null)}>Users</Link>
+                  <Link
+                    href="/users"
+                    data-nav
+                    data-href="/users"
+                    className="relative inline-block px-3 py-2 z-30 !text-zinc-100"
+                    onMouseEnter={(e) =>
+                      updateIndicator(e.currentTarget as HTMLElement)
+                    }
+                    onMouseLeave={() =>
+                      updateIndicator(computeActiveLink() as HTMLElement | null)
+                    }
+                  >
+                    Users
+                  </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
@@ -224,7 +296,20 @@ export function Navbar() {
                   asChild
                   className={`${navigationMenuTriggerStyle()} !bg-transparent !text-zinc-100 !hover:bg-transparent hover:text-zinc-100 focus:!text-zinc-100 data-[active=true]:!bg-transparent data-[active=true]:!hover:bg-transparent data-[active=true]:!text-zinc-100 data-[state=open]:!text-zinc-100`}
                 >
-                  <Link href="/contests" data-nav data-href="/contests" className="relative inline-block px-3 py-2 z-30 !text-zinc-100" onMouseEnter={(e) => updateIndicator(e.currentTarget as HTMLElement)} onMouseLeave={() => updateIndicator(computeActiveLink() as HTMLElement | null)}>Contests</Link>
+                  <Link
+                    href="/contests"
+                    data-nav
+                    data-href="/contests"
+                    className="relative inline-block px-3 py-2 z-30 !text-zinc-100"
+                    onMouseEnter={(e) =>
+                      updateIndicator(e.currentTarget as HTMLElement)
+                    }
+                    onMouseLeave={() =>
+                      updateIndicator(computeActiveLink() as HTMLElement | null)
+                    }
+                  >
+                    Contests
+                  </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
@@ -241,7 +326,9 @@ export function Navbar() {
                           className="flex h-full w-full flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none select-none focus:shadow-md"
                           href="/about"
                         >
-                          <div className="mt-4 mb-2 text-lg font-bold">About YACPS</div>
+                          <div className="mt-4 mb-2 text-lg font-bold">
+                            About YACPS
+                          </div>
                           <p className="text-muted-foreground text-sm leading-tight">
                             Yet Another Competitive Programming System.
                             Open-source, modern, and built for learning.
@@ -249,8 +336,22 @@ export function Navbar() {
                         </a>
                       </NavigationMenuLink>
                     </li>
-                    <ListItem href="https://github.com/Trung-Development/online-judge" title="GitHub" icon={<FontAwesomeIcon icon={faGithub} className="h-4 w-4" />}>Source code and contributions.</ListItem>
-                    <ListItem href="/status" title="Status" icon={<ActivityIcon size={16} />}>System status and uptime.</ListItem>
+                    <ListItem
+                      href="https://github.com/Trung-Development/online-judge"
+                      title="GitHub"
+                      icon={
+                        <FontAwesomeIcon icon={faGithub} className="h-4 w-4" />
+                      }
+                    >
+                      Source code and contributions.
+                    </ListItem>
+                    <ListItem
+                      href="/status"
+                      title="Status"
+                      icon={<ActivityIcon size={16} />}
+                    >
+                      System status and uptime.
+                    </ListItem>
                   </ul>
                 </NavigationMenuContent>
               </NavigationMenuItem>
@@ -282,7 +383,10 @@ export function Navbar() {
             </>
           ) : (
             // Authenticated: show dropdown
-            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+            <DropdownMenu
+              open={isDropdownOpen}
+              onOpenChange={setIsDropdownOpen}
+            >
               <DropdownMenuTrigger className="flex items-center gap-2 bg-transparent hover:bg-zinc-800 text-zinc-100 p-2 rounded-md focus:ring-0 focus:ring-offset-0 outline-none transition-colors">
                 {avatarUrl && (
                   <Image
@@ -304,26 +408,41 @@ export function Navbar() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[170px]">
                 <DropdownMenuItem asChild>
-                  <Link href="/profile/edit" className="w-full cursor-pointer flex items-center gap-2">
+                  <Link
+                    href="/profile/edit"
+                    className="w-full cursor-pointer flex items-center gap-2"
+                  >
                     <FontAwesomeIcon icon={faSquarePen} className="h-4 w-4" />
                     Profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/accounts/security" className="w-full cursor-pointer flex items-center gap-2">
+                  <Link
+                    href="/accounts/security"
+                    className="w-full cursor-pointer flex items-center gap-2"
+                  >
                     <Shield className="h-4 w-4" />
                     Security
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/accounts/security" className="w-full cursor-pointer flex items-center gap-2">
+                  <Link
+                    href="/accounts/security"
+                    className="w-full cursor-pointer flex items-center gap-2"
+                  >
                     <Cog className="h-4 w-4" />
                     Manage
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <button className="w-full text-left cursor-pointer flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-950/20" onClick={() => logout()}>
-                    <FontAwesomeIcon icon={faRightFromBracket} className="h-4 w-4" />
+                  <button
+                    className="w-full text-left cursor-pointer flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-950/20"
+                    onClick={() => logout()}
+                  >
+                    <FontAwesomeIcon
+                      icon={faRightFromBracket}
+                      className="h-4 w-4"
+                    />
                     Sign out
                   </button>
                 </DropdownMenuItem>
@@ -338,4 +457,3 @@ export function Navbar() {
     </div>
   );
 }
- 

@@ -37,7 +37,7 @@ function parseSignupError(status: number, errorData: SignupErrorData): string {
         return errorData.message;
     }
   }
-  
+
   return "An error occurred during signup";
 }
 

@@ -29,5 +29,11 @@ export default async function Page() {
       status: statuses.find((x) => x.slug == v.code),
     };
   });
-  return <ProblemsPage initialProblems={problems} initialCategories={categories} initialTypes={types}/>;
+  return (
+    <ProblemsPage
+      initialProblems={problems}
+      initialCategories={categories}
+      initialTypes={types}
+    />
+  );
 }

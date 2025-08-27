@@ -36,9 +36,11 @@ function base64ToUint8Array(b64: string) {
   const isHex = /^[0-9a-fA-F]+$/.test(b64) && b64.length % 2 === 0;
   if (isHex) {
     // hex -> bytes
-    if (typeof Buffer !== "undefined") return Uint8Array.from(Buffer.from(b64, "hex"));
+    if (typeof Buffer !== "undefined")
+      return Uint8Array.from(Buffer.from(b64, "hex"));
     const bytes = new Uint8Array(b64.length / 2);
-    for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(b64.substr(i * 2, 2), 16);
+    for (let i = 0; i < bytes.length; i++)
+      bytes[i] = parseInt(b64.substr(i * 2, 2), 16);
     return bytes;
   }
 
@@ -74,14 +76,23 @@ function uint8ArrayToBase64(u8: Uint8Array) {
 async function getCryptoKey(): Promise<CryptoKey> {
   if (_cryptoKey) return _cryptoKey;
   const raw = env.SESSION_ENC_KEY || "";
-  if (!raw) throw new Error("SESSION_ENC_KEY is not set; cannot encrypt session cookie");
+  if (!raw)
+    throw new Error(
+      "SESSION_ENC_KEY is not set; cannot encrypt session cookie",
+    );
 
   // Expect SESSION_ENC_KEY to be base64 encoding of at least 32 bytes (256 bits)
   const keyBytes = base64ToUint8Array(raw);
-  if (keyBytes.length < 32) throw new Error("SESSION_ENC_KEY must decode to at least 32 bytes (256 bits)");
-  const cryptoObj = (globalThis as unknown) as { crypto?: Crypto };
+  if (keyBytes.length < 32)
+    throw new Error(
+      "SESSION_ENC_KEY must decode to at least 32 bytes (256 bits)",
+    );
+  const cryptoObj = globalThis as unknown as { crypto?: Crypto };
   const subtle = cryptoObj.crypto?.subtle;
-  if (!subtle) throw new Error("WebCrypto Subtle API not available for session encryption");
+  if (!subtle)
+    throw new Error(
+      "WebCrypto Subtle API not available for session encryption",
+    );
 
   _cryptoKey = await subtle.importKey(
     "raw",
@@ -98,7 +109,7 @@ async function encryptString(plain: string): Promise<string> {
   // Try WebCrypto first
   try {
     const key = await getCryptoKey();
-    const cryptoObj = (globalThis as unknown) as { crypto?: Crypto };
+    const cryptoObj = globalThis as unknown as { crypto?: Crypto };
     const subtle = cryptoObj.crypto!.subtle;
     const iv = cryptoObj.crypto!.getRandomValues(new Uint8Array(12));
     const enc = new TextEncoder();
@@ -123,7 +134,7 @@ async function decryptString(b64: string): Promise<string> {
   // Try WebCrypto first
   try {
     const key = await getCryptoKey();
-    const cryptoObj = (globalThis as unknown) as { crypto?: Crypto };
+    const cryptoObj = globalThis as unknown as { crypto?: Crypto };
     const subtle = cryptoObj.crypto!.subtle;
     const data = base64ToUint8Array(b64);
     if (data.length < 13) throw new Error("Encrypted session cookie too short");
@@ -160,15 +171,18 @@ function decodeJWT(token: string) {
   }
 }
 
-export async function setAuthSession(sessionToken: string, user: User): Promise<void> {
+export async function setAuthSession(
+  sessionToken: string,
+  user: User,
+): Promise<void> {
   const cookieStore = await cookies();
-  
+
   // Decode JWT to get expiry
   const decodedSession = decodeJWT(sessionToken);
-  const sessionExpires = decodedSession?.expiresAt 
+  const sessionExpires = decodedSession?.expiresAt
     ? Date.parse(decodedSession.expiresAt)
-    : Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 days default
-  
+    : Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days default
+
   const session: AuthSession = {
     sessionToken,
     sessionExpires,
@@ -182,7 +196,10 @@ export async function setAuthSession(sessionToken: string, user: User): Promise<
     const encrypted = await encryptString(JSON.stringify(session));
     cookieStore.set(COOKIE_NAME, encrypted, COOKIE_OPTIONS);
   } catch (e) {
-    console.warn("Failed to encrypt session cookie, falling back to plaintext cookie:", e);
+    console.warn(
+      "Failed to encrypt session cookie, falling back to plaintext cookie:",
+      e,
+    );
     try {
       cookieStore.set(COOKIE_NAME, JSON.stringify(session), COOKIE_OPTIONS);
     } catch (e2) {
@@ -195,18 +212,18 @@ export async function setAuthSession(sessionToken: string, user: User): Promise<
 export async function getAuthSession(): Promise<AuthSession | null> {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(COOKIE_NAME);
-  
+
   if (!sessionCookie?.value) {
     return null;
   }
-  
+
   try {
     // Heuristic: if cookie value appears to be plain JSON, parse it directly
     // (backwards compatibility with unencrypted cookies). Encrypted values
     // are base64/hex and won't start with '{' or '['.
     const raw = sessionCookie.value;
     let session: AuthSession;
-    if (raw && (raw[0] === '{' || raw[0] === '[')) {
+    if (raw && (raw[0] === "{" || raw[0] === "[")) {
       try {
         session = JSON.parse(raw);
       } catch {
@@ -217,13 +234,13 @@ export async function getAuthSession(): Promise<AuthSession | null> {
       const decrypted = await decryptString(raw);
       session = JSON.parse(decrypted);
     }
-    
+
     // Check if session is expired
     if (Date.now() > session.sessionExpires) {
       await clearAuthSession();
       return null;
     }
-    
+
     return session;
   } catch (error) {
     console.error("Failed to parse session cookie:", error);
@@ -239,11 +256,11 @@ export async function clearAuthSession(): Promise<void> {
 
 export async function requireAuth(): Promise<AuthSession> {
   const session = await getAuthSession();
-  
+
   if (!session) {
     redirect("/accounts/login");
   }
-  
+
   return session;
 }
 

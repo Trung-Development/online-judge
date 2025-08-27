@@ -49,9 +49,12 @@ import { registerUser } from "@/lib/server-actions/auth";
 import { AlertCircle } from "lucide-react";
 import { env } from "@/lib/env";
 
-const Turnstile = dynamic(() => import("next-turnstile").then(mod => mod.Turnstile), {
-  ssr: false,
-});
+const Turnstile = dynamic(
+  () => import("next-turnstile").then((mod) => mod.Turnstile),
+  {
+    ssr: false,
+  },
+);
 
 export default function SignupPage() {
   const { theme } = useTheme();
@@ -96,18 +99,18 @@ export default function SignupPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    
+
     // Username validation
-    if (id === 'username') {
+    if (id === "username") {
       // Allow only a-z, A-Z, 0-9, -, _, and . (dots)
       const usernameRegex = /^[a-zA-Z0-9\-_.]*$/;
-      
+
       if (value && !usernameRegex.test(value)) {
         // Don't update if invalid characters are entered
         return;
       }
     }
-    
+
     setFormData({
       ...formData,
       [id]: value,
@@ -173,7 +176,9 @@ export default function SignupPage() {
       // Username validation
       const usernameRegex = /^[a-zA-Z0-9\-_.]+$/;
       if (!usernameRegex.test(formData.username)) {
-        throw new Error("Username can only contain letters, numbers, hyphens (-), underscores (_), and dots (.)");
+        throw new Error(
+          "Username can only contain letters, numbers, hyphens (-), underscores (_), and dots (.)",
+        );
       }
 
       if (formData.username.length < 4) {
@@ -199,7 +204,7 @@ export default function SignupPage() {
       // Get the form data including the Turnstile token
       const formDataObj = new FormData(formRef.current);
       const token = formDataObj.get("cf-turnstile-response") as string;
-      
+
       if (!token) {
         throw new Error("Turnstile verification failed, please try again.");
       }
@@ -298,7 +303,8 @@ export default function SignupPage() {
                     maxLength={30}
                   />
                   <p className="text-xs text-muted-foreground">
-                    4-30 characters. Only letters, numbers, hyphens (-), underscores (_), and dots (.) allowed.
+                    4-30 characters. Only letters, numbers, hyphens (-),
+                    underscores (_), and dots (.) allowed.
                   </p>
                 </div>
                 <div className="grid gap-2">
@@ -479,7 +485,9 @@ export default function SignupPage() {
                       }}
                       onExpire={() => {
                         setTurnstileStatus("expired");
-                        setError("Security check expired. Please verify again.");
+                        setError(
+                          "Security check expired. Please verify again.",
+                        );
                       }}
                       onLoad={() => {
                         setTurnstileStatus("required");

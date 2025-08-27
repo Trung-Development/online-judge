@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 
 interface JudgeStatus {
   connected: boolean;
@@ -13,7 +13,7 @@ interface JudgeCapabilities {
 export const useJudgeCapabilities = () => {
   const [capabilities, setCapabilities] = useState<JudgeCapabilities>({
     status: { connected: false, judgeCount: 0 },
-    executors: []
+    executors: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,28 +21,28 @@ export const useJudgeCapabilities = () => {
   const fetchCapabilities = useCallback(async () => {
     try {
       setError(null);
-      
+
       // Fetch status and executors only (problems removed for privacy)
       const [statusRes, executorsRes] = await Promise.all([
-        fetch('/api/judge/status'),
-        fetch('/api/judge/executors')
+        fetch("/api/judge/status"),
+        fetch("/api/judge/executors"),
       ]);
 
       const [status, executors] = await Promise.all([
         statusRes.ok ? statusRes.json() : { connected: false, judgeCount: 0 },
-        executorsRes.ok ? executorsRes.json() : []
+        executorsRes.ok ? executorsRes.json() : [],
       ]);
 
       setCapabilities({
         status,
-        executors
+        executors,
       });
     } catch (err) {
-      console.error('Error fetching judge capabilities:', err);
-      setError('Failed to fetch judge capabilities');
+      console.error("Error fetching judge capabilities:", err);
+      setError("Failed to fetch judge capabilities");
       setCapabilities({
         status: { connected: false, judgeCount: 0 },
-        executors: []
+        executors: [],
       });
     } finally {
       setLoading(false);
@@ -51,16 +51,19 @@ export const useJudgeCapabilities = () => {
 
   useEffect(() => {
     fetchCapabilities();
-    
+
     // Refresh capabilities every 30 seconds
     const interval = setInterval(fetchCapabilities, 30000);
-    
+
     return () => clearInterval(interval);
   }, [fetchCapabilities]);
 
-  const isExecutorAvailable = useCallback((executor: string): boolean => {
-    return capabilities.executors.includes(executor);
-  }, [capabilities.executors]);
+  const isExecutorAvailable = useCallback(
+    (executor: string): boolean => {
+      return capabilities.executors.includes(executor);
+    },
+    [capabilities.executors],
+  );
 
   const refreshCapabilities = useCallback(() => {
     setLoading(true);

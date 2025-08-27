@@ -212,7 +212,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
         // load non-SB3 files into the editor locally. For SB3 we must have
         // an upload endpoint on the server; surface a helpful message.
         if (res.status === 404) {
-          if (file.name.toLowerCase().endsWith('.sb3')) {
+          if (file.name.toLowerCase().endsWith(".sb3")) {
             // Store the sb3 locally and submit it as multipart/form-data during submit
             setPendingFile(file);
             setUploadedFileName(file.name);
@@ -230,13 +230,13 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
         try {
           const parsed = await res.json();
           const parsedObj = parsed as Record<string, unknown> | string;
-          if (parsedObj && typeof parsedObj === 'object') {
-            if (typeof parsedObj.error === 'string' && parsedObj.error.trim()) {
+          if (parsedObj && typeof parsedObj === "object") {
+            if (typeof parsedObj.error === "string" && parsedObj.error.trim()) {
               msg = parsedObj.error;
-            } else if (typeof parsedObj.message === 'string') {
+            } else if (typeof parsedObj.message === "string") {
               msg = parsedObj.message;
             }
-          } else if (typeof parsedObj === 'string' && parsedObj.trim()) {
+          } else if (typeof parsedObj === "string" && parsedObj.trim()) {
             msg = parsedObj;
           }
         } catch {
@@ -270,8 +270,8 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
     if (!authLoading && !isAuthenticated) {
       router.push(
         `/accounts/login?callbackUrl=${encodeURIComponent(
-          `/problem/${slug}/submit`
-        )}`
+          `/problem/${slug}/submit`,
+        )}`,
       );
     }
   }, [isAuthenticated, authLoading, router, slug]);
@@ -279,7 +279,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
   useEffect(() => {
     if (problem.isLocked) {
       setWarning(
-        "Modifications to this problem are restricted. Please contact an administrator for further assistance."
+        "Modifications to this problem are restricted. Please contact an administrator for further assistance.",
       );
     }
   }, [problem.isLocked]);
@@ -365,14 +365,14 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
 
     if (!isProblemAvailable) {
       setError(
-        "This problem is not available on any connected judge. Please try again later."
+        "This problem is not available on any connected judge. Please try again later.",
       );
       return;
     }
 
     if (!isExecutorAvailable(selectedLanguage)) {
       setError(
-        `The selected language (${selectedLanguage}) is not available on any connected judge. Please select a different language.`
+        `The selected language (${selectedLanguage}) is not available on any connected judge. Please select a different language.`,
       );
       return;
     }
@@ -414,7 +414,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          errorData.error || "An error occured while submitting your solution."
+          errorData.error || "An error occured while submitting your solution.",
         );
       }
 
@@ -429,7 +429,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
       }, 3000);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
+        err instanceof Error ? err.message : "An unexpected error occurred",
       );
     } finally {
       setIsSubmitting(false);
@@ -527,7 +527,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                     <SelectContent>
                       {availableLanguages
                         .filter(
-                          (lang) => lang.value && lang.value.trim() !== ""
+                          (lang) => lang.value && lang.value.trim() !== "",
                         )
                         .map((lang) => (
                           <SelectItem key={lang.value} value={lang.value}>
@@ -618,28 +618,28 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                           selectedLanguage.startsWith("PY")
                             ? "python"
                             : selectedLanguage.startsWith("CPP") ||
-                              selectedLanguage === "C"
-                            ? "cpp"
-                            : selectedLanguage === "JAVA8"
-                            ? "java"
-                            : selectedLanguage === "V8JS"
-                            ? "javascript"
-                            : selectedLanguage === "GO"
-                            ? "go"
-                            : selectedLanguage === "HASK"
-                            ? "haskell"
-                            : selectedLanguage === "D"
-                            ? "d"
-                            : selectedLanguage === "RUBY" ||
-                              selectedLanguage === "RUBY18"
-                            ? "ruby"
-                            : selectedLanguage === "PHP"
-                            ? "php"
-                            : selectedLanguage === "LUA"
-                            ? "lua"
-                            : selectedLanguage === "PAS"
-                            ? "pascal"
-                            : "plaintext"
+                                selectedLanguage === "C"
+                              ? "cpp"
+                              : selectedLanguage === "JAVA8"
+                                ? "java"
+                                : selectedLanguage === "V8JS"
+                                  ? "javascript"
+                                  : selectedLanguage === "GO"
+                                    ? "go"
+                                    : selectedLanguage === "HASK"
+                                      ? "haskell"
+                                      : selectedLanguage === "D"
+                                        ? "d"
+                                        : selectedLanguage === "RUBY" ||
+                                            selectedLanguage === "RUBY18"
+                                          ? "ruby"
+                                          : selectedLanguage === "PHP"
+                                            ? "php"
+                                            : selectedLanguage === "LUA"
+                                              ? "lua"
+                                              : selectedLanguage === "PAS"
+                                                ? "pascal"
+                                                : "plaintext"
                         }
                         value={code}
                         onChange={(value) => setCode(value || "")}
@@ -712,10 +712,10 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                               submissionStatus.verdict === "AC"
                                 ? "text-green-600"
                                 : ["WA", "TLE", "MLE", "RTE", "CE"].includes(
-                                    submissionStatus.verdict
-                                  )
-                                ? "text-red-600"
-                                : "text-yellow-600"
+                                      submissionStatus.verdict,
+                                    )
+                                  ? "text-red-600"
+                                  : "text-yellow-600"
                             }`}
                           >
                             {getVerdictText(submissionStatus.verdict)}
@@ -802,7 +802,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                           variant="outline"
                           onClick={() =>
                             router.push(
-                              `/problem/${slug}/submission/${submissionStatus.id}`
+                              `/problem/${slug}/submission/${submissionStatus.id}`,
                             )
                           }
                           className="w-full"
@@ -856,7 +856,11 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                 )}
 
                 {/* Submit Button */}
-                <Button type="submit" className="w-full" disabled={isSubmitDisabled}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitDisabled}
+                >
                   {isSubmitting ? (
                     <>
                       <FontAwesomeIcon
@@ -945,10 +949,10 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                   .filter(
                     (lang) =>
                       problem.allowedLanguages.includes(
-                        lang.value as TAllowedLang
+                        lang.value as TAllowedLang,
                       ) &&
                       lang.value &&
-                      lang.value.trim() !== ""
+                      lang.value.trim() !== "",
                   )
                   .map((lang) => (
                     <div

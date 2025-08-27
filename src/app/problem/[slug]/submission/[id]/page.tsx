@@ -47,5 +47,11 @@ export default async function Page({
   if (!problem || problem == 404) notFound();
   else if (problem == 403) forbidden();
 
-  return <SubmissionViewPage problem={problem} slug={slug} submissionId={parseInt(id)} />;
+  return (
+    <SubmissionViewPage
+      problem={problem}
+      slug={slug}
+      submissionId={parseInt(id)}
+    />
+  );
 }

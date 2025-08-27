@@ -23,7 +23,8 @@ export async function publicFetchWithAuthentication(
     ...headers,
     "X-User-Agent": navigator.userAgent, // Send the original browser User Agent
   };
-  if (isLoggedIn) authHeaders.Authorization = `Bearer ${sessionData.sessionToken}`;
+  if (isLoggedIn)
+    authHeaders.Authorization = `Bearer ${sessionData.sessionToken}`;
 
   // Add content-type for POST/PUT requests with body
   if (body && !headers["Content-Type"]) {
@@ -41,7 +42,12 @@ export async function publicFetchWithAuthentication(
   });
 
   // Handle 401 Unauthorized responses only if the user is logged in
-  if (isLoggedIn && response.status === 401 && autoLogout && (await response.json()).message === "INVALID_TOKEN") {
+  if (
+    isLoggedIn &&
+    response.status === 401 &&
+    autoLogout &&
+    (await response.json()).message === "INVALID_TOKEN"
+  ) {
     console.log("Session expired during API call, signing out");
     // Clear the session by calling logout endpoint
     await fetch("/api/auth/logout", { method: "POST" });

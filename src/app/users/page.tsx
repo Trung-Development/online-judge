@@ -7,9 +7,9 @@ import { getUsersList } from "@/lib/server-actions/users";
 export const runtime = "nodejs";
 
 export const metadata: Metadata = {
-    title: `Leaderboard - ${Config.siteDescription}`,
-    description: `Leaderboard of users on ${Config.sitename}. View user ratings, ranks, and statistics.`,
-}
+  title: `Leaderboard - ${Config.siteDescription}`,
+  description: `Leaderboard of users on ${Config.sitename}. View user ratings, ranks, and statistics.`,
+};
 
 export default async function Page() {
   try {
@@ -23,26 +23,26 @@ export default async function Page() {
         username: "alice",
         rating: 2150,
         totalPoints: 2500,
-        problemsSolved: 45
+        problemsSolved: 45,
       },
       {
-        username: "bob", 
+        username: "bob",
         rating: 1850,
         totalPoints: 1800,
-        problemsSolved: 32
+        problemsSolved: 32,
       },
       {
         username: "charlie",
         rating: 1420,
         totalPoints: 1200,
-        problemsSolved: 28
+        problemsSolved: 28,
       },
       {
         username: "diana",
         rating: 950,
         totalPoints: 800,
-        problemsSolved: 15
-      }
+        problemsSolved: 15,
+      },
     ];
     return <UsersPage initialUsers={mockUsers} />;
   }

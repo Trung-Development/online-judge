@@ -6,7 +6,7 @@ export const runtime = "edge";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getAuthSession();
@@ -16,7 +16,7 @@ export async function GET(
     if (!id || isNaN(parseInt(id))) {
       return NextResponse.json(
         { error: "Valid submission ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -25,27 +25,28 @@ export async function GET(
       {
         method: "GET",
         headers: {
-          ...(session?.sessionToken && { Authorization: `Bearer ${session.sessionToken}` }),
+          ...(session?.sessionToken && {
+            Authorization: `Bearer ${session.sessionToken}`,
+          }),
         },
-      }
+      },
     );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       return NextResponse.json(
         { error: errorData.message || "Failed to fetch submission" },
-        { status: response.status }
+        { status: response.status },
       );
     }
 
     const result = await response.json();
     return NextResponse.json(result);
-
   } catch (error) {
     console.error("Submission fetch API error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

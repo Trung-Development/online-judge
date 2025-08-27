@@ -31,10 +31,10 @@ try {
 } catch (error) {
   if (error instanceof ZodError) {
     const errorMessages = error.issues.map(
-      (err) => `${err.path.join(".")}: ${err.message}`
+      (err) => `${err.path.join(".")}: ${err.message}`,
     );
     throw new Error(
-      `Environment validation failed:\n${errorMessages.join("\n")}`
+      `Environment validation failed:\n${errorMessages.join("\n")}`,
     );
   }
   throw error;

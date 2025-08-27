@@ -14,11 +14,23 @@ export default function UserTabs({ username, currentUser }: UserTabsProps) {
   const pathname = usePathname();
 
   const tabs = [
-    { name: "About", href: `/user/${username}`, active: pathname === `/user/${username}` },
-    { name: "Problems", href: `/user/${username}/problems`, active: pathname === `/user/${username}/problems` },
-    { name: "Submissions", href: `/submissions?author=${username}`, active: pathname === `/submissions?author=${username}` },
+    {
+      name: "About",
+      href: `/user/${username}`,
+      active: pathname === `/user/${username}`,
+    },
+    {
+      name: "Problems",
+      href: `/user/${username}/problems`,
+      active: pathname === `/user/${username}/problems`,
+    },
+    {
+      name: "Submissions",
+      href: `/submissions?author=${username}`,
+      active: pathname === `/submissions?author=${username}`,
+    },
   ];
-  
+
   // Check if the current user matches the profile being viewed
   const isOwnProfile = currentUser?.username === username;
 
@@ -33,13 +45,13 @@ export default function UserTabs({ username, currentUser }: UserTabsProps) {
               "inline-flex items-center px-4 py-2 font-medium border-b-2",
               tab.active
                 ? "border-primary text-primary"
-                : "border-transparent text-muted-foreground hover:border-muted-foreground"
+                : "border-transparent text-muted-foreground hover:border-muted-foreground",
             )}
           >
             {tab.name}
           </Link>
         ))}
-        
+
         {isOwnProfile && (
           <Link
             href={`/edit/profile`}

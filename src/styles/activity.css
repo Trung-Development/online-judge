@@ -42,7 +42,7 @@
 .submission-activity-table td {
   border-radius: 20%;
   padding: 0;
-  width: 12px;  /* Explicitly set width */
+  width: 12px; /* Explicitly set width */
   height: 12px; /* Explicitly set height */
 }
 
@@ -89,7 +89,7 @@
   width: 0;
   height: 0;
   color: rgba(0, 0, 0, 0.8);
-  content: '';
+  content: "";
   border: 5px solid transparent;
   pointer-events: none;
 }
@@ -223,19 +223,19 @@
   .activity-0 {
     background-color: #3b3b3b;
   }
-  
+
   .activity-1 {
     background-color: #0e4429;
   }
-  
+
   .activity-2 {
     background-color: #006d32;
   }
-  
+
   .activity-3 {
     background-color: #26a641;
   }
-  
+
   .activity-4 {
     background-color: #39d353;
   }
@@ -246,11 +246,11 @@
   .submission-activity-table {
     min-width: 650px;
   }
-  
+
   .submission-activity-table th.submission-date-col {
     display: none;
   }
-  
+
   #submission-total-count {
     padding-left: 5px;
   }

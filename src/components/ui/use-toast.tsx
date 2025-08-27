@@ -26,9 +26,9 @@ export function useToast(): UseToastReturn {
   const toast = (options: ToastOptions) => {
     const id = Math.random().toString(36).substring(2, 9);
     const newToast = { ...options, id };
-    
+
     setToasts((prevToasts) => [...prevToasts, newToast]);
-    
+
     if (options.duration !== Infinity) {
       setTimeout(() => {
         dismiss(id);

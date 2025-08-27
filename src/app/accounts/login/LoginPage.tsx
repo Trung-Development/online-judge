@@ -23,9 +23,12 @@ import Loading from "@/app/loading";
 import { AlertCircle } from "lucide-react";
 import { env } from "@/lib/env";
 
-const Turnstile = dynamic(() => import("next-turnstile").then(mod => mod.Turnstile), {
-  ssr: false,
-});
+const Turnstile = dynamic(
+  () => import("next-turnstile").then((mod) => mod.Turnstile),
+  {
+    ssr: false,
+  },
+);
 
 export default function LoginPage() {
   const { theme } = useTheme();
@@ -45,7 +48,7 @@ export default function LoginPage() {
   >("required");
 
   const turnstileSiteKey = env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
-  const callbackUrl = searchParams.get('callbackUrl') || '/';
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   useEffect(() => {
     setMounted(true);

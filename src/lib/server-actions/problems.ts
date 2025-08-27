@@ -80,7 +80,7 @@ export async function getProblem(slug: string, token?: string) {
         return 403;
       }
       throw new Error(
-        `Failed to fetch problem: ${json?.message || response.status}`
+        `Failed to fetch problem: ${json?.message || response.status}`,
       );
     }
 
@@ -91,7 +91,7 @@ export async function getProblem(slug: string, token?: string) {
 }
 
 export async function getProblemStatus(
-  token?: string
+  token?: string,
 ): Promise<ProblemStatus[]> {
   if (!token) return [];
   try {
@@ -110,7 +110,7 @@ export async function getProblemStatus(
 
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch problems status: ${json?.message || response.status}`
+        `Failed to fetch problems status: ${json?.message || response.status}`,
       );
     }
 
@@ -130,11 +130,11 @@ export async function createProblem(
     description: string;
     categoryId?: number;
     types?: number[];
-  allowedLanguages?: string[];
-  timeLimit?: number;
-  memoryLimit?: number;
+    allowedLanguages?: string[];
+    timeLimit?: number;
+    memoryLimit?: number;
   },
-  token?: string
+  token?: string,
 ) {
   try {
     const baseUrl = env.API_ENDPOINT;
@@ -143,7 +143,8 @@ export async function createProblem(
     const headers = new Headers({
       "Content-Type": "application/json",
     });
-    if (token && token.length > 0) headers.append("Authorization", `Bearer ${token}`);
+    if (token && token.length > 0)
+      headers.append("Authorization", `Bearer ${token}`);
 
     const response = await fetch(url.toString(), {
       method: "POST",
@@ -155,16 +156,17 @@ export async function createProblem(
         description: data.description,
         categoryId: data.categoryId,
         types: data.types,
-  allowedLanguages: data.allowedLanguages,
-  timeLimit: data.timeLimit ?? 1,
-  memoryLimit: data.memoryLimit ?? 256,
+        allowedLanguages: data.allowedLanguages,
+        timeLimit: data.timeLimit ?? 1,
+        memoryLimit: data.memoryLimit ?? 256,
       }),
     });
 
     const json = await response.json().catch(() => null);
 
     if (!response.ok) {
-      const message = json?.message || `Failed to create problem: ${response.status}`;
+      const message =
+        json?.message || `Failed to create problem: ${response.status}`;
       throw new Error(message);
     }
 
@@ -172,7 +174,7 @@ export async function createProblem(
   } catch (err: unknown) {
     console.error("createProblem error:", err);
     if (err instanceof Error) throw err;
-    throw new Error('Unknown error in createProblem');
+    throw new Error("Unknown error in createProblem");
   }
 }
 
@@ -185,23 +187,27 @@ export async function updateProblem(
     description?: string;
     categoryId?: number;
     types?: number[];
-  allowedLanguages?: string[];
-  timeLimit?: number;
-  memoryLimit?: number;
+    allowedLanguages?: string[];
+    timeLimit?: number;
+    memoryLimit?: number;
   },
-  token?: string
+  token?: string,
 ) {
   try {
     const baseUrl = env.API_ENDPOINT;
-    const url = new URL(`/client/problems/${encodeURIComponent(slug)}`, baseUrl);
+    const url = new URL(
+      `/client/problems/${encodeURIComponent(slug)}`,
+      baseUrl,
+    );
 
     const headers = new Headers({
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     });
-    if (token && token.length > 0) headers.append('Authorization', `Bearer ${token}`);
+    if (token && token.length > 0)
+      headers.append("Authorization", `Bearer ${token}`);
 
     const response = await fetch(url.toString(), {
-      method: 'PUT',
+      method: "PUT",
       headers,
       body: JSON.stringify(data),
     });
@@ -209,15 +215,16 @@ export async function updateProblem(
     const json = await response.json().catch(() => null);
 
     if (!response.ok) {
-      const message = json?.message || `Failed to update problem: ${response.status}`;
+      const message =
+        json?.message || `Failed to update problem: ${response.status}`;
       throw new Error(message);
     }
 
     return json;
   } catch (err: unknown) {
-    console.error('updateProblem error:', err);
+    console.error("updateProblem error:", err);
     if (err instanceof Error) throw err;
-    throw new Error('Unknown error in updateProblem');
+    throw new Error("Unknown error in updateProblem");
   }
 }
 
@@ -225,27 +232,32 @@ export async function updateProblem(
 export async function deleteProblem(slug: string, token?: string) {
   try {
     const baseUrl = env.API_ENDPOINT;
-    const url = new URL(`/client/problems/${encodeURIComponent(slug)}`, baseUrl);
+    const url = new URL(
+      `/client/problems/${encodeURIComponent(slug)}`,
+      baseUrl,
+    );
 
     const headers = new Headers();
-    if (token && token.length > 0) headers.append('Authorization', `Bearer ${token}`);
+    if (token && token.length > 0)
+      headers.append("Authorization", `Bearer ${token}`);
 
     const response = await fetch(url.toString(), {
-      method: 'DELETE',
+      method: "DELETE",
       headers,
     });
 
     const json = await response.json().catch(() => null);
 
     if (!response.ok) {
-      const message = json?.message || `Failed to delete problem: ${response.status}`;
+      const message =
+        json?.message || `Failed to delete problem: ${response.status}`;
       throw new Error(message);
     }
 
     return json;
   } catch (err: unknown) {
-    console.error('deleteProblem error:', err);
+    console.error("deleteProblem error:", err);
     if (err instanceof Error) throw err;
-    throw new Error('Unknown error in deleteProblem');
+    throw new Error("Unknown error in deleteProblem");
   }
 }
