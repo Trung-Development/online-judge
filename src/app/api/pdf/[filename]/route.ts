@@ -17,7 +17,9 @@ export async function GET(
   req: NextRequest,
   context: { params: Promise<{ filename: string }> },
 ) {
-  const { filename } = await context.params;
+  let { filename } = await context.params;
+  // Remove .pdf extension if present
+  filename = filename.replace(/\.pdf$/i, "");
 
   try {
     console.log(`Fetching PDF for filename: ${filename}`);
