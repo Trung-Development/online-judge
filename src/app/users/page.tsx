@@ -22,24 +22,28 @@ export default async function Page() {
       {
         username: "alice",
         rating: 2150,
+        fullname: "Alice",
         totalPoints: 2500,
         problemsSolved: 45,
       },
       {
         username: "bob",
         rating: 1850,
+        fullname: "Bob",
         totalPoints: 1800,
         problemsSolved: 32,
       },
       {
         username: "charlie",
         rating: 1420,
+        fullname: "Charlie",
         totalPoints: 1200,
         problemsSolved: 28,
       },
       {
         username: "diana",
         rating: 950,
+        fullname: "Diana",
         totalPoints: 800,
         problemsSolved: 15,
       },
