@@ -781,7 +781,7 @@ export default function SubmissionViewPage({ problem, slug, submissionId }: Subm
                   <div className="space-y-2">
                     <a
                       href={uploaded.uploadedFileUrl || uploaded.uploadedFile}
-                      className="inline-block w-full text-center px-4 py-2 border rounded bg-primary text-white"
+                      className="inline-block w-full text-center px-4 py-2 border rounded bg-primary text-primary-foreground"
                       download
                     >
                       Download Submission File

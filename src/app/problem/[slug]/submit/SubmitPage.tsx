@@ -561,7 +561,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                       </template>
 
                       <label className="relative flex w-full border overflow-hidden border-gray-200 shadow-2xs rounded-lg text-sm focus:outline-hidden focus:z-10 focus:border-blue-500 disabled:opacity-50 disabled:pointer-events-none cursor-pointer">
-                        <span className="h-full py-3 px-4 bg-gray-100 text-nowrap">
+                        <span className="h-full py-3 px-4 bg-primary text-primary-foreground text-nowrap">
                           Choose File
                         </span>
                         <span className="group grow flex overflow-hidden h-full py-3 px-4">
@@ -605,7 +605,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                               if (f) uploadFile(f);
                             }}
                           />
-                          <span className="ml-2 text-sm text-muted-foreground cursor-pointer underline">
+                          <span className="ml-2 text-sm text-foreground cursor-pointer underline">
                             Choose file to load
                           </span>
                         </label>
