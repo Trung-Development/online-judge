@@ -191,3 +191,4 @@ svg {
 /* Import rating styles */
 @import "../styles/rating.css";
 @import "../styles/table.css";
+@import "../styles/wikijs-backport.css";

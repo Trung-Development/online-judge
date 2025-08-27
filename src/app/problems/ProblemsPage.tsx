@@ -78,7 +78,7 @@ export default function ProblemsPage({
   const [types, setTypes] = useState<string[]>([]);
   const [chosenCategory, setChosenCategory] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(
-    searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1,
+    searchParams.get("page") ? parseInt(searchParams.get("page")!) : 1
   );
   const [showEditorialOnly, setShowEditorialOnly] = useState(false);
   const [hideSolved, setHideSolved] = useState(false);
@@ -184,7 +184,7 @@ export default function ProblemsPage({
         return 0;
       });
     },
-    [sortField, sortOrder],
+    [sortField, sortOrder]
   );
 
   const totalPages = Math.ceil(filteredProblems.length / PROBLEMS_PER_PAGE);
@@ -200,7 +200,7 @@ export default function ProblemsPage({
       filtered = filtered.filter(
         (problem) =>
           problem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          problem.code.toLowerCase().includes(searchTerm.toLowerCase()),
+          problem.code.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -218,14 +218,14 @@ export default function ProblemsPage({
     if (chosenCategory != "") {
       filtered = filtered.filter(
         (problem) =>
-          problem.category.toLowerCase() === chosenCategory.toLowerCase(),
+          problem.category.toLowerCase() === chosenCategory.toLowerCase()
       );
     }
 
     // Types filter
     if (types.length > 0) {
       filtered = filtered.filter((problem) =>
-        problem.type.some((type) => types.includes(type)),
+        problem.type.some((type) => types.includes(type))
       );
     }
 
@@ -283,7 +283,7 @@ export default function ProblemsPage({
           {isAuthenticated &&
             hasPermission(
               user?.perms,
-              FEUserPermissions.CREATE_NEW_PROBLEM,
+              FEUserPermissions.CREATE_NEW_PROBLEM
             ) && (
               <div className="ml-4">
                 <Link href="/problem/create">
@@ -652,12 +652,12 @@ export default function ProblemsPage({
                           !problem.stats
                             ? "text-muted-foreground"
                             : calculateAcceptanceRate(problem.stats) === null
-                              ? "text-muted-foreground"
-                              : calculateAcceptanceRate(problem.stats)! >= 50
-                                ? "text-green-600 dark:text-green-400"
-                                : calculateAcceptanceRate(problem.stats)! >= 25
-                                  ? "text-yellow-600 dark:text-yellow-400"
-                                  : "text-red-600 dark:text-red-400"
+                            ? "text-muted-foreground"
+                            : calculateAcceptanceRate(problem.stats)! >= 50
+                            ? "text-green-600 dark:text-green-400"
+                            : calculateAcceptanceRate(problem.stats)! >= 25
+                            ? "text-yellow-600 dark:text-yellow-400"
+                            : "text-red-600 dark:text-red-400"
                         }`}
                       >
                         {problem.stats

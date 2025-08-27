@@ -9,6 +9,7 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import remarkHeadingSeparator from "@/lib/remarkHeadingSeparator";
+import remarkBreaks from "remark-breaks";
 import "katex/dist/katex.min.css";
 
 import { Button } from "@/components/ui/button";
@@ -54,7 +55,7 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
       problem.author,
       problem.curator,
       problem.tester || [],
-      user.id,
+      user.id
     );
 
   const problemLocked = problem.isLocked;
@@ -65,10 +66,10 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
       problem.allowedLanguages
         .map(
           (langValue) =>
-            languages.find((lang) => lang.value === langValue)?.commonName,
+            languages.find((lang) => lang.value === langValue)?.commonName
         )
-        .filter(Boolean),
-    ),
+        .filter(Boolean)
+    )
   ).sort();
 
   // Helper to format memory limit
@@ -113,7 +114,12 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
           {/* Statement + SampleIO and separators */}
           <div className="prose max-w-none">
             <ReactMarkdown
-              remarkPlugins={[remarkGfm, remarkMath, remarkHeadingSeparator]}
+              remarkPlugins={[
+                remarkGfm,
+                remarkMath,
+                remarkHeadingSeparator,
+                remarkBreaks,
+              ]}
               rehypePlugins={[rehypeKatex, rehypeRaw]}
               components={{
                 h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
@@ -128,13 +134,23 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
                 u: (props: React.HTMLAttributes<HTMLElement>) => (
                   <u className="underline" {...props} />
                 ),
+                table: ({ children }) => (
+                  <div className="table-wrapper figure-table">
+                    <table>{children}</table>
+                  </div>
+                ),
+                thead: ({ children }) => <thead>{children}</thead>,
+                tbody: ({ children }) => <tbody>{children}</tbody>,
+                tr: ({ children, ...rest }) => <tr {...rest}>{children}</tr>,
+                th: ({ children }) => <th>{children}</th>,
+                td: ({ children }) => <td>{children}</td>,
+                img: ({ children }) => <img>{children}</img>,
                 code: (
                   props: React.HTMLAttributes<HTMLElement> & {
                     inline?: boolean;
-                  },
+                  }
                 ) => {
                   const { inline, children, ...rest } = props;
-                  // inline is now recognized as any, so no TS error
                   if (!inline) {
                     const text = React.Children.toArray(children)
                       .map((c) => (typeof c === "string" ? c : ""))
@@ -446,7 +462,7 @@ function PDFViewer({ src, title }: { src: string; title: string }) {
             body?.scrollHeight || 0,
             html?.scrollHeight || 0,
             body?.offsetHeight || 0,
-            html?.offsetHeight || 0,
+            html?.offsetHeight || 0
           );
           if (height > 0) {
             iframe.style.height = `${height}px`;

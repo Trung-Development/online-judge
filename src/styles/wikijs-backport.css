@@ -1,0 +1,170 @@
+/* ---------------------------------
+   Responsive Wiki-like Tables (pure CSS)
+   Backported from SCSS to CSS vars system
+--------------------------------- */
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1rem 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.table-wrapper table {
+  width: 100%;
+  border-collapse: separate; /* SCSS used spacing and radii */
+  border-spacing: 0;
+  table-layout: auto;
+  max-width: 100%;
+  font-size: 0.95rem;
+  background: var(--background);
+  border-radius: 5px;
+}
+
+/* Dense mode (optional utility class) */
+.table-wrapper.dense td,
+.table-wrapper.dense th {
+  font-size: 0.85rem;
+  padding: 0.5rem;
+}
+
+.table-wrapper thead th {
+  padding: 0.75rem;
+  border-bottom: 2px solid var(--border-strong, var(--border));
+  color: var(--muted-foreground);
+  background: color-mix(in srgb, var(--muted) 85%, transparent);
+  font-weight: 600;
+  text-align: center;
+}
+
+.dark .table-wrapper thead th {
+  background: color-mix(in srgb, var(--muted) 20%, transparent);
+  border-bottom-color: var(--border);
+  color: var(--muted-foreground);
+}
+
+/* Rounded corners for header row */
+.table-wrapper thead th:first-child {
+  border-top-left-radius: 7px;
+}
+.table-wrapper thead th:last-child {
+  border-top-right-radius: 7px;
+}
+
+.table-wrapper tbody td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border-muted, var(--muted));
+  color: var(--foreground);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.table-wrapper tbody td:last-child {
+  border-right: none;
+}
+
+/* Zebra rows */
+.table-wrapper tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--muted) 94%, transparent);
+}
+.dark .table-wrapper tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--muted) 14%, transparent);
+}
+
+/* Extra zebra alt (for checkerboard effect if desired) */
+.table-wrapper tbody tr:nth-child(even) td:nth-child(even) {
+  background: color-mix(in srgb, var(--muted) 88%, transparent);
+}
+.dark .table-wrapper tbody tr:nth-child(even) td:nth-child(even) {
+  background: color-mix(in srgb, var(--muted) 18%, transparent);
+}
+
+/* Last row rounded corners */
+.table-wrapper tbody tr:last-child td {
+  border-bottom: none;
+}
+.table-wrapper tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 7px;
+}
+.table-wrapper tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 7px;
+}
+
+/* Hover highlight */
+.table-wrapper tbody tr:hover td {
+  background: color-mix(in srgb, var(--muted) 85%, transparent);
+}
+.dark .table-wrapper tbody tr:hover td {
+  background: color-mix(in srgb, var(--muted) 25%, transparent);
+}
+
+/* Sticky header option */
+.table-wrapper.sticky thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Small screens */
+@media (max-width: 640px) {
+  .table-wrapper table {
+    min-width: 480px;
+    font-size: 0.9rem;
+  }
+}
+
+/* -----------------------------------------------
+   Image utilities (backported from WikiJS's SCSS)
+-------------------------------------------------- */
+
+img {
+  max-width: 100%;
+}
+
+img.align-left {
+  float: left;
+  margin: 0 1rem 1rem 0;
+}
+
+img.align-right {
+  float: right;
+  margin: 0 0 1rem 1rem;
+  z-index: 1;
+  position: relative;
+}
+
+img.align-center {
+  display: block;
+  max-width: 100%;
+  margin: auto;
+}
+
+img.align-abstopright {
+  position: absolute;
+  top: -90px;
+  right: 1rem;
+  height: calc(90px - 32px);
+  width: auto;
+}
+
+/* RTL override */
+.is-rtl img.align-abstopright {
+  left: 1rem;
+  right: initial;
+}
+
+img.decor-shadow {
+  box-shadow: 0 3px 8px 0 rgba(116, 129, 141, 0.1);
+}
+
+img.decor-outline {
+  border: 1px solid var(--border, #ccc);
+}
+
+img.uml-diagram {
+  margin: 1rem 0;
+}
