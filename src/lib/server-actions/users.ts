@@ -132,10 +132,6 @@ export async function getSolvedAndAttemptedProblems(username: string): Promise<I
 export async function getActivityHeatmapSubmissions(username: string): Promise<IActivityHeatmapSubmission[]> {
   const apiBase = env.API_ENDPOINT;
 
-  if (!apiBase) {
-    throw new Error("API base URL is not defined");
-  }
-
   const response = await fetch(
     new URL(`/client/submissions/heatmap/${username}`, apiBase).toString(),
     {
