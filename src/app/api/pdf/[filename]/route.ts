@@ -23,7 +23,7 @@ export async function GET(
     console.log(`Fetching PDF for filename: ${filename}`);
     const command = new GetObjectCommand({
       Bucket: process.env.STORAGE_BUCKET!,
-      Key: `${filename}.pdf`,
+      Key: `pdf/${filename}.pdf`,
     });
     const { Body } = await s3.send(command);
 
