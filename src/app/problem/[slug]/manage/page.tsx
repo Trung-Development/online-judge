@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: `Manage Problem - ${Config.siteDescription}`,
   description: `Manage and edit problem on ${Config.sitename}.`,
 };
+
 export default function Page() {
   return <ManageClient />;
 }
