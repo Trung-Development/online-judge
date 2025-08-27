@@ -3,13 +3,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import rehypeRaw from "rehype-raw";
-import remarkHeadingSeparator from "@/lib/remarkHeadingSeparator";
-import remarkBreaks from "remark-breaks";
 import "katex/dist/katex.min.css";
 
 import { Button } from "@/components/ui/button";
@@ -18,7 +11,6 @@ import { canEditProblemTestcases } from "@/lib/permissions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheck,
-  faClone,
   faFilePdf,
   faClock,
   faServer,
@@ -38,10 +30,16 @@ import { languages } from "@/constants";
 interface ProblemPageProps {
   problem: IProblemPageData;
   slug: string;
+  renderedDescription: string;
 }
 
-export default function ProblemPage({ problem, slug }: ProblemPageProps) {
+export default function ProblemPage({
+  problem,
+  slug,
+  renderedDescription,
+}: ProblemPageProps) {
   const { user } = useAuth();
+  const renderedRef = useRef<HTMLDivElement | null>(null);
   const [typeExpanded, setTypeExpanded] = useState(false);
   const [sourceExpanded, setSourceExpanded] = useState(true);
   const [langExpanded, setLangExpanded] = useState(true); // default open
@@ -113,56 +111,12 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
 
           {/* Statement + SampleIO and separators */}
           <div className="prose max-w-none">
-            <ReactMarkdown
-              remarkPlugins={[
-                remarkGfm,
-                remarkMath,
-                remarkHeadingSeparator,
-                remarkBreaks,
-              ]}
-              rehypePlugins={[rehypeKatex, rehypeRaw]}
-              components={{
-                h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-                  <h1 className="text-2xl font-bold mt-6 mb-4" {...props} />
-                ),
-                h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-                  <h2 className="text-xl font-semibold mt-5 mb-3" {...props} />
-                ),
-                h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
-                  <h3 className="text-lg font-semibold mt-4 mb-2" {...props} />
-                ),
-                u: (props: React.HTMLAttributes<HTMLElement>) => (
-                  <u className="underline" {...props} />
-                ),
-                table: ({ children }) => (
-                  <div className="table-wrapper figure-table">
-                    <table>{children}</table>
-                  </div>
-                ),
-                thead: ({ children }) => <thead>{children}</thead>,
-                tbody: ({ children }) => <tbody>{children}</tbody>,
-                tr: ({ children, ...rest }) => <tr {...rest}>{children}</tr>,
-                th: ({ children }) => <th>{children}</th>,
-                td: ({ children }) => <td>{children}</td>,
-                img: ({ children }) => <img>{children}</img>,
-                code: (
-                  props: React.HTMLAttributes<HTMLElement> & {
-                    inline?: boolean;
-                  }
-                ) => {
-                  const { inline, children, ...rest } = props;
-                  if (!inline) {
-                    const text = React.Children.toArray(children)
-                      .map((c) => (typeof c === "string" ? c : ""))
-                      .join("");
-                    return <SampleIO text={text} />;
-                  }
-                  return <code {...rest}>{children}</code>;
-                },
-              }}
-            >
-              {problem.description?.replace(/__([^_\n]+)__/g, "<u>$1</u>")}
-            </ReactMarkdown>
+            <div
+              ref={renderedRef}
+              className="markdown-rendered"
+              // content is produced server-side by unified + rehype-pretty-code
+              dangerouslySetInnerHTML={{ __html: renderedDescription }}
+            />
           </div>
         </div>
 
@@ -412,35 +366,6 @@ export default function ProblemPage({ problem, slug }: ProblemPageProps) {
         </div>
       </div>
     </main>
-  );
-}
-
-function SampleIO({ text }: { text: string }) {
-  const ref = useRef<HTMLPreElement>(null);
-  const [copied, setCopied] = useState(false);
-  const copy = () => {
-    if (ref.current) {
-      navigator.clipboard.writeText(ref.current.innerText).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1000);
-      });
-    }
-  };
-  return (
-    <div className="mb-6">
-      <div className="relative bg-muted border p-4 rounded-md">
-        <button
-          onClick={copy}
-          className="absolute top-2 right-2 bg-background border px-2 py-1 rounded text-sm flex items-center gap-1 hover:bg-muted transition-colors"
-        >
-          <FontAwesomeIcon icon={copied ? faCheck : faClone} />
-          <span>{copied ? "Copied" : "Copy"}</span>
-        </button>
-        <pre ref={ref} className="whitespace-pre-wrap text-foreground">
-          <code>{text}</code>
-        </pre>
-      </div>
-    </div>
   );
 }
 
