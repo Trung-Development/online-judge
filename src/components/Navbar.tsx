@@ -186,10 +186,10 @@ export function Navbar() {
               ref={navListRef}
               className="bg-zinc-900 text-zinc-100 justify-start relative isolate z-0"
             >
-              {/* Animated indicator - rounded pill behind links */}
+              {/* Animated indicator - rounded rectangle behind links */}
               <div
                 aria-hidden
-                className="absolute top-1/2 -translate-y-1/2 h-9 rounded-full bg-[#2563EB] transition-all duration-300 ease-out pointer-events-none"
+                className="absolute top-1/2 -translate-y-1/2 h-9 rounded-md bg-white/10 dark:bg-white/10 transition-all duration-200 ease-out pointer-events-none shadow-sm"
                 style={{
                   transform: `translate3d(${indicator.left}px, 0, 0)`,
                   width: `${indicator.width}px`,
