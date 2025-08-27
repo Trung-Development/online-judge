@@ -29,12 +29,16 @@ export async function POST(
         | { default?: true }
         | null;
       selectedIndices?: number[] | null;
+      ioInputFile?: string | null;
+      ioOutputFile?: string | null;
     };
 
     const payload: FinalizePayload = {
       cases: body.cases || [],
       checker: body.checker || null,
       selectedIndices: body.selectedIndices || null,
+      ioInputFile: body.ioInputFile || null,
+      ioOutputFile: body.ioOutputFile || null,
     };
 
     const res = await fetch(backendUrl, {

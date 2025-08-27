@@ -185,7 +185,6 @@ export default function TestcaseManagerPage({
       setToast({ open: false, message: "", caseIdx: null, anim: null, uid: null });
     };
   // IO global settings (match LQDOJ data.html fields)
-  const [ioMethod, setIoMethod] = useState<string | null>("standard");
   const [ioInputFile, setIoInputFile] = useState<string | null>(null);
   const [ioOutputFile, setIoOutputFile] = useState<string | null>(null);
 
@@ -1002,41 +1001,30 @@ export default function TestcaseManagerPage({
                     </div>
                   )}
                 </div>
-                <div>
-                  <div className="text-sm">IO Method</div>
-                  <div className="w-40">
-                    <Select
-                      value={ioMethod || "standard"}
-                      onValueChange={(v) => setIoMethod(v)}
-                    >
-                      <SelectTrigger size="sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="standard">Standard</SelectItem>
-                        <SelectItem value="file">File</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <div className="flex items-center gap-4 ms-auto">
+                  <div className="w-48">
+                    <Label className="text-sm">Input file (optional)</Label>
+                    <Input
+                      placeholder="filename or leave empty"
+                      value={ioInputFile ?? ""}
+                      onChange={(e) => setIoInputFile(e.target.value || null)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div className="w-48">
+                    <Label className="text-sm">Output file (optional)</Label>
+                    <Input
+                      placeholder="filename or leave empty"
+                      value={ioOutputFile ?? ""}
+                      onChange={(e) => setIoOutputFile(e.target.value || null)}
+                      className="mt-1"
+                    />
                   </div>
                 </div>
-                {ioMethod === "file" && (
-                  <div className="flex items-center gap-2">
-                    <div className="w-40">
-                      <Input
-                        placeholder="input file"
-                        value={ioInputFile ?? ""}
-                        onChange={(e) => setIoInputFile(e.target.value)}
-                      />
-                    </div>
-                    <div className="w-40">
-                      <Input
-                        placeholder="output file"
-                        value={ioOutputFile ?? ""}
-                        onChange={(e) => setIoOutputFile(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                )}
+                <p className="text-xs text-muted-foreground mt-2">
+                  Leave the input field empty to use stdin. Leave the output
+                  field empty to use stdout.
+                </p>
               </div>
             </div>
 
@@ -1161,7 +1149,6 @@ export default function TestcaseManagerPage({
                       cases: detectedCases,
                       batchStarts: batchStarts,
                       checker: checkerPayload,
-                      ioMethod: ioMethod,
                       ioInputFile: ioInputFile,
                       ioOutputFile: ioOutputFile,
                       archiveUrl: j.url,
