@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { IUserData } from "@/lib/server-actions/users";
+import { ISolvedAndAttemptedProblems, IUserData } from "@/lib/server-actions/users";
 import { getRatingClass, getRatingTitle } from "@/lib/rating";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
@@ -19,12 +19,19 @@ interface UserProblemsPageProps {
     fullname: string;
     defaultRuntime: string;
   } | null;
+  SAP: ISolvedAndAttemptedProblems
+  categories: {
+    id: number,
+    name: string,
+  }[]
 }
 
 export default function UserProblemsPage({
   userData,
   username,
   serverUser,
+  SAP,
+  categories
 }: UserProblemsPageProps) {
   // For client-side session
   const { user: clientUser } = useAuth();
@@ -33,56 +40,41 @@ export default function UserProblemsPage({
   const ratingValue = userData.rating || 0;
 
   // Group problems by category
-  const problemsByCategory: {
-    [key: string]: { code: string; name: string; points: number }[];
-  } = {};
-  const pointsByCategory: { [key: string]: number } = {};
-
-  // Only count AC submissions and unique problems
-  const processedProblemSlugs = new Set<string>();
+  const solvedProbsByCat = new Map<number, { code: string; name: string; points: number }[]>();
+  const attemptedProbsByCat = new Map<number, { code: string; name: string; points: number }[]>();
+  const pointsByCategory: { [key: number]: number } = {};
 
   // Track maximum points for each problem
-  const maxPointsByProblem = new Map<string, number>();
+  const solvedProblems: {slug:string,name:string}[] = [];
+  const attemptedProblems = new Map<string, { name: string, points: number }>();
 
-  userData.submissions.forEach((submission) => {
-    if (submission.status === "AC") {
-      const currentMax = maxPointsByProblem.get(submission.problemSlug) || 0;
-      maxPointsByProblem.set(
-        submission.problemSlug,
-        Math.max(currentMax, submission.points),
-      );
+  SAP.data.forEach((prob) => {
+    if (prob.solved) {
+      solvedProblems.push({
+        slug: prob.slug,
+        name: prob.name,
+      });
+    } else {
+      attemptedProblems.set(prob.slug, {name: prob.name, points: prob.points});
     }
   });
 
   // Group problems by category using the maximum points
-  maxPointsByProblem.forEach((points, problemSlug) => {
-    const submission = userData.submissions.find(
-      (sub) => sub.problemSlug === problemSlug,
-    );
-    if (submission) {
-      if (!problemsByCategory[submission.problemCategory]) {
-        problemsByCategory[submission.problemCategory] = [];
-        pointsByCategory[submission.problemCategory] = 0;
-      }
-
-      problemsByCategory[submission.problemCategory].push({
-        code: submission.problemSlug,
-        name: submission.problemName,
-        points,
+  SAP.data.forEach((prob) => {
+    const map = prob.solved ? solvedProbsByCat : attemptedProbsByCat;
+      const total_probs = map.get(prob.categoryId) || [];
+      total_probs?.push({
+        code: prob.slug,
+        name: prob.name,
+        points: prob.points,
       });
+      map.set(prob.categoryId, total_probs || []);
 
-      pointsByCategory[submission.problemCategory] += points;
-
-      // Add the problem slug to the processed set
-      processedProblemSlugs.add(problemSlug);
-    }
+      pointsByCategory[prob.categoryId] = (pointsByCategory[prob.categoryId] || 0) + prob.points;
   });
 
   // Calculate total points based on maximum points for unique problems
-  const totalPoints = Array.from(maxPointsByProblem.values()).reduce(
-    (sum, points) => sum + points,
-    0,
-  );
+  const totalPoints = SAP.totalPoints;
 
   return (
     <main className="max-w-6xl mx-auto py-8 px-4">
@@ -119,14 +111,8 @@ export default function UserProblemsPage({
           <div className="space-y-3 bg-card border rounded-lg p-4 mb-4">
             <div>
               <span className="font-medium">Problems solved:</span>{" "}
-              {processedProblemSlugs.size}
+              {SAP.data.filter(v => v.solved).length}
             </div>
-            {userData.rankByPoints && (
-              <div>
-                <span className="font-medium">Rank by points:</span> #
-                {userData.rankByPoints}
-              </div>
-            )}
             <div>
               <span className="font-medium">Total points:</span>{" "}
               {totalPoints.toLocaleString()}
@@ -148,31 +134,31 @@ export default function UserProblemsPage({
           <UserTabs username={username} currentUser={currentUser} />
 
           <div className="mb-4">
-            <h2 className="text-xl font-semibold mb-4">Problems Solved</h2>
+            <h2 className="text-xl font-semibold mb-4">Solved Problems</h2>
 
-            {Object.keys(problemsByCategory).length === 0 ? (
+            {SAP.data.filter(v => v.solved).length === 0 ? (
               <div className="bg-card border rounded-lg p-6">
                 <p className="text-muted-foreground text-center py-4">
-                  No problems solved yet.
+                  No solved problems yet.
                 </p>
               </div>
             ) : (
               <div className="space-y-6">
-                {Object.keys(problemsByCategory)
-                  .sort()
-                  .map((category) => (
+                {solvedProbsByCat.entries().map(([categoryId, problems]) => {
+                  const categoryName = categories.find(v => v.id === categoryId)?.name || "Unknown";
+                  return (
                     <div
-                      key={category}
+                      key={categoryId}
                       className="bg-card border rounded-lg p-6"
                     >
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-medium">{category}</h3>
+                        <h3 className="text-lg font-medium">{categoryName}</h3>
                         <p className="text-muted-foreground">
-                          {pointsByCategory[category]} points
+                          {pointsByCategory[categoryId]} points
                         </p>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {problemsByCategory[category].map((problem) => (
+                        {problems.map((problem) => (
                           <Link
                             key={problem.code}
                             href={`/problem/${problem.code}`}
@@ -191,7 +177,58 @@ export default function UserProblemsPage({
                         ))}
                       </div>
                     </div>
-                  ))}
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold mb-4">Attempted Problems</h2>
+
+            {SAP.data.filter(v => !v.solved).length === 0 ? (
+              <div className="bg-card border rounded-lg p-6">
+                <p className="text-muted-foreground text-center py-4">
+                  No attempted problems yet.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {attemptedProbsByCat.entries().map(([categoryId, problems]) => {
+                  const categoryName = categories.find(v => v.id === categoryId)?.name || "Unknown";
+                  return (
+                    <div
+                      key={categoryId}
+                      className="bg-card border rounded-lg p-6"
+                    >
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-medium">{categoryName}</h3>
+                        <p className="text-muted-foreground">
+                          {pointsByCategory[categoryId]} points
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {problems.map((problem) => (
+                          <Link
+                            key={problem.code}
+                            href={`/problem/${problem.code}`}
+                            className="p-3 border rounded-md hover:bg-muted/50 flex justify-between"
+                          >
+                            <div>
+                              <p className="font-medium">{problem.name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {problem.code}
+                              </p>
+                            </div>
+                            <div className="text-sm font-medium">
+                              {problem.points} pts
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>

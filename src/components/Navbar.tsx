@@ -409,7 +409,7 @@ export function Navbar() {
               <DropdownMenuContent align="end" className="w-[170px]">
                 <DropdownMenuItem asChild>
                   <Link
-                    href="/profile/edit"
+                    href={`/user/${user.username}`}
                     className="w-full cursor-pointer flex items-center gap-2"
                   >
                     <FontAwesomeIcon icon={faSquarePen} className="h-4 w-4" />
@@ -427,7 +427,7 @@ export function Navbar() {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link
-                    href="/accounts/security"
+                    href="/manage"
                     className="w-full cursor-pointer flex items-center gap-2"
                   >
                     <Cog className="h-4 w-4" />

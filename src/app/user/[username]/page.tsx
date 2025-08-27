@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { Config } from "@/config";
-import { getUser } from "@/lib/server-actions/users";
+import { getActivityHeatmapSubmissions, getUser } from "@/lib/server-actions/users";
 import { notFound } from "next/navigation";
 import UserPage from "./UserPage";
 import { getAuthSession } from "@/lib/auth";
@@ -41,6 +41,7 @@ export default async function Page({
   // Get the current session to check if the user is viewing their own profile
   const { username } = await params;
   const session = await getAuthSession();
+  const heatmap = await getActivityHeatmapSubmissions(username);
   const userData = await getUser(username);
   if (!userData) notFound();
 
@@ -49,6 +50,7 @@ export default async function Page({
       userData={userData}
       username={username}
       serverUser={session?.user}
+      heatmapSubs={heatmap}
     />
   );
 }

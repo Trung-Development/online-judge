@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { ISubmissionsData } from "@/lib/server-actions/users";
 import "@/styles/activity.css";
+import { IActivityHeatmapSubmission } from "@/lib/server-actions/users";
 
 interface ActivityHeatmapProps {
-  submissions: ISubmissionsData[];
+  submissions: IActivityHeatmapSubmission[];
 }
 
 interface ActivityData {

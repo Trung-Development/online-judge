@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { IUserData } from "@/lib/server-actions/users";
+import { IActivityHeatmapSubmission, IUserData } from "@/lib/server-actions/users";
 import { getRatingClass, getRatingTitle } from "@/lib/rating";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
@@ -20,33 +20,21 @@ interface UserPageProps {
     fullname: string;
     defaultRuntime: string;
   } | null;
+  heatmapSubs: IActivityHeatmapSubmission[]
 }
 
 export default function UserPage({
   userData,
   username,
   serverUser,
+  heatmapSubs,
 }: UserPageProps) {
   // For client-side session
   const { user: clientUser } = useAuth();
   const currentUser = serverUser || clientUser;
 
-  const uniqueProblems = new Map();
-  userData.submissions.forEach((submission) => {
-    if (submission.status === "AC") {
-      const currentMax = uniqueProblems.get(submission.problemSlug) || 0;
-      uniqueProblems.set(
-        submission.problemSlug,
-        Math.max(currentMax, submission.points),
-      );
-    }
-  });
-
-  const solvedProblems = uniqueProblems.size;
-  const totalPoints = Array.from(uniqueProblems.values()).reduce(
-    (sum, points) => sum + points,
-    0,
-  );
+  const solvedProblems = userData.solvedProblems;
+  const totalPoints = userData.totalPoints;
 
   const ratingValue = userData.rating || 0;
 
@@ -89,12 +77,6 @@ export default function UserPage({
               <span className="font-medium">Problems solved:</span>{" "}
               {solvedProblems}
             </div>
-            {userData.rankByPoints && (
-              <div>
-                <span className="font-medium">Rank by points:</span> #
-                {userData.rankByPoints}
-              </div>
-            )}
             <div>
               <span className="font-medium">Total points:</span>{" "}
               {totalPoints.toLocaleString()}
@@ -128,13 +110,13 @@ export default function UserPage({
           <div className="bg-card border rounded-lg p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">Submission Activity</h2>
 
-            {userData.submissions.length === 0 ? (
+            {heatmapSubs.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">
                 No submissions yet.
               </p>
             ) : (
               <div className="submission-activity">
-                <ActivityHeatmap submissions={userData.submissions} />
+                <ActivityHeatmap submissions={heatmapSubs} />
               </div>
             )}
           </div>
