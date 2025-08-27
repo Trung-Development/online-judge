@@ -39,14 +39,14 @@ export const UserPermissions = {
   EDIT_SUBMISSION: BigInt(1) << BigInt(20),
   SKIP_SUBMISSION: BigInt(1) << BigInt(21),
   UNLIMITED_SUBMISSIONS: BigInt(1) << BigInt(22),
-  CHANGE_SUBMISSION_STATUS: BigInt(1) << BigInt(23), // active, aborted, locked
+  LOCK_SUBMISSION: BigInt(1) << BigInt(23),
 
   // Problems
   VIEW_ALL_PROBLEMS: BigInt(1) << BigInt(24),
   CREATE_NEW_PROBLEM: BigInt(1) << BigInt(25),
   MODIFY_ALL_PROBLEMS: BigInt(1) << BigInt(26),
   MODIFY_PERMITTED_PROBLEMS: BigInt(1) << BigInt(27),
-  CHANGE_PROBLEM_STATUS: BigInt(1) << BigInt(28), // locked, hidden, active
+  LOCK_PROBLEM: BigInt(1) << BigInt(28),
   DELETE_PROBLEM: BigInt(1) << BigInt(29),
   UPDATE_SOLUTIONS: BigInt(1) << BigInt(30),
   CLONE_PROBLEM: BigInt(1) << BigInt(31),
@@ -58,7 +58,7 @@ export const UserPermissions = {
   EDIT_JUDGES: BigInt(1) << BigInt(35),
   CREATE_NEW_JUDGE: BigInt(1) << BigInt(36),
   DELETE_JUDGES: BigInt(1) << BigInt(37),
-} as const;
+}
 
 export type PermissionBit = bigint;
 
