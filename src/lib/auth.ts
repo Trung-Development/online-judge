@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { env } from "@/lib/env";
+import { Config } from "@/config";
 
 export interface User {
   id: string;
@@ -107,6 +108,7 @@ async function getCryptoKey(): Promise<CryptoKey> {
 
 async function encryptString(plain: string): Promise<string> {
   // Try WebCrypto first
+  if (Config.encryptAuthCookies == false) throw new Error("Cookie encryption force disabled by config");
   try {
     const key = await getCryptoKey();
     const cryptoObj = globalThis as unknown as { crypto?: Crypto };
@@ -192,19 +194,38 @@ export async function setAuthSession(
   // (missing key, WebCrypto unavailable), fall back to plain JSON to avoid
   // blocking login. This maintains backward compatibility with existing
   // deployments while preferring encrypted cookies when possible.
-  try {
-    const encrypted = await encryptString(JSON.stringify(session));
-    cookieStore.set(COOKIE_NAME, encrypted, COOKIE_OPTIONS);
-  } catch (e) {
-    console.warn(
-      "Failed to encrypt session cookie, falling back to plaintext cookie:",
-      e,
-    );
+  if (Config.encryptAuthCookies == true) {
+    try {
+      const encrypted = await encryptString(JSON.stringify(session));
+      cookieStore.set(COOKIE_NAME, encrypted, COOKIE_OPTIONS);
+    } catch (e) {
+      throw new Error(
+        `Failed to encrypt session cookie: ${e instanceof Error ? e.message : String(e)}`,
+      );
+    }
+  } else if (Config.encryptAuthCookies == false) {
     try {
       cookieStore.set(COOKIE_NAME, JSON.stringify(session), COOKIE_OPTIONS);
     } catch (e2) {
-      console.error("Failed to set plaintext session cookie as fallback:", e2);
-      throw e2;
+      throw new Error(
+        `Failed to set plaintext session cookie: ${e2 instanceof Error ? e2.message : String(e2)}`,
+      );
+    }
+  } else {
+    try {
+      const encrypted = await encryptString(JSON.stringify(session));
+      cookieStore.set(COOKIE_NAME, encrypted, COOKIE_OPTIONS);
+    } catch (e) {
+      console.warn(
+        "Failed to encrypt session cookie, falling back to plaintext cookie:",
+        e,
+      );
+      try {
+        cookieStore.set(COOKIE_NAME, JSON.stringify(session), COOKIE_OPTIONS);
+      } catch (e2) {
+        console.error("Failed to set plaintext session cookie as fallback:", e2);
+        throw e2;
+      }
     }
   }
 }

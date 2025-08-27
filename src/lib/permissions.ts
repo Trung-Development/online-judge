@@ -103,7 +103,6 @@ export function canEditProblemTestcases(
   userPerms: string | undefined,
   problemAuthors: string[],
   problemCurators: string[],
-  problemTesters: string[],
   userId: string | undefined,
 ): boolean {
   if (!userId) return false;
@@ -116,7 +115,6 @@ export function canEditProblemTestcases(
   // Check if user is author, curator, or tester
   return (
     problemAuthors.includes(userId) ||
-    problemCurators.includes(userId) ||
-    problemTesters.includes(userId)
+    problemCurators.includes(userId)
   );
 }

@@ -7,7 +7,7 @@ import "katex/dist/katex.min.css";
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/AuthProvider";
-import { canEditProblemTestcases } from "@/lib/permissions";
+import { canEditProblemTestcases, hasPermission, UserPermissions } from "@/lib/permissions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheck,
@@ -22,6 +22,7 @@ import {
   faDatabase,
   faRectangleList,
   faAddressBook,
+  faCog,
 } from "@fortawesome/free-solid-svg-icons";
 
 import { IProblemPageData } from "@/types";
@@ -38,7 +39,7 @@ export default function ProblemPage({
   slug,
   renderedDescription,
 }: ProblemPageProps) {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const renderedRef = useRef<HTMLDivElement | null>(null);
   const [typeExpanded, setTypeExpanded] = useState(false);
   const [sourceExpanded, setSourceExpanded] = useState(true);
@@ -46,15 +47,16 @@ export default function ProblemPage({
 
   // Check if current user can edit test cases
   const canUserEditTestcases =
-    !problem.isLocked &&
-    user &&
     canEditProblemTestcases(
-      user.perms,
+      user?.perms,
       problem.author,
       problem.curator,
-      problem.tester || [],
-      user.id
+      user?.id
     );
+
+  const canEditProblemInfo = hasPermission(user?.perms, UserPermissions.MODIFY_ALL_PROBLEMS);
+
+  const canViewEditSection = !problem.isLocked && user && (canUserEditTestcases || canEditProblemInfo);
 
   const problemLocked = problem.isLocked;
 
@@ -137,7 +139,7 @@ export default function ProblemPage({
                     </Button>
                   ) : (
                     <Button asChild className="w-full">
-                      <Link href={`/problem/${slug}/submit`}>Submit</Link>
+                      {isAuthenticated ? (<Link href={`/problem/${slug}/submit`}>Submit</Link>) : <Link href={`/accounts/login?callbackUrl=/problem/${slug}/submit`}>Log in to submit</Link>}
                     </Button>
                   )}
                   <Button variant="outline" asChild className="w-full">
@@ -164,17 +166,6 @@ export default function ProblemPage({
                     <Button variant="outline" asChild className="w-full">
                       <Link href={`/problem/${slug}/solution`}>
                         Read editorial
-                      </Link>
-                    </Button>
-                  )}
-                  {canUserEditTestcases && (
-                    <Button variant="outline" asChild className="w-full">
-                      <Link href={`/problem/${slug}/testcases`}>
-                        <FontAwesomeIcon
-                          icon={faDatabase}
-                          className="w-4 h-4 mr-2"
-                        />
-                        Edit test data
                       </Link>
                     </Button>
                   )}
@@ -293,11 +284,10 @@ export default function ProblemPage({
                       </span>
                     </button>
                     <div
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        typeExpanded
-                          ? "max-h-32 opacity-100 mt-2"
-                          : "max-h-0 opacity-0"
-                      }`}
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${typeExpanded
+                        ? "max-h-32 opacity-100 mt-2"
+                        : "max-h-0 opacity-0"
+                        }`}
                     >
                       <div className="text-foreground ml-5">
                         {problem.type.join(", ")}
@@ -319,11 +309,10 @@ export default function ProblemPage({
                         </span>
                       </button>
                       <div
-                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                          sourceExpanded
-                            ? "max-h-32 opacity-100 mt-2"
-                            : "max-h-0 opacity-0"
-                        }`}
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${sourceExpanded
+                          ? "max-h-32 opacity-100 mt-2"
+                          : "max-h-0 opacity-0"
+                          }`}
                       >
                         <div className="text-foreground ml-5">
                           {problem.problemSource}
@@ -348,11 +337,10 @@ export default function ProblemPage({
                       </span>
                     </button>
                     <div
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        langExpanded
-                          ? "max-h-32 opacity-100 mt-2"
-                          : "max-h-0 opacity-0"
-                      }`}
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${langExpanded
+                        ? "max-h-32 opacity-100 mt-2"
+                        : "max-h-0 opacity-0"
+                        }`}
                     >
                       <div className="text-foreground ml-5">
                         {allowedLanguageNames.join(", ")}
@@ -361,6 +349,42 @@ export default function ProblemPage({
                   </div>
                 </div>
               </div>
+
+              {canViewEditSection && (<>
+                {/* Separator */}
+                < hr className="hidden lg:block border-gray-300 lg:border-gray-200" />
+
+                {/* Edit Problem Info */}
+                <div
+                  aria-disabled
+                  className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 text-lg"
+                >
+                  <div className="flex flex-col gap-2">
+                    {canUserEditTestcases && (
+                      <Button variant="outline" asChild className="w-full">
+                        <Link href={`/problem/${slug}/testcases`}>
+                          <FontAwesomeIcon
+                            icon={faDatabase}
+                            className="w-4 h-4 mr-2"
+                          />
+                          Edit test data
+                        </Link>
+                      </Button>
+                    )}
+                    {canEditProblemInfo && (
+                      <Button variant="outline" asChild className="w-full">
+                        <Link href={`/problem/${slug}/manage`}>
+                          <FontAwesomeIcon
+                            icon={faCog}
+                            className="w-4 h-4 mr-2"
+                          />
+                          Manage problem
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </>)}
             </div>
           </div>
         </div>
