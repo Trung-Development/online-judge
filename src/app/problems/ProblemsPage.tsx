@@ -17,6 +17,9 @@ import {
   faSortDown,
   faLockOpen,
   faFilter,
+  faEarth,
+  faBoltLightning,
+  faPlusCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -37,6 +40,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
 const PROBLEMS_PER_PAGE = 50;
 
@@ -72,6 +77,7 @@ export default function ProblemsPage({
 }: ProblemsPageProps) {
   const { sessionToken, user } = useAuth();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [filteredProblems, setFilteredProblems] =
     useState<IProblemData[]>(initialProblems);
   const [searchTerm, setSearchTerm] = useState("");
@@ -278,20 +284,39 @@ export default function ProblemsPage({
   return (
     <main className="max-w-7xl mx-auto py-8 px-4">
       <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold mb-4">Problems list</h1>
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="text-3xl font-bold">Problems list</h1>
           {isAuthenticated &&
             hasPermission(
               user?.perms,
               FEUserPermissions.CREATE_NEW_PROBLEM
             ) && (
               <div className="ml-4">
-                <Link href="/problems/create">
-                  <Button className="ml-2">
-                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                    Create problem
-                  </Button>
-                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button className="ml-2 hover:cursor-pointer" variant="outline">
+                      <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                      New
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="center">
+                    <DropdownMenuItem onClick={() => router.push('/problems/create')} className="hover:cursor-pointer">
+                      <FontAwesomeIcon icon={faPlusCircle} className="mr-2" />
+                      Create a new problem
+                    </DropdownMenuItem>
+                    <DropdownMenuLabel>Import from</DropdownMenuLabel>
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem onClick={() => router.push('/problems/import/dmoj')} className="hover:cursor-pointer">
+                        <FontAwesomeIcon icon={faEarth} className="mr-2" />
+                        DMOJ site
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => router.push('/problems/import/codeforces')} className="hover:cursor-pointer">
+                        <FontAwesomeIcon icon={faBoltLightning} className="mr-2" />
+                        Codeforces
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             )}
         </div>
@@ -580,8 +605,8 @@ export default function ProblemsPage({
                   <tr
                     key={problem.code}
                     className={`border-b transition-colors ${problem.isDeleted // The problem is deleted
-                        ? "bg-muted/100 opacity-50 pointer-events-none"
-                        : "hover:bg-muted/50"
+                      ? "bg-muted/100 opacity-50 pointer-events-none"
+                      : "hover:bg-muted/50"
                       }`}
                   >
                     {isAuthenticated && (
@@ -639,14 +664,14 @@ export default function ProblemsPage({
                     <td className="p-4 align-middle text-center border-r border-border w-16">
                       <span
                         className={`font-medium ${!problem.stats
+                          ? "text-muted-foreground"
+                          : calculateAcceptanceRate(problem.stats) === null
                             ? "text-muted-foreground"
-                            : calculateAcceptanceRate(problem.stats) === null
-                              ? "text-muted-foreground"
-                              : calculateAcceptanceRate(problem.stats)! >= 50
-                                ? "text-green-600 dark:text-green-400"
-                                : calculateAcceptanceRate(problem.stats)! >= 25
-                                  ? "text-yellow-600 dark:text-yellow-400"
-                                  : "text-red-600 dark:text-red-400"
+                            : calculateAcceptanceRate(problem.stats)! >= 50
+                              ? "text-green-600 dark:text-green-400"
+                              : calculateAcceptanceRate(problem.stats)! >= 25
+                                ? "text-yellow-600 dark:text-yellow-400"
+                                : "text-red-600 dark:text-red-400"
                           }`}
                       >
                         {problem.stats

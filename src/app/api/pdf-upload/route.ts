@@ -14,8 +14,7 @@ export async function POST(req: NextRequest) {
     // Allow users who can create problems, or who can edit problem tests (manage)
     const perms = session.user?.perms;
     const allowed =
-      hasPermission(perms, UserPermissions.CREATE_NEW_PROBLEM) ||
-      hasPermission(perms, UserPermissions.MODIFY_ALL_PROBLEMS);
+      hasPermission(perms, UserPermissions.CREATE_NEW_PROBLEM);
     if (!allowed)
       return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
 
