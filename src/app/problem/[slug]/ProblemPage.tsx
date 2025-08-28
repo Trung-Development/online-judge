@@ -285,7 +285,7 @@ export default function ProblemPage({
                     </button>
                     <div
                       className={`overflow-hidden transition-all duration-300 ease-in-out ${typeExpanded
-                        ? "max-h-32 opacity-100 mt-2"
+                        ? "max-h-64 opacity-100 mt-2"
                         : "max-h-0 opacity-0"
                         }`}
                     >
@@ -310,7 +310,7 @@ export default function ProblemPage({
                       </button>
                       <div
                         className={`overflow-hidden transition-all duration-300 ease-in-out ${sourceExpanded
-                          ? "max-h-32 opacity-100 mt-2"
+                          ? "max-h-64 opacity-100 mt-2"
                           : "max-h-0 opacity-0"
                           }`}
                       >
@@ -338,11 +338,11 @@ export default function ProblemPage({
                     </button>
                     <div
                       className={`overflow-hidden transition-all duration-300 ease-in-out ${langExpanded
-                        ? "max-h-32 opacity-100 mt-2"
+                        ? "max-h-96 opacity-100 mt-2"
                         : "max-h-0 opacity-0"
                         }`}
                     >
-                      <div className="text-foreground ml-5">
+                      <div className="text-foreground ml-5 max-h-96 overflow-y-auto">
                         {allowedLanguageNames.join(", ")}
                       </div>
                     </div>
