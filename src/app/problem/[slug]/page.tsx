@@ -224,15 +224,21 @@ export default async function Page({
 }
 
 function preprocessTabs(md: string): string {
-  // Handle multi-line tab-indented blocks
-  md = md.replace(/(?:^|\n)(\t[^\n]+(?:\n\t[^\n]+)+)/g, (match, block) => {
-    // remove one leading tab from each line
-    const cleaned = block.replace(/^\t/gm, "");
-    return `\n\`\`\`\n${cleaned}\n\`\`\`\n`;
-  });
+  // Multi-line: at least 2 lines starting with tab OR 2+ spaces
+  md = md.replace(
+    /(?:^|\n)((?:[ \t]{2,}[^\n]+)(?:\n[ \t]{2,}[^\n]+)+)/g,
+    (_match, block) => {
+      // strip the leading indentation (tab or 2+ spaces)
+      const cleaned = block.replace(/^[ \t]{2,}/gm, "");
+      return `\n\`\`\`\n${cleaned}\n\`\`\`\n`;
+    }
+  );
 
-  // Handle single-line tab-indented text
-  md = md.replace(/(?:^|\n)\t([^\n]+)/g, (match, text) => `\n\`${text}\``);
+  // Single-line: exactly one line with leading tab OR 2+ spaces
+  md = md.replace(
+    /(?:^|\n)[ \t]{1,}([^\n]+)/g,
+    (match, text) => `\n\`${text.trim()}\``
+  );
 
   return md;
 }
