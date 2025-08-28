@@ -58,8 +58,8 @@ export default async function Page({
 
   // Server-side render the problem description to HTML using unified
   let renderedDescription: string = "";
+
   try {
-    const md = problem.description ?? "";
     // Combined rehype plugin: table CSS inject + header css inject
     const rehypeCustomStyleAndHeaders = () => {
       // minimal HAST element shape we need
@@ -115,7 +115,8 @@ export default async function Page({
                 : props.className
                 ? [String(props.className)]
                 : [];
-              if (!existing.includes("wiki-inline-code")) existing.push("wiki-inline-code");
+              if (!existing.includes("wiki-inline-code"))
+                existing.push("wiki-inline-code");
               props.className = existing;
               child.properties = props;
             }
@@ -146,24 +147,28 @@ export default async function Page({
               child.properties = props;
             }
 
-              // Add list container classes for targeted styling
-              if (child.tagName === "ul" || child.tagName === "ol" || child.tagName === "dl") {
-                const props = (child.properties || {}) as Record<string, unknown>;
-                const existing = Array.isArray(props.className)
-                  ? props.className.map(String)
-                  : props.className
-                  ? [String(props.className)]
-                  : [];
-                // mark task-list/contains-task-list if present in items
-                if (child.tagName === "ul" || child.tagName === "ol") {
-                  if (!existing.includes("wiki-list")) existing.push("wiki-list");
-                }
-                if (child.tagName === "dl") {
-                  if (!existing.includes("wiki-dl")) existing.push("wiki-dl");
-                }
-                props.className = existing;
-                child.properties = props;
+            // Add list container classes for targeted styling
+            if (
+              child.tagName === "ul" ||
+              child.tagName === "ol" ||
+              child.tagName === "dl"
+            ) {
+              const props = (child.properties || {}) as Record<string, unknown>;
+              const existing = Array.isArray(props.className)
+                ? props.className.map(String)
+                : props.className
+                ? [String(props.className)]
+                : [];
+              // mark task-list/contains-task-list if present in items
+              if (child.tagName === "ul" || child.tagName === "ol") {
+                if (!existing.includes("wiki-list")) existing.push("wiki-list");
               }
+              if (child.tagName === "dl") {
+                if (!existing.includes("wiki-dl")) existing.push("wiki-dl");
+              }
+              props.className = existing;
+              child.properties = props;
+            }
 
             // recurse
             walk(child);
@@ -173,8 +178,14 @@ export default async function Page({
       };
     };
 
-    // Preprocess legacy underline markup: convert __text__ to <u>text</u>
-    const preprocessed = md.replace(/__([^_\n]+)__/g, "<u>$1</u>");
+    // Preproc pure md.
+    // Transform __text__ to underlined text like discord using <u> tag
+    // Transform multi tab indented text -> <pre>
+    // Transform single tab indented text -> <code>
+    const preprocessed = preprocessTabs(problem.description ?? "").replace(
+      /__([^_\n]+)__/g,
+      "<u>$1</u>"
+    );
 
     const file = await unified()
       .use(remarkParse)
@@ -186,8 +197,8 @@ export default async function Page({
       .use(rehypeRaw)
       .use(rehypeCustomStyleAndHeaders)
       .use(rehypePrettyCode, {
-        // theme: "github-light",
         keepBackground: true,
+        defaultLang: "text",
         transformers: [
           transformerCopyButton({
             visibility: "always",
@@ -210,4 +221,18 @@ export default async function Page({
       renderedDescription={renderedDescription}
     />
   );
+}
+
+function preprocessTabs(md: string): string {
+  // Handle multi-line tab-indented blocks
+  md = md.replace(/(?:^|\n)(\t[^\n]+(?:\n\t[^\n]+)+)/g, (match, block) => {
+    // remove one leading tab from each line
+    const cleaned = block.replace(/^\t/gm, "");
+    return `\n\`\`\`\n${cleaned}\n\`\`\`\n`;
+  });
+
+  // Handle single-line tab-indented text
+  md = md.replace(/(?:^|\n)\t([^\n]+)/g, (match, text) => `\n\`${text}\``);
+
+  return md;
 }
