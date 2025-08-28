@@ -379,7 +379,7 @@ export default function TestcaseManagerPage({
                     icon={faUsers}
                     className="w-4 h-4 text-blue-600"
                   />
-                  Problem Moderators
+                  Problem Moderators and Testers Only
                 </Label>
                 <p className="text-sm text-muted-foreground">
                   Only problem authors, curators, testers, and users with
