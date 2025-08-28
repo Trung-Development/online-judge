@@ -355,10 +355,7 @@ export default function ProblemPage({
                 < hr className="hidden lg:block border-gray-300 lg:border-gray-200" />
 
                 {/* Edit Problem Info */}
-                <div
-                  aria-disabled
-                  className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 text-lg"
-                >
+                <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0 text-lg">
                   <div className="flex flex-col gap-2">
                     {canUserEditTestcases && (
                       <Button variant="outline" asChild className="w-full">
