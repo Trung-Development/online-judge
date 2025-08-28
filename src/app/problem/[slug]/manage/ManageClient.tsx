@@ -84,9 +84,9 @@ export default function ManageProblemPage({ problem }: {
         setDescription(problem.description || "");
         // PDF UUID provided by backend (if any)
         if (problem.pdfUuid) {
-          setPdfUuidState(problem.pdfUuid || problem.pdf || "");
+          setPdfUuidState(problem.pdfUuid || "");
           // derive filename for display
-          setPdfFileName(`${problem.pdfUuid || problem.pdf || ""}.pdf`);
+          setPdfFileName(`${problem.pdfUuid || ""}.pdf`);
         }
         setTimeLimit(typeof problem.timeLimit === "number" ? problem.timeLimit : 1);
         setMemoryLimit(
@@ -113,7 +113,7 @@ export default function ManageProblemPage({ problem }: {
     return () => {
       // nothing to cleanup here; OverType init/cleanup handled in its own effect below
     };
-  }, [problem.allowedLanguages, problem.categoryId, problem.description, problem.memoryLimit, problem.name, problem.pdf, problem.pdfUuid, problem.short_circuit, problem.timeLimit, problem.type, slugParam]);
+  }, [problem.allowedLanguages, problem.categoryId, problem.description, problem.memoryLimit, problem.name, problem.pdfUuid, problem.short_circuit, problem.timeLimit, problem.type, slugParam]);
 
   // Initialize OverType once when description (or slugParam) is available.
   // Use a container ref and a small retry loop to handle client navigations
