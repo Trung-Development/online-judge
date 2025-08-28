@@ -166,6 +166,18 @@ export default function CreateProblemPage() {
       }
     } catch { }
     try {
+      // client-side validation: require category and at least one type
+      if (!categoryId) {
+        setError("Please select a category.");
+        setLoading(false);
+        return;
+      }
+      if (!selectedTypes || selectedTypes.length === 0) {
+        setError("Please select at least one type.");
+        setLoading(false);
+        return;
+      }
+
       const res = await fetch("/api/problems/create/", {
         method: "POST",
         headers: {

@@ -93,14 +93,39 @@ export default function ManageProblemPage({ problem }: {
           typeof problem.memoryLimit === "number" ? problem.memoryLimit : 256
         );
         setShortCircuit(!!(problem.short_circuit || false));
-        setCategoryId(problem.categoryId ?? undefined);
         setAllowedLanguages(problem.allowedLanguages || []);
-        // types are names on read; if API returns ids, adapt; try to map by name
-        if (problem.type && Array.isArray(problem.type)) {
-          const sel = (typesRes as { id: number; name: string }[])
-            .filter((t) => problem.type.includes(t.name))
-            .map((t) => t.id);
-          setSelectedTypes(sel);
+
+        // Backend may send category as name (string). If so, map to local id.
+        // Prefer `problem.categoryId` when provided; otherwise try to resolve by name.
+  const backendCategory = (problem as unknown) ? (problem as { category?: unknown }).category : undefined;
+        if (typeof backendCategory === "string" && catsRes && Array.isArray(catsRes)) {
+          const found = (catsRes as { id: number; name: string }[]).find(
+            (c) => c.name === backendCategory
+          );
+          if (found) setCategoryId(found.id);
+          else setCategoryId(undefined);
+        } else {
+          setCategoryId(problem.categoryId ?? undefined);
+        }
+
+        // types may be sent as array of names. Map to ids if necessary.
+        if (problem.type && Array.isArray(problem.type) && typesRes) {
+          // if typesRes contains objects with name/id, map by name
+          const mapped: number[] = [];
+          const typePool = typesRes as { id: number; name: string }[];
+          for (const t of (problem.type as string[])) {
+            const found = typePool.find((p) => p.name === t);
+            if (found) mapped.push(found.id);
+          }
+          // if we found at least one mapping, use mapped, otherwise if problem.type contains numeric ids, coerce
+          if (mapped.length > 0) setSelectedTypes(mapped);
+          else if (problem.type.every((x: unknown) => typeof x === "number")) {
+            // safe cast after checking runtime types
+            setSelectedTypes((problem.type as unknown as number[]).filter((n) => typeof n === "number"));
+          } else {
+            // fallback: empty
+            setSelectedTypes([]);
+          }
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -113,7 +138,7 @@ export default function ManageProblemPage({ problem }: {
     return () => {
       // nothing to cleanup here; OverType init/cleanup handled in its own effect below
     };
-  }, [problem.allowedLanguages, problem.categoryId, problem.description, problem.memoryLimit, problem.name, problem.pdf, problem.short_circuit, problem.timeLimit, problem.type, slugParam]);
+  }, [problem, problem.allowedLanguages, problem.categoryId, problem.description, problem.memoryLimit, problem.name, problem.pdf, problem.short_circuit, problem.timeLimit, problem.type, slugParam]);
 
   // Initialize OverType once when description (or slugParam) is available.
   // Use a container ref and a small retry loop to handle client navigations
