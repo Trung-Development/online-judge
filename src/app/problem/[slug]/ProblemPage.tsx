@@ -115,7 +115,7 @@ export default function ProblemPage({
           <div className="prose max-w-none">
             <div
               ref={renderedRef}
-              className="markdown-rendered"
+              className="markdown-rendered content-description"
               // content is produced server-side by unified + rehype-pretty-code
               dangerouslySetInnerHTML={{ __html: renderedDescription }}
             />

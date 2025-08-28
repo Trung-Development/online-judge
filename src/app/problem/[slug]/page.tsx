@@ -107,6 +107,19 @@ export default async function Page({
               child.properties = props;
             }
 
+            // Add wiki-inline-code class to inline <code> so backported CSS targets it
+            if (child.tagName === "code") {
+              const props = (child.properties || {}) as Record<string, unknown>;
+              const existing = Array.isArray(props.className)
+                ? props.className.map(String)
+                : props.className
+                ? [String(props.className)]
+                : [];
+              if (!existing.includes("wiki-inline-code")) existing.push("wiki-inline-code");
+              props.className = existing;
+              child.properties = props;
+            }
+
             /* header css inject */
             if (
               child.tagName === "h1" ||
@@ -133,6 +146,25 @@ export default async function Page({
               child.properties = props;
             }
 
+              // Add list container classes for targeted styling
+              if (child.tagName === "ul" || child.tagName === "ol" || child.tagName === "dl") {
+                const props = (child.properties || {}) as Record<string, unknown>;
+                const existing = Array.isArray(props.className)
+                  ? props.className.map(String)
+                  : props.className
+                  ? [String(props.className)]
+                  : [];
+                // mark task-list/contains-task-list if present in items
+                if (child.tagName === "ul" || child.tagName === "ol") {
+                  if (!existing.includes("wiki-list")) existing.push("wiki-list");
+                }
+                if (child.tagName === "dl") {
+                  if (!existing.includes("wiki-dl")) existing.push("wiki-dl");
+                }
+                props.className = existing;
+                child.properties = props;
+              }
+
             // recurse
             walk(child);
           }
@@ -154,6 +186,8 @@ export default async function Page({
       .use(rehypeRaw)
       .use(rehypeCustomStyleAndHeaders)
       .use(rehypePrettyCode, {
+        // theme: "github-light",
+        keepBackground: true,
         transformers: [
           transformerCopyButton({
             visibility: "always",
