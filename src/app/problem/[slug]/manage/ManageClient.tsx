@@ -21,9 +21,15 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { languages } from "@/constants";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCheck, faExclamationTriangle, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import { IProblemPageData } from "@/types";
 
-export default function ManageProblemPage() {
+export default function ManageProblemPage({ problem }: {
+  problem: IProblemPageData & {
+    pdfUuid?: string | null;
+    categoryId?: number | null
+  }
+}) {
   const params = useParams() as Record<string, string | undefined>;
   const slugParam = params.slug ?? "";
   const router = useRouter();
@@ -74,35 +80,25 @@ export default function ManageProblemPage() {
         ]);
         setCategories(catsRes);
         setTypesOptions(typesRes);
-
-        const probRes = await fetch(
-          `/api/problem/${encodeURIComponent(slugParam)}`
-        );
-        if (!probRes.ok) {
-          setError("Failed to load problem");
-          setLoading("");
-          return;
-        }
-        const prob = await probRes.json();
-        setName(prob.name || "");
-        setDescription(prob.description || "");
+        setName(problem.name || "");
+        setDescription(problem.description || "");
         // PDF UUID provided by backend (if any)
-        if (prob.pdfUuid) {
-          setPdfUuidState(prob.pdfUuid);
+        if (problem.pdfUuid) {
+          setPdfUuidState(problem.pdfUuid || problem.pdf || "");
           // derive filename for display
-          setPdfFileName(`${prob.pdfUuid}.pdf`);
+          setPdfFileName(`${problem.pdfUuid || problem.pdf || ""}.pdf`);
         }
-        setTimeLimit(typeof prob.timeLimit === "number" ? prob.timeLimit : 1);
+        setTimeLimit(typeof problem.timeLimit === "number" ? problem.timeLimit : 1);
         setMemoryLimit(
-          typeof prob.memoryLimit === "number" ? prob.memoryLimit : 256
+          typeof problem.memoryLimit === "number" ? problem.memoryLimit : 256
         );
-        setShortCircuit(!!(prob.short_circuit || false));
-        setCategoryId(prob.categoryId ?? undefined);
-        setAllowedLanguages(prob.allowedLanguages || []);
+        setShortCircuit(!!(problem.short_circuit || false));
+        setCategoryId(problem.categoryId ?? undefined);
+        setAllowedLanguages(problem.allowedLanguages || []);
         // types are names on read; if API returns ids, adapt; try to map by name
-        if (prob.type && Array.isArray(prob.type)) {
+        if (problem.type && Array.isArray(problem.type)) {
           const sel = (typesRes as { id: number; name: string }[])
-            .filter((t) => prob.type.includes(t.name))
+            .filter((t) => problem.type.includes(t.name))
             .map((t) => t.id);
           setSelectedTypes(sel);
         }
@@ -117,7 +113,7 @@ export default function ManageProblemPage() {
     return () => {
       // nothing to cleanup here; OverType init/cleanup handled in its own effect below
     };
-  }, [slugParam]);
+  }, [problem.allowedLanguages, problem.categoryId, problem.description, problem.memoryLimit, problem.name, problem.pdf, problem.pdfUuid, problem.short_circuit, problem.timeLimit, problem.type, slugParam]);
 
   // Initialize OverType once when description (or slugParam) is available.
   // Use a container ref and a small retry loop to handle client navigations
@@ -267,24 +263,40 @@ export default function ManageProblemPage() {
         body: bodyPayload,
       });
       if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        const j = (() => {
-          try {
-            return JSON.parse(text);
-          } catch {
-            return null;
+        res.json().then(v => {
+          console.log(v);
+          if (v?.error) setError(v?.error);
+          else if (v.message) {
+            if (v.message === "INSUFFICIENT_PERMISSIONS")
+              setError(
+                "You are not authorized to perform this operation. Please try again later.",
+              );
+            if (v.message === "PROBLEM_NOT_FOUND")
+              setError(
+                "The problem you are trying to access does not exist. Please check the URL and try again.",
+              );
+            if (v.message === "PROBLEM_LOCKED")
+              setError(
+                "Modifications to this problem are restricted. Please contact an administrator for further assistance.",
+              );
+          } else {
+            setError(`Failed to save the new details: ${res.status}. More details are available in the console.`);
           }
-        })();
-        throw new Error(j?.message || `Failed to save: ${res.status}`);
+        }).catch((x) => {
+          setError(`Failed to save the new details: ${res.status}. More details are available in the console`);
+          console.log(x);
+        })
+        setLoading("");
+        return;
       }
       router.refresh();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
     } finally {
-      setUpdateSuccess(true);
       setLoading("");
     }
+    setUpdateSuccess(true);
   };
 
   const handleDelete = async () => {
@@ -300,8 +312,30 @@ export default function ManageProblemPage() {
         },
       });
       if (!res.ok) {
-        const j = await res.json().catch(() => null);
-        throw new Error(j?.message || `Failed to delete: ${res.status}`);
+        res.json().then(v => {
+          console.log(v);
+          if (v?.error) setError(v?.error);
+          else if (v.message) {
+            if (v.message === "INSUFFICIENT_PERMISSIONS")
+              setError(
+                "You are not authorized to perform this operation. Please try again later.",
+              );
+            if (v.message === "PROBLEM_NOT_FOUND")
+              setError(
+                "The problem you are trying to access does not exist. Please check the URL and try again.",
+              );
+            if (v.message === "PROBLEM_LOCKED")
+              setError(
+                "Modifications to this problem are restricted. Please contact an administrator for further assistance.",
+              );
+          } else {
+            setError(`Failed to load the problem: ${res.status}. More details are available in the console.`);
+          }
+        }).catch((x) => {
+          setError(`Failed to load the problem: ${res.status}. More details are available in the console`);
+          console.log(x);
+        })
+        return;
       }
       // Navigate away after delete
       router.push("/problems");
@@ -316,9 +350,12 @@ export default function ManageProblemPage() {
   if (!canEdit) {
     return (
       <main className="max-w-4xl mx-auto py-8 px-4">
-        <div className="text-yellow-600">
-          You do not have permission to edit this problem.
-        </div>
+        <Alert variant="warning" className="mb-6">
+          <FontAwesomeIcon icon={faExclamationTriangle} className="h-4 w-4" />
+          <AlertDescription>
+            You do not have the permission to manage problems.
+          </AlertDescription>
+        </Alert>
       </main>
     );
   }
