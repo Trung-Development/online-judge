@@ -138,6 +138,7 @@ export default function CreateProblemPage() {
   const [memoryLimit, setMemoryLimit] = useState<number>(256);
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [allowedLanguages, setAllowedLanguages] = useState<string[]>([]);
+  const [short_circuit, setShortCircuit] = useState<boolean>(false);
   const [categories, setCategories] = useState<{ id: number; name: string }[]>(
     [],
   );
@@ -182,6 +183,7 @@ export default function CreateProblemPage() {
           allowedLanguages: allowedLanguages,
           timeLimit,
           memoryLimit,
+          short_circuit: short_circuit
         }),
       });
       if (!res.ok) {
@@ -277,6 +279,21 @@ export default function CreateProblemPage() {
               ))}
             </SelectContent>
           </Select>
+
+          <div className="mt-4 flex grid-cols-2">
+            <label className="block text-sm font-medium mr-3">Short-circuit</label>
+            <button
+              onClick={() => setShortCircuit(!short_circuit)}
+              type="button"
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${short_circuit ? "bg-primary" : "bg-muted"
+                }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${short_circuit ? "translate-x-6" : "translate-x-1"
+                  }`}
+              />
+            </button>
+          </div>
 
           <div className="mt-4">
             <label className="block text-sm font-medium mb-1">
@@ -390,6 +407,6 @@ export default function CreateProblemPage() {
           </Button>
         </div>
       </form>
-    </main>
+    </main >
   );
 }

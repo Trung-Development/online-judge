@@ -19,6 +19,9 @@ import {
 } from "@/components/ui/select";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { languages } from "@/constants";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 
 export default function ManageProblemPage() {
   const params = useParams() as Record<string, string | undefined>;
@@ -32,7 +35,7 @@ export default function ManageProblemPage() {
     FEUserPermissions.EDIT_PROBLEM_TESTS
   );
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   // form state
@@ -44,6 +47,8 @@ export default function ManageProblemPage() {
   const [pdfUuidState, setPdfUuidState] = useState<string | null>(null);
   const overTypeRef = useRef<import("overtype").default | null>(null);
   const [timeLimit, setTimeLimit] = useState<number>(1);
+  const [short_circuit, setShortCircuit] = useState<boolean>(false);
+  const [updateSuccess, setUpdateSuccess] = useState<boolean>(false);
   const [memoryLimit, setMemoryLimit] = useState<number>(256);
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
   const [allowedLanguages, setAllowedLanguages] = useState<string[]>([]);
@@ -57,7 +62,7 @@ export default function ManageProblemPage() {
 
   useEffect(() => {
     (async () => {
-      setLoading(true);
+      setLoading("");
       try {
         const [catsRes, typesRes] = await Promise.all([
           fetch("/api/categories/all")
@@ -75,7 +80,7 @@ export default function ManageProblemPage() {
         );
         if (!probRes.ok) {
           setError("Failed to load problem");
-          setLoading(false);
+          setLoading("");
           return;
         }
         const prob = await probRes.json();
@@ -91,6 +96,7 @@ export default function ManageProblemPage() {
         setMemoryLimit(
           typeof prob.memoryLimit === "number" ? prob.memoryLimit : 256
         );
+        setShortCircuit(!!(prob.short_circuit || false));
         setCategoryId(prob.categoryId ?? undefined);
         setAllowedLanguages(prob.allowedLanguages || []);
         // types are names on read; if API returns ids, adapt; try to map by name
@@ -104,7 +110,7 @@ export default function ManageProblemPage() {
         const msg = err instanceof Error ? err.message : String(err);
         setError(msg);
       } finally {
-        setLoading(false);
+        setLoading("");
       }
     })();
     // OverType init moved to separate effect below so it can use the fetched description
@@ -140,12 +146,12 @@ export default function ManageProblemPage() {
           const OTModule = await import("overtype");
           const OTGlobal = ((OTModule as { default?: unknown }).default ||
             OTModule) as unknown as {
-            setTheme?: (s: string, o?: Record<string, string>) => void;
-          };
+              setTheme?: (s: string, o?: Record<string, string>) => void;
+            };
           if (OTGlobal && typeof OTGlobal.setTheme === "function") {
             OTGlobal.setTheme(preferredTheme, otThemeOverrides);
           }
-        } catch {}
+        } catch { }
 
         // retry a few times if the container isn't present yet
         const maxAttempts = 5;
@@ -186,7 +192,7 @@ export default function ManageProblemPage() {
             if (cur && typeof cur.showPreviewMode === "function") {
               try {
                 cur.showPreviewMode(false);
-              } catch {}
+              } catch { }
             }
           }
         };
@@ -208,7 +214,7 @@ export default function ManageProblemPage() {
       if (cur && typeof cur.destroy === "function") {
         try {
           cur.destroy();
-        } catch {}
+        } catch { }
       }
       overTypeRef.current = null;
     };
@@ -217,7 +223,8 @@ export default function ManageProblemPage() {
 
   const handleSave = async () => {
     setError(null);
-    setLoading(true);
+    setUpdateSuccess(false);
+    setLoading("save");
     // read editor content if present
     let payloadDescription = description;
     try {
@@ -225,16 +232,16 @@ export default function ManageProblemPage() {
       if (cur && typeof cur.getValue === "function") {
         payloadDescription = cur.getValue();
       }
-    } catch {}
+    } catch { }
     // client-side validation
     if (!(timeLimit > 0) || timeLimit > 60) {
       setError("Time limit must be > 0 and ≤ 60 seconds");
-      setLoading(false);
+      setLoading("");
       return;
     }
     if (!(memoryLimit > 0)) {
       setError("Memory limit must be > 0 MB");
-      setLoading(false);
+      setLoading("");
       return;
     }
 
@@ -249,6 +256,7 @@ export default function ManageProblemPage() {
         allowedLanguages,
         timeLimit,
         memoryLimit,
+        short_circuit
       });
       const res = await fetch(`/api/problem/${encodeURIComponent(slugParam)}`, {
         method: "PUT",
@@ -274,14 +282,16 @@ export default function ManageProblemPage() {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
     } finally {
-      setLoading(false);
+      setUpdateSuccess(true);
+      setLoading("");
     }
   };
 
   const handleDelete = async () => {
     if (!confirm("Delete this problem? This cannot be undone.")) return;
     setError(null);
-    setLoading(true);
+    setUpdateSuccess(false);
+    setLoading("delete");
     try {
       const res = await fetch(`/api/problem/${encodeURIComponent(slugParam)}`, {
         method: "DELETE",
@@ -299,7 +309,7 @@ export default function ManageProblemPage() {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
     } finally {
-      setLoading(false);
+      setLoading("");
     }
   };
 
@@ -428,6 +438,21 @@ export default function ManageProblemPage() {
           </Select>
         </div>
 
+        <div className="mt-4 flex grid-cols-2">
+          <label className="block text-sm font-medium mr-3">Short-circuit</label>
+          <button
+            onClick={() => setShortCircuit(!short_circuit)}
+            type="button"
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${short_circuit ? "bg-primary" : "bg-muted"
+              }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${short_circuit ? "translate-x-6" : "translate-x-1"
+                }`}
+            />
+          </button>
+        </div>
+
         <div>
           <label className="block text-sm font-medium mb-1">Types</label>
           <MultiSelect
@@ -488,18 +513,33 @@ export default function ManageProblemPage() {
           </p>
         </div>
 
-        {error && <div className="text-red-600">{error}</div>}
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <FontAwesomeIcon icon={faInfoCircle} className="h-4 w-4" />
+            <AlertDescription>
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+        {updateSuccess && (
+          <Alert variant="success" className="mb-6">
+            <FontAwesomeIcon icon={faCheck} className="h-4 w-4" />
+            <AlertDescription>
+              Problem updated successfully!
+            </AlertDescription>
+          </Alert>
+        )}
 
         <div className="flex gap-2">
-          <Button onClick={handleSave} disabled={loading}>
-            {loading ? "Saving..." : "Save"}
+          <Button onClick={handleSave} disabled={loading == 'save'}>
+            {loading == 'save' ? "Saving..." : "Save"}
           </Button>
           <Button
             variant="destructive"
             onClick={handleDelete}
-            disabled={loading}
+            disabled={loading == 'delete'}
           >
-            {loading ? "Deleting..." : "Delete"}
+            {loading == 'delete' ? "Deleting..." : "Delete"}
           </Button>
         </div>
       </div>

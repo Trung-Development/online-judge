@@ -133,6 +133,7 @@ export async function createProblem(
     allowedLanguages?: string[];
     timeLimit?: number;
     memoryLimit?: number;
+    short_circuit?: boolean;
   },
   token?: string,
 ) {
@@ -159,6 +160,7 @@ export async function createProblem(
         allowedLanguages: data.allowedLanguages,
         timeLimit: data.timeLimit ?? 1,
         memoryLimit: data.memoryLimit ?? 256,
+        short_circuit: data.short_circuit ?? false,
       }),
     });
 

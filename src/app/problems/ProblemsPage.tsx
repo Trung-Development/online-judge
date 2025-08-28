@@ -27,6 +27,7 @@ import { IProblemData, ProblemStatus } from "@/lib/server-actions/problems";
 import {
   hasPermission,
   UserPermissions as FEUserPermissions,
+  UserPermissions,
 } from "@/lib/permissions";
 import { useAuth } from "@/components/AuthProvider";
 import { useSearchParams } from "next/navigation";
@@ -88,6 +89,7 @@ export default function ProblemsPage({
   );
   const [showEditorialOnly, setShowEditorialOnly] = useState(false);
   const [hideSolved, setHideSolved] = useState(false);
+  const [hideDeleted, setHideDeleted] = useState(false);
   const [showTypes, setShowTypes] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [sortField, setSortField] = useState<SortField | null>(null);
@@ -95,6 +97,7 @@ export default function ProblemsPage({
 
   // Use client session after hydration to avoid SSR mismatch
   const isAuthenticated = isHydrated ? !!sessionToken : false;
+  const canViewDeletedProblems = isAuthenticated && hasPermission(user?.perms, UserPermissions.VIEW_ALL_PROBLEMS);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -220,6 +223,11 @@ export default function ProblemsPage({
       filtered = filtered.filter((problem) => !problem.status?.solved);
     }
 
+    // Hide deleted problems filter
+    if (hideDeleted && canViewDeletedProblems) {
+      filtered = filtered.filter((problem) => !problem?.isDeleted);
+    }
+
     // Category filter
     if (chosenCategory != "") {
       filtered = filtered.filter(
@@ -244,6 +252,8 @@ export default function ProblemsPage({
     initialProblems,
     showEditorialOnly,
     hideSolved,
+    hideDeleted,
+    canViewDeletedProblems,
     isAuthenticated,
     sortField,
     sortOrder,
@@ -438,6 +448,25 @@ export default function ProblemsPage({
                   >
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${hideSolved ? "translate-x-6" : "translate-x-1"
+                        }`}
+                    />
+                  </button>
+                </div>
+              )}
+
+              {canViewDeletedProblems && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                    Hide deleted problems
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setHideDeleted(!hideDeleted)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${hideDeleted ? "bg-primary" : "bg-muted"
+                      }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${hideDeleted ? "translate-x-6" : "translate-x-1"
                         }`}
                     />
                   </button>
