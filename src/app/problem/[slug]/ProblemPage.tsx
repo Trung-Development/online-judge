@@ -102,10 +102,10 @@ export default function ProblemPage({
         {/* Left Content - Problem Statement */}
         <div className="lg:flex-1 lg:w-[70%]">
           {/* PDF Viewer (if available) */}
-          {problem.pdfUuid && (
+          {problem.pdf && (
             <div className="w-full mb-6" style={{ height: "auto" }}>
               <PDFViewer
-                src={`/api/pdf/${slug + "/" + problem.pdfUuid}`}
+                src={`/api/pdf/${slug + "/" + problem.pdf}`}
                 title={`${problem.name} PDF Statement`}
               />
             </div>

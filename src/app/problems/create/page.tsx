@@ -150,7 +150,7 @@ export default function CreateProblemPage() {
   const [loading, setLoading] = useState(false);
   const [pdfFileName, setPdfFileName] = useState<string | null>(null);
   const [pdfUploading, setPdfUploading] = useState(false);
-  const [pdfUuid, setPdfUuid] = useState<string | null>(null);
+  const [pdf, setPdf] = useState<string | null>(null);
   const user = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -177,7 +177,7 @@ export default function CreateProblemPage() {
           name,
           points,
           description: payloadDescription,
-          pdfUuid,
+          pdf,
           categoryId,
           types: selectedTypes,
           allowedLanguages: allowedLanguages,
@@ -321,7 +321,7 @@ export default function CreateProblemPage() {
                     });
                     if (!res.ok) throw new Error("Upload failed");
                     const j = await res.json();
-                    if (j.pdfUuid) setPdfUuid(j.pdfUuid);
+                    if (j.pdf) setPdf(j.pdf);
                   } catch (err) {
                     console.error("PDF upload error", err);
                   } finally {
@@ -335,7 +335,7 @@ export default function CreateProblemPage() {
               >
                 {pdfUploading ? "Uploading..." : pdfFileName || "Choose PDF"}
               </Button>
-              {pdfUuid && (
+              {pdf && (
                 <div className="text-sm text-muted-foreground">Uploaded</div>
               )}
             </div>

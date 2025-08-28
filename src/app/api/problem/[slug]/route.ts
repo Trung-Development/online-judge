@@ -38,17 +38,17 @@ export async function PUT(
     const token =
       req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || undefined;
 
-    // If the problem currently has a pdfUuid and the incoming payload
+    // If the problem currently has a pdf and the incoming payload
     // explicitly clears it (null/empty/undefined), delete the previous
     // PDF object from storage to avoid orphaned files.
     try {
       const current = await getProblem(slug, token);
       const prevPdfUuid =
-        current && typeof current === "object" && "pdfUuid" in current
-          ? (current as { pdfUuid?: string }).pdfUuid
+        current && typeof current === "object" && "pdf" in current
+          ? (current as { pdf?: string }).pdf
           : null;
-      const hasPdfKey = Object.prototype.hasOwnProperty.call(body, "pdfUuid");
-      const incomingPdf = hasPdfKey ? body.pdfUuid : undefined;
+      const hasPdfKey = Object.prototype.hasOwnProperty.call(body, "pdf");
+      const incomingPdf = hasPdfKey ? body.pdf : undefined;
       const isCleared =
         prevPdfUuid &&
         (incomingPdf === null ||

@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "INVALID_FILE_TYPE" }, { status: 400 });
     }
 
-    const pdfUuid = uuidv4();
-    const key = `pdf/${slug}/${pdfUuid}.pdf`;
+    const pdf = uuidv4();
+    const key = `pdf/${slug}/${pdf}.pdf`;
 
     // Read file bytes
     const arrayBuffer = await file.arrayBuffer();
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 
       // Construct URL (signed generation left to callers) — return s3:// path
       const url = `s3://${process.env.STORAGE_BUCKET}/${key}`;
-      return NextResponse.json({ pdfUuid, key, url });
+      return NextResponse.json({ pdf, key, url });
     } catch (e) {
       console.error("PDF upload failed", e);
       return NextResponse.json({ error: "UPLOAD_FAILED" }, { status: 500 });

@@ -100,7 +100,7 @@ export interface IProblemPageData {
   author: string[];
   curator: string[];
   tester?: string[];
-  pdfUuid?: string; // PDF Statement name. In UUID.
+  pdf?: string; // PDF Statement name.
   solution?: string;
 
   short_circuit?: boolean

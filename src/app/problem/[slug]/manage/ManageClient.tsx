@@ -26,7 +26,7 @@ import { IProblemPageData } from "@/types";
 
 export default function ManageProblemPage({ problem }: {
   problem: IProblemPageData & {
-    pdfUuid?: string | null;
+    pdf?: string | null;
     categoryId?: number | null
   }
 }) {
@@ -83,10 +83,10 @@ export default function ManageProblemPage({ problem }: {
         setName(problem.name || "");
         setDescription(problem.description || "");
         // PDF UUID provided by backend (if any)
-        if (problem.pdfUuid) {
-          setPdfUuidState(problem.pdfUuid || "");
+        if (problem.pdf) {
+          setPdfUuidState(problem.pdf || "");
           // derive filename for display
-          setPdfFileName(`${problem.pdfUuid || ""}.pdf`);
+          setPdfFileName(`${problem.pdf || ""}.pdf`);
         }
         setTimeLimit(typeof problem.timeLimit === "number" ? problem.timeLimit : 1);
         setMemoryLimit(
@@ -113,7 +113,7 @@ export default function ManageProblemPage({ problem }: {
     return () => {
       // nothing to cleanup here; OverType init/cleanup handled in its own effect below
     };
-  }, [problem.allowedLanguages, problem.categoryId, problem.description, problem.memoryLimit, problem.name, problem.pdfUuid, problem.short_circuit, problem.timeLimit, problem.type, slugParam]);
+  }, [problem.allowedLanguages, problem.categoryId, problem.description, problem.memoryLimit, problem.name, problem.pdf, problem.short_circuit, problem.timeLimit, problem.type, slugParam]);
 
   // Initialize OverType once when description (or slugParam) is available.
   // Use a container ref and a small retry loop to handle client navigations
@@ -246,7 +246,7 @@ export default function ManageProblemPage({ problem }: {
         slug,
         name,
         description: payloadDescription,
-        pdfUuid: pdfUuidState,
+        pdf: pdfUuidState,
         categoryId,
         types: selectedTypes,
         allowedLanguages,
@@ -421,8 +421,8 @@ export default function ManageProblemPage({ problem }: {
                   });
                   if (!res.ok) throw new Error("Upload failed");
                   const j = await res.json();
-                  if (j.pdfUuid) {
-                    setPdfUuidState(j.pdfUuid);
+                  if (j.pdf) {
+                    setPdfUuidState(j.pdf);
                     setPdfFileName(f.name);
                   }
                 } catch (err) {
