@@ -10,6 +10,7 @@ import rehypeRaw from "rehype-raw";
 import rehypeKatex from "rehype-katex";
 import rehypePrettyCode from "rehype-pretty-code";
 import rehypeStringify from "rehype-stringify";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { transformerCopyButton } from "@rehype-pretty/transformers";
 import { Metadata } from "next";
 import { Config } from "../../../config";
@@ -99,8 +100,8 @@ export default async function Page({
               const existing = Array.isArray(props.className)
                 ? props.className.map(String)
                 : props.className
-                  ? [String(props.className)]
-                  : [];
+                ? [String(props.className)]
+                : [];
               if (!existing.includes("decor-outline"))
                 existing.push("decor-outline");
               props.className = existing;
@@ -113,8 +114,8 @@ export default async function Page({
               const existing = Array.isArray(props.className)
                 ? props.className.map(String)
                 : props.className
-                  ? [String(props.className)]
-                  : [];
+                ? [String(props.className)]
+                : [];
               if (!existing.includes("wiki-inline-code"))
                 existing.push("wiki-inline-code");
               props.className = existing;
@@ -131,8 +132,8 @@ export default async function Page({
               const existing = Array.isArray(props.className)
                 ? props.className.map(String)
                 : props.className
-                  ? [String(props.className)]
-                  : [];
+                ? [String(props.className)]
+                : [];
               if (child.tagName === "h1") {
                 if (!existing.includes("text-2xl"))
                   existing.push("text-2xl", "font-bold", "mt-6", "mb-4");
@@ -157,8 +158,8 @@ export default async function Page({
               const existing = Array.isArray(props.className)
                 ? props.className.map(String)
                 : props.className
-                  ? [String(props.className)]
-                  : [];
+                ? [String(props.className)]
+                : [];
               // mark task-list/contains-task-list if present in items
               if (child.tagName === "ul" || child.tagName === "ol") {
                 if (!existing.includes("wiki-list")) existing.push("wiki-list");
@@ -184,7 +185,7 @@ export default async function Page({
     // Transform single tab indented text -> <code>
     const preprocessed = preprocessTabs(problem.description ?? "").replace(
       /__([^_\n]+)__/g,
-      "<u>$1</u>",
+      "<u>$1</u>"
     );
 
     const file = await unified()
@@ -193,8 +194,23 @@ export default async function Page({
       .use(remarkMath)
       .use(remarkHeadingSeparator)
       .use(remarkBreaks)
-      .use(remarkRehype)
+      .use(remarkRehype, { allowDangerousHtml: true })
       .use(rehypeRaw)
+      .use(rehypeSanitize, {
+        ...defaultSchema,
+        // customize what tags/attributes you allow
+        attributes: {
+          ...defaultSchema.attributes,
+          img: [
+            ...(defaultSchema.attributes?.img || []),
+            ["className"],
+            ["alt"],
+            ["src"],
+            ["title"],
+          ],
+          code: [...(defaultSchema.attributes?.code || []), ["className"]],
+        },
+      })
       .use(rehypeCustomStyleAndHeaders)
       .use(rehypePrettyCode, {
         keepBackground: true,
@@ -207,7 +223,7 @@ export default async function Page({
         ],
       })
       .use(rehypeKatex)
-      .use(rehypeStringify)
+      .use(rehypeStringify, { allowDangerousHtml: true })
       .process(preprocessed);
     renderedDescription = String(file);
   } catch {
@@ -231,13 +247,13 @@ function preprocessTabs(md: string): string {
       // strip the leading indentation (tab or 2+ spaces)
       const cleaned = block.replace(/^[ \t]{2,}/gm, "");
       return `\n\`\`\`\n${cleaned}\n\`\`\`\n`;
-    },
+    }
   );
 
   // Single-line: exactly one line with leading tab OR 2+ spaces
   md = md.replace(
     /(?:^|\n)[ \t]{1,}([^\n]+)/g,
-    (match, text) => `\n\`${text.trim()}\``,
+    (match, text) => `\n\`${text.trim()}\``
   );
 
   return md;

@@ -56,45 +56,85 @@ export default function ImportCodeforcesPolygonPage() {
 
   const texToMarkdownFallback = (tex: string) => {
     if (!tex) return "";
-    // Preserve math environments ($...$, $$...$$) untouched so KaTeX can render them.
-    // We'll only transform structural and simple text macros outside math.
-    let s = tex;
 
-    // Temporarily protect math regions
+    // helper: pick safe backtick delimiter
+    const wrapCode = (str: string) => {
+      let ticks = "`";
+      while (str.includes(ticks)) ticks += "`";
+      return ticks + str + ticks;
+    };
+
+    // 0) convert LaTeX opening/closing quotes to straight quotes
+    let s = tex.replace(/``/g, '"').replace(/''/g, '"');
+
+    // 1) protect math
     const mathRegions: string[] = [];
     s = s.replace(/\$\$([\s\S]*?)\$\$/g, (_, g1) => {
-      const token = `@@MATH${mathRegions.length}@@`;
+      const t = `@@MATH${mathRegions.length}@@`;
       mathRegions.push(`$$${g1}$$`);
-      return token;
+      return t;
     });
     s = s.replace(/\$(.*?)\$/g, (_, g1) => {
-      const token = `@@MATH${mathRegions.length}@@`;
+      const t = `@@MATH${mathRegions.length}@@`;
       mathRegions.push(`$${g1}$`);
+      return t;
+    });
+
+    // 2) protect \texttt and \verb (do NOT add extra quotes)
+    const codeRegions: string[] = [];
+    s = s.replace(/\\texttt\{([^}]*)\}/g, (_, g1) => {
+      const token = `@@CODE${codeRegions.length}@@`;
+      codeRegions.push(wrapCode(g1)); // only backticks, no extra quotes
+      return token;
+    });
+    s = s.replace(/\\verb(.)(.*?)\1/g, (_, _d, g1) => {
+      const token = `@@CODE${codeRegions.length}@@`;
+      codeRegions.push(wrapCode(g1));
       return token;
     });
 
-    // Structural conversions
+    // 3) structural + text macros
     s = s.replace(/\\section\*?\{([^}]+)\}/g, "\n## $1\n");
     s = s.replace(/\\subsection\*?\{([^}]+)\}/g, "\n### $1\n");
-    s = s.replace(/\\begin\{(.*?)\}|\\end\{(.*?)\}/g, "");
+    s = s.replace(/\\begin\{(itemize|enumerate)\}/g, "\n");
+    s = s.replace(/\\end\{(itemize|enumerate)\}/g, "\n");
+    s = s.replace(/(^|[\r\n])\s*\\item\s+/g, "\n- ");
 
-    // Basic formatting
-    s = s.replace(/\\textbf\{([^}]+)\}/g, "**$1**");
-    s = s.replace(/\\textit\{([^}]+)\}/g, "*$1*");
-    s = s.replace(/\\emph\{([^}]+)\}/g, "*$1*");
+    s = s.replace(/\\textbf\{([^}]*)\}/g, "**$1**");
+    s = s.replace(/\\textit\{([^}]*)\}/g, "*$1*");
+    s = s.replace(/\\emph\{([^}]*)\}/g, "*$1*");
+    s = s.replace(/\\underline\{([^}]*)\}/g, "__$1__");
 
-    // Remove other simple commands \cmd{...} -> ...
+    s = s.replace(/\\url\{([^}]+)\}/g, (_, url) => {
+      const disp = url.replace(/^https?:\/\//, "");
+      return `[${disp}](${url})`;
+    });
+
+    // spacing and dashes
+    s = s.replace(/~+/g, " ");
+    s = s.replace(/---/g, "—");
+    s = s.replace(/--/g, "-");
+
+    // 4) conservative generic unwrap
     s = s.replace(/\\[a-zA-Z]+\{([^}]*)\}/g, "$1");
+    s = s.replace(/\\([_%&#{}])/g, "$1"); // common escapes
 
-    // Remove remaining backslashes that are not in math
-    s = s.replace(/\\/g, "");
+    // 5) restore code placeholders (backticked)
+    s = s.replace(
+      /@@CODE(\d+)@@/g,
+      (_, i) => codeRegions[parseInt(i, 10)] || ""
+    );
 
-    // Restore math regions
+    // collapse blanks
+    s = s.replace(/\n{3,}/g, "\n\n");
+
+    // 6) restore math
     s = s.replace(
       /@@MATH(\d+)@@/g,
       (_, idx) => mathRegions[parseInt(idx, 10)] || ""
     );
-    return s;
+
+    return s.trim();
   };
 
   const processImagesInText = async (
@@ -397,7 +437,20 @@ export default function ImportCodeforcesPolygonPage() {
 
       // checker
       let checkerFile: File | null = null;
-      if (!isInteractive && checker) {
+      if (isInteractive) {
+        // For interactive, upload interactor.cpp as checkerFile
+        const interactorSrc = interactor?.querySelector("source");
+        const interactorPath = interactorSrc?.getAttribute("path");
+        if (interactorPath) {
+          const f = zip.file(interactorPath);
+          if (f) {
+            const buf = await f.async("arraybuffer");
+            const fileName =
+              interactorPath.split("/").pop() || "interactor.cpp";
+            checkerFile = new File([buf], fileName, { type: "text/x-c++src" });
+          }
+        }
+      } else if (checker) {
         const src = checker.querySelector("source");
         const path = src?.getAttribute("path");
         if (path) {
