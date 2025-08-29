@@ -581,8 +581,6 @@ export default function ImportCodeforcesPolygonPage() {
         memoryLimit: parsedPackage.memoryLimit,
         short_circuit: false,
         archives: uploadedArchive?.key ? [uploadedArchive.key as string] : [],
-        checker_url: uploadedChecker?.url || null,
-        checker_type: parsedPackage.isInteractive ? "interacttl" : "testlib",
       };
       // prepare finalize payload and headers
       const finalizePayload = {
@@ -591,7 +589,7 @@ export default function ImportCodeforcesPolygonPage() {
           ? {
               url: uploadedChecker.url,
               key: uploadedChecker.key,
-              name: uploadedChecker.name,
+              name: parsedPackage.isInteractive ? "interacttl" : "bridged",
             }
           : null,
         archiveUrl: uploadedArchive?.url,
