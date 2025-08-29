@@ -48,18 +48,16 @@ export default function ProblemPage({
 
   // Check if current user can edit test cases
   const canUserEditTestcases =
+    !problem.isDeleted && !problem.isLocked &&
     canEditProblemTestcases(
       user?.perms,
       problem.author,
       problem.curator,
       user?.id
     );
+  const canEditProblemInfo = !problem.isDeleted && !problem.isLocked && hasPermission(user?.perms, UserPermissions.MODIFY_ALL_PROBLEMS);
 
-  const canEditProblemInfo = hasPermission(user?.perms, UserPermissions.MODIFY_ALL_PROBLEMS);
-
-  const canViewEditSection = !problem.isLocked && user && (canUserEditTestcases || canEditProblemInfo);
-
-  const problemLocked = problem.isLocked;
+  const canViewEditSection = !problem.isDeleted && user && (canUserEditTestcases || canEditProblemInfo);
 
   // Extract unique common names from allowed languages
   const allowedLanguageNames = Array.from(
@@ -87,7 +85,18 @@ export default function ProblemPage({
     <main className="max-w-7xl mx-auto py-8 px-4">
       {/* Title & PDF */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-3xl font-bold">{problem.name}</h1>
+        <h1
+          className={`flex items-center gap-2 text-3xl font-bold ${problem.isDeleted
+            ? "text-red-500"
+            : problem.isLocked
+              ? "text-yellow-500"
+              : ""
+            }`}
+        >
+          {problem.isLocked && <span>🔒</span>}
+          {problem.isDeleted && <span>⛔</span>}
+          <span>{problem.name}</span>
+        </h1>
         <Link
           href={`/api/problem/${slug}/pdf`}
           className="text-sm text-blue-600 hover:underline flex items-center gap-1"
@@ -96,7 +105,7 @@ export default function ProblemPage({
           View as PDF
         </Link>
       </div>
-      <hr className="border-gray-300 mb-6" />
+      <hr className="border-gray-300" />
 
       {/* Main Content Layout */}
       <div className="flex flex-col-reverse lg:flex-row lg:gap-6">
@@ -134,15 +143,18 @@ export default function ProblemPage({
                 className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 text-lg"
               >
                 <div className="flex flex-col gap-2">
-                  {problemLocked ? (
+                  {problem.isLocked ? (
                     <Button disabled className="w-full">
                       Problem locked
                     </Button>
-                  ) : (
-                    <Button asChild className="w-full">
-                      {isAuthenticated ? (<Link href={`/problem/${slug}/submit`}>Submit</Link>) : <Link href={`/accounts/login?callbackUrl=/problem/${slug}/submit`}>Log in to submit</Link>}
-                    </Button>
-                  )}
+                  ) : problem.isDeleted ?
+                    <Button disabled className="w-full">
+                      Problem deleted
+                    </Button> : (
+                      <Button asChild className="w-full">
+                        {isAuthenticated ? (<Link href={`/problem/${slug}/submit`}>Submit</Link>) : <Link href={`/accounts/login?callbackUrl=/problem/${slug}/submit`}>Log in to submit</Link>}
+                      </Button>
+                    )}
                   <Button variant="outline" asChild className="w-full">
                     <Link href={`/submissions?problemSlug=${slug}`}>
                       <FontAwesomeIcon

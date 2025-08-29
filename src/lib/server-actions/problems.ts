@@ -34,14 +34,10 @@ export async function getProblems(token?: string): Promise<IProblemData[]> {
     const baseUrl = env.API_ENDPOINT;
     const url = new URL("/client/problems/all", baseUrl);
 
-    const headers = new Headers();
-    if (token && token.length > 0)
-      headers.append("Authorization", `Bearer ${token}`);
-
     const response = await fetch(url.toString(), {
       // dev phase - no cache
       headers: {
-        ...headers,
+        "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json",
         "Cache-Control": "no-cache, no-store, must-revalidate",
         Pragma: "no-cache",
@@ -266,5 +262,38 @@ export async function deleteProblem(slug: string, token?: string) {
     console.error("deleteProblem error:", err);
     if (err instanceof Error) throw err;
     throw new Error("Unknown error in deleteProblem");
+  }
+}
+
+export async function changeLockStatus(slug: string, token?: string) {
+  try {
+    const baseUrl = env.API_ENDPOINT;
+    const url = new URL(
+      `/client/problems/${encodeURIComponent(slug)}/lock`,
+      baseUrl,
+    );
+
+    const headers = new Headers();
+    if (token && token.length > 0)
+      headers.append("Authorization", `Bearer ${token}`);
+
+    const response = await fetch(url.toString(), {
+      method: "POST",
+      headers,
+    });
+
+    const json = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      const message =
+        json?.message || `Failed to delete problem: ${response.status}`;
+      throw new Error(message);
+    }
+
+    return json;
+  } catch (err: unknown) {
+    console.error("changeLockStatus error:", err);
+    if (err instanceof Error) throw err;
+    throw new Error("Unknown error in changeLockStatus");
   }
 }

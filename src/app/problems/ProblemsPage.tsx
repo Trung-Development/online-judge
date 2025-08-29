@@ -320,9 +320,9 @@ export default function ProblemsPage({
                         <FontAwesomeIcon icon={faEarth} className="mr-2" />
                         DMOJ site
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => router.push('/problems/import/codeforces')} className="hover:cursor-pointer">
+                      <DropdownMenuItem onClick={() => router.push('/problems/import/polygon')} className="hover:cursor-pointer">
                         <FontAwesomeIcon icon={faBoltLightning} className="mr-2" />
-                        Codeforces
+                        Codeforces Polygon
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
