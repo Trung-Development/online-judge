@@ -13,6 +13,7 @@ export default function ImportCodeforcesPolygonPage() {
   const [processing, setProcessing] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [slug, setSlug] = useState("");
+  const [slugError, setSlugError] = useState<string | null>(null);
   const [ignoreZeroPointBatches, setIgnoreZeroPointBatches] = useState(false);
   const [ignoreZeroPointCases, setIgnoreZeroPointCases] = useState(false);
   type ParsedPackage = {
@@ -51,12 +52,7 @@ export default function ImportCodeforcesPolygonPage() {
   const [uploadedChecker, setUploadedChecker] = useState<UploadedInfo | null>(
     null
   );
-  const [debugMode, setDebugMode] = useState(false);
-  const [debugPayloads, setDebugPayloads] = useState<{
-    create?: Record<string, unknown>;
-    finalize?: Record<string, unknown>;
-    headers?: Record<string, string>;
-  } | null>(null);
+  // debug mode removed in production
 
   const texToMarkdownFallback = (tex: string) => {
     if (!tex) return "";
@@ -492,13 +488,14 @@ export default function ImportCodeforcesPolygonPage() {
     setMessage(null);
     try {
       const form = new FormData();
+      if (slugError || !slug) throw new Error("Please enter a valid slug");
       form.append(
         "file",
         new File([parsedPackage.testsZipBlob], "upload.zip", {
           type: "application/zip",
         })
       );
-      form.append("path", `tests/${parsedPackage.problemName}/upload.zip`);
+      form.append("path", `tests/${slug}/upload.zip`);
       const uploadRes = await fetch("/api/upload-testcase-file", {
         method: "POST",
         body: form,
@@ -510,10 +507,7 @@ export default function ImportCodeforcesPolygonPage() {
       if (parsedPackage.checkerFile) {
         const cform = new FormData();
         cform.append("file", parsedPackage.checkerFile);
-        cform.append(
-          "path",
-          `tests/${parsedPackage.problemName}/${parsedPackage.checkerFile.name}`
-        );
+        cform.append("path", `tests/${slug}/${parsedPackage.checkerFile.name}`);
         const cres = await fetch("/api/upload-checker", {
           method: "POST",
           body: cform,
@@ -542,9 +536,7 @@ export default function ImportCodeforcesPolygonPage() {
     setMessage(null);
     try {
       const payload: Record<string, unknown> = {
-        slug:
-          slug ||
-          parsedPackage.problemName.toLowerCase().replace(/[^a-z0-9-]+/g, "-"),
+        slug: slug,
         name: parsedPackage.problemName,
         points: 0.01,
         description: parsedPackage.finalDescription,
@@ -641,19 +633,7 @@ export default function ImportCodeforcesPolygonPage() {
         Authorization: sessionToken ? `Bearer ${sessionToken}` : "",
       };
 
-      // if debug mode is enabled, show the payloads instead of immediately sending
-      if (debugMode) {
-        setDebugPayloads({
-          create: payload,
-          finalize: finalizePayload,
-          headers,
-        });
-        setMessage(
-          "Prepared payloads (debug mode). Inspect below and click Confirm Import to proceed."
-        );
-        setProcessing(false);
-        return;
-      }
+      // proceed with create + finalize
 
       // perform create + finalize
       const createRes = await fetch("/api/problems/create/", {
@@ -689,45 +669,7 @@ export default function ImportCodeforcesPolygonPage() {
     }
   };
 
-  const confirmImport = async () => {
-    if (!debugPayloads) return;
-    // re-run the network steps using the prepared payloads
-    setProcessing(true);
-    setMessage(null);
-    try {
-      const createRes = await fetch("/api/problems/create/", {
-        method: "POST",
-        headers: debugPayloads.headers,
-        body: JSON.stringify(debugPayloads.create),
-      });
-      if (!createRes.ok) {
-        const text = await createRes.text();
-        throw new Error(`Create problem failed: ${createRes.status} ${text}`);
-      }
-      const j = await createRes.json();
-
-      const finRes = await fetch(
-        `/api/problem/${encodeURIComponent(j.slug)}/finalize-testcase-upload`,
-        {
-          method: "POST",
-          headers: debugPayloads.headers,
-          body: JSON.stringify(debugPayloads.finalize),
-        }
-      );
-      if (!finRes.ok) {
-        const text = await finRes.text();
-        throw new Error(`Finalize failed: ${finRes.status} ${text}`);
-      }
-
-      setDebugPayloads(null);
-      setMessage("Problem imported and testcases finalized. Redirecting...");
-      window.location.href = `/problem/${j.slug}`;
-    } catch (err: unknown) {
-      setMessage(err instanceof Error ? err.message : String(err));
-    } finally {
-      setProcessing(false);
-    }
-  };
+  // debug confirm removed
 
   return (
     <main className="max-w-3xl mx-auto py-8 px-4">
@@ -740,8 +682,29 @@ export default function ImportCodeforcesPolygonPage() {
       </p>
       <div className="space-y-4">
         <div>
-          <Label>Slug</Label>
-          <Input value={slug} onChange={(e) => setSlug(e.target.value)} />
+          <Label>Problem slug</Label>
+          <Input
+            value={slug}
+            onChange={(e) => {
+              const v = e.target.value;
+              setSlug(v);
+              // validate: allow letters, digits, underscore, hyphen
+              if (!v || v.length === 0) {
+                setSlugError("Slug is required");
+              } else if (v.length > 64) {
+                setSlugError("Slug too long (max 64 chars)");
+              } else if (!/^[A-Za-z0-9_-]+$/.test(v)) {
+                setSlugError(
+                  "Invalid characters: only letters, digits, underscore and hyphen allowed"
+                );
+              } else {
+                setSlugError(null);
+              }
+            }}
+          />
+          {slugError && (
+            <div className="text-xs text-red-600 mt-1">{slugError}</div>
+          )}
         </div>
 
         <div>
@@ -804,44 +767,6 @@ export default function ImportCodeforcesPolygonPage() {
           Import
         </Button>
       </div>
-      <div className="mt-4">
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={debugMode}
-            onChange={(e) => setDebugMode(e.target.checked)}
-          />
-          <span className="text-sm ml-1">Enable debug payload preview</span>
-        </label>
-      </div>
-      {debugPayloads && (
-        <div className="mt-4 p-3 bg-gray-50 border rounded">
-          <div className="mb-2 font-medium">Prepared create payload</div>
-          <pre className="text-xs max-h-40 overflow-auto">
-            {JSON.stringify(debugPayloads.create, null, 2)}
-          </pre>
-          <div className="mt-2 mb-2 font-medium">Prepared finalize payload</div>
-          <pre className="text-xs max-h-40 overflow-auto">
-            {JSON.stringify(debugPayloads.finalize, null, 2)}
-          </pre>
-          <div className="mt-2 mb-2 font-medium">Headers</div>
-          <pre className="text-xs max-h-20 overflow-auto">
-            {JSON.stringify(debugPayloads.headers, null, 2)}
-          </pre>
-          <div className="flex gap-2 mt-2">
-            <Button onClick={() => confirmImport()} disabled={processing}>
-              Confirm Import
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => setDebugPayloads(null)}
-              disabled={processing}
-            >
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
       {message && <div className="mt-4 text-red-600">{message}</div>}
     </main>
   );
