@@ -56,17 +56,41 @@ export default function ImportCodeforcesPolygonPage() {
 
   const texToMarkdownFallback = (tex: string) => {
     if (!tex) return "";
+    // Preserve math environments ($...$, $$...$$) untouched so KaTeX can render them.
+    // We'll only transform structural and simple text macros outside math.
     let s = tex;
+
+    // Temporarily protect math regions
+    const mathRegions: string[] = [];
+    s = s.replace(/\$\$([\s\S]*?)\$\$/g, (_, g1) => {
+      const token = `@@MATH${mathRegions.length}@@`;
+      mathRegions.push(`$$${g1}$$`);
+      return token;
+    });
+    s = s.replace(/\$(.*?)\$/g, (_, g1) => {
+      const token = `@@MATH${mathRegions.length}@@`;
+      mathRegions.push(`$${g1}$`);
+      return token;
+    });
+
+    // Structural conversions
+    s = s.replace(/\\section\*?\{([^}]+)\}/g, "\n## $1\n");
+    s = s.replace(/\\subsection\*?\{([^}]+)\}/g, "\n### $1\n");
+    s = s.replace(/\\begin\{(.*?)\}|\\end\{(.*?)\}/g, "");
+
+    // Basic formatting
     s = s.replace(/\\textbf\{([^}]+)\}/g, "**$1**");
     s = s.replace(/\\textit\{([^}]+)\}/g, "*$1*");
     s = s.replace(/\\emph\{([^}]+)\}/g, "*$1*");
-    s = s.replace(/\\begin\{(.*?)\}|\\end\{(.*?)\}/g, "");
-    s = s.replace(/\\section\*?\{([^}]+)\}/g, "\n## $1\n");
-    s = s.replace(/\\subsection\*?\{([^}]+)\}/g, "\n### $1\n");
-    s = s.replace(/\$\$([\s\S]*?)\$\$/g, "\n$$$1$$\n");
-    s = s.replace(/\$(.*?)\$/g, "\\$$1\\$");
+
+    // Remove other simple commands \cmd{...} -> ...
     s = s.replace(/\\[a-zA-Z]+\{([^}]*)\}/g, "$1");
+
+    // Remove remaining backslashes that are not in math
     s = s.replace(/\\/g, "");
+
+    // Restore math regions
+    s = s.replace(/@@MATH(\d+)@@/g, (_, idx) => mathRegions[parseInt(idx, 10)] || "");
     return s;
   };
 
