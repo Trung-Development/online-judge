@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 import "katex/dist/katex.min.css";
+import styles from "./ProblemPage.module.css";
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/AuthProvider";
@@ -112,7 +113,7 @@ export default function ProblemPage({
           )}
 
           {/* Statement + SampleIO and separators */}
-          <div className="prose max-w-none">
+          <div className={`prose max-w-none ${styles.problemProse}`}>
             <div
               ref={renderedRef}
               className="markdown-rendered content-description"
