@@ -19,15 +19,9 @@ import {
 } from "@/components/ui/select";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { languages } from "@/constants";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheck,
-  faExclamationTriangle,
-  faInfoCircle,
-} from "@fortawesome/free-solid-svg-icons";
 import { IProblemPageData } from "@/types";
 import { User } from "@/lib/auth";
+import { ErrorAlert, OverlayWarning, SuccessAlert } from "@/components/CustomAlert";
 
 export default function ManageProblemPage({
   problem,
@@ -206,12 +200,12 @@ export default function ManageProblemPage({
           const OTModule = await import("overtype");
           const OTGlobal = ((OTModule as { default?: unknown }).default ||
             OTModule) as unknown as {
-            setTheme?: (s: string, o?: Record<string, string>) => void;
-          };
+              setTheme?: (s: string, o?: Record<string, string>) => void;
+            };
           if (OTGlobal && typeof OTGlobal.setTheme === "function") {
             OTGlobal.setTheme(preferredTheme, otThemeOverrides);
           }
-        } catch {}
+        } catch { }
 
         // retry a few times if the container isn't present yet
         const maxAttempts = 5;
@@ -252,7 +246,7 @@ export default function ManageProblemPage({
             if (cur && typeof cur.showPreviewMode === "function") {
               try {
                 cur.showPreviewMode(false);
-              } catch {}
+              } catch { }
             }
           }
         };
@@ -274,7 +268,7 @@ export default function ManageProblemPage({
       if (cur && typeof cur.destroy === "function") {
         try {
           cur.destroy();
-        } catch {}
+        } catch { }
       }
       overTypeRef.current = null;
     };
@@ -292,7 +286,7 @@ export default function ManageProblemPage({
       if (cur && typeof cur.getValue === "function") {
         payloadDescription = cur.getValue();
       }
-    } catch {}
+    } catch { }
     // client-side validation
     if (!(timeLimit > 0) || timeLimit > 60) {
       setError("Time limit must be > 0 and ≤ 60 seconds");
@@ -449,7 +443,7 @@ export default function ManageProblemPage({
           .json()
           .then((v) => {
             console.log(v);
-            if (v?.error) alert(`Failed to unlock problem: ${v.error}`);
+            if (v?.error) setError(`Failed to unlock problem: ${v.error}`);
             else if (v.message) {
               if (v.message === "INSUFFICIENT_PERMISSIONS")
                 setError(
@@ -477,23 +471,14 @@ export default function ManageProblemPage({
       router.push(`/problem/${slugParam}`);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      alert(msg);
+      setError(msg);
     } finally {
       setLoading("");
     }
   };
 
   if (!canEdit) {
-    return (
-      <main className="max-w-4xl mx-auto py-8 px-4">
-        <Alert variant="warning" className="mb-6">
-          <FontAwesomeIcon icon={faExclamationTriangle} className="h-4 w-4" />
-          <AlertDescription>
-            You do not have the permission to manage problems.
-          </AlertDescription>
-        </Alert>
-      </main>
-    );
+    return <OverlayWarning message="You do not have permission to edit this problem." />;
   }
 
   return (
@@ -619,14 +604,12 @@ export default function ManageProblemPage({
           <button
             onClick={() => setShortCircuit(!short_circuit)}
             type="button"
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              short_circuit ? "bg-primary" : "bg-muted"
-            }`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${short_circuit ? "bg-primary" : "bg-muted"
+              }`}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                short_circuit ? "translate-x-6" : "translate-x-1"
-              }`}
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${short_circuit ? "translate-x-6" : "translate-x-1"
+                }`}
             />
           </button>
         </div>
@@ -692,16 +675,10 @@ export default function ManageProblemPage({
         </div>
 
         {error && (
-          <Alert variant="destructive" className="mb-6">
-            <FontAwesomeIcon icon={faInfoCircle} className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+          <ErrorAlert message={error} className="mb-6" />
         )}
         {updateSuccess && (
-          <Alert variant="success" className="mb-6">
-            <FontAwesomeIcon icon={faCheck} className="h-4 w-4" />
-            <AlertDescription>Problem updated successfully!</AlertDescription>
-          </Alert>
+          <SuccessAlert message="Problem details updated successfully." className="mb-6" />
         )}
 
         <div className="flex gap-2">
