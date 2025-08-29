@@ -166,13 +166,13 @@ export default function CreateProblemPage() {
       }
     } catch { }
     try {
-      // client-side validation: require category and at least one type
-      if (!categoryId) {
+      // client-side validation: require category and at least one type only when options exist
+      if (categories && categories.length > 0 && !categoryId) {
         setError("Please select a category.");
         setLoading(false);
         return;
       }
-      if (!selectedTypes || selectedTypes.length === 0) {
+      if (typesOptions && typesOptions.length > 0 && (!selectedTypes || selectedTypes.length === 0)) {
         setError("Please select at least one type.");
         setLoading(false);
         return;

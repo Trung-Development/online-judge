@@ -518,8 +518,9 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
               <Button
                 variant="destructive"
                 size="sm"
-                onClick={() => {
-                  // Clear attachment client-side; backend will be updated on save
+                onClick={async () => {
+                  // Only clear locally for immediate UI feedback.
+                  // The change will be persisted when the user clicks Save.
                   setPdfUuidState(null);
                   setPdfFileName(null);
                 }}
