@@ -29,12 +29,14 @@ export default async function Page({
     problem == 404 ||
     (problem.error && problem.error === "PROBLEM_NOT_FOUND")
   )
-    return <OverlayWarning message="The problem you are trying to access does not exist. Please check the URL and try again." />
+    return (
+      <OverlayWarning message="The problem you are trying to access does not exist. Please check the URL and try again." />
+    );
   else {
     if (problem == 403)
-      return <OverlayWarning message=
-        "You do not have the permission to edit this problem. Please contact the administrator if you believe this is an error."
-      />
+      return (
+        <OverlayWarning message="You do not have the permission to edit this problem. Please contact the administrator if you believe this is an error." />
+      );
     if (problem?.isLocked)
       return (
         <UnlockLockedProblem
@@ -45,9 +47,9 @@ export default async function Page({
         />
       );
     if (problem?.isDeleted)
-      return <OverlayWarning message=
-        "This problem is marked as deleted and cannot be edited. Please check the URL and try again later."
-      />
+      return (
+        <OverlayWarning message="This problem is marked as deleted and cannot be edited. Please check the URL and try again later." />
+      );
   }
   problem = problem as IProblemPageData;
   return (

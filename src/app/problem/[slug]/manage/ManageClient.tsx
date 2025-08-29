@@ -21,7 +21,11 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { languages } from "@/constants";
 import { IProblemPageData } from "@/types";
 import { User } from "@/lib/auth";
-import { ErrorAlert, OverlayWarning, SuccessAlert } from "@/components/CustomAlert";
+import {
+  ErrorAlert,
+  OverlayWarning,
+  SuccessAlert,
+} from "@/components/CustomAlert";
 
 export default function ManageProblemPage({
   problem,
@@ -200,12 +204,12 @@ export default function ManageProblemPage({
           const OTModule = await import("overtype");
           const OTGlobal = ((OTModule as { default?: unknown }).default ||
             OTModule) as unknown as {
-              setTheme?: (s: string, o?: Record<string, string>) => void;
-            };
+            setTheme?: (s: string, o?: Record<string, string>) => void;
+          };
           if (OTGlobal && typeof OTGlobal.setTheme === "function") {
             OTGlobal.setTheme(preferredTheme, otThemeOverrides);
           }
-        } catch { }
+        } catch {}
 
         // retry a few times if the container isn't present yet
         const maxAttempts = 5;
@@ -246,7 +250,7 @@ export default function ManageProblemPage({
             if (cur && typeof cur.showPreviewMode === "function") {
               try {
                 cur.showPreviewMode(false);
-              } catch { }
+              } catch {}
             }
           }
         };
@@ -268,7 +272,7 @@ export default function ManageProblemPage({
       if (cur && typeof cur.destroy === "function") {
         try {
           cur.destroy();
-        } catch { }
+        } catch {}
       }
       overTypeRef.current = null;
     };
@@ -286,7 +290,7 @@ export default function ManageProblemPage({
       if (cur && typeof cur.getValue === "function") {
         payloadDescription = cur.getValue();
       }
-    } catch { }
+    } catch {}
     // client-side validation
     if (!(timeLimit > 0) || timeLimit > 60) {
       setError("Time limit must be > 0 and ≤ 60 seconds");
@@ -478,7 +482,9 @@ export default function ManageProblemPage({
   };
 
   if (!canEdit) {
-    return <OverlayWarning message="You do not have permission to edit this problem." />;
+    return (
+      <OverlayWarning message="You do not have permission to edit this problem." />
+    );
   }
 
   return (
@@ -604,12 +610,14 @@ export default function ManageProblemPage({
           <button
             onClick={() => setShortCircuit(!short_circuit)}
             type="button"
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${short_circuit ? "bg-primary" : "bg-muted"
-              }`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              short_circuit ? "bg-primary" : "bg-muted"
+            }`}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${short_circuit ? "translate-x-6" : "translate-x-1"
-                }`}
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                short_circuit ? "translate-x-6" : "translate-x-1"
+              }`}
             />
           </button>
         </div>
@@ -674,11 +682,12 @@ export default function ManageProblemPage({
           </p>
         </div>
 
-        {error && (
-          <ErrorAlert message={error} className="mb-6" />
-        )}
+        {error && <ErrorAlert message={error} className="mb-6" />}
         {updateSuccess && (
-          <SuccessAlert message="Problem details updated successfully." className="mb-6" />
+          <SuccessAlert
+            message="Problem details updated successfully."
+            className="mb-6"
+          />
         )}
 
         <div className="flex gap-2">

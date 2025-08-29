@@ -16,5 +16,12 @@ export default async function TestcasePage({
     notFound();
   }
 
-  return <TestcaseManagerPage user={session?.user} sessionToken={session?.sessionToken} problem={problem} slug={slug} />;
+  return (
+    <TestcaseManagerPage
+      user={session?.user}
+      sessionToken={session?.sessionToken}
+      problem={problem}
+      slug={slug}
+    />
+  );
 }

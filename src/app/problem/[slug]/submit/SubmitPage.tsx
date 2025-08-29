@@ -35,7 +35,11 @@ import { IProblemPageData, TAllowedLang } from "@/types";
 import { languages } from "@/constants";
 import { useJudgeCapabilities } from "@/hooks/use-judge-capabilities";
 import { useProblemAvailability } from "@/hooks/use-problem-availability";
-import { ErrorAlert, SuccessAlert, WarningAlert } from "@/components/CustomAlert";
+import {
+  ErrorAlert,
+  SuccessAlert,
+  WarningAlert,
+} from "@/components/CustomAlert";
 
 interface SubmitPageProps {
   problem: IProblemPageData;
@@ -618,7 +622,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                           selectedLanguage.startsWith("PY")
                             ? "python"
                             : selectedLanguage.startsWith("CPP") ||
-                              selectedLanguage === "C"
+                                selectedLanguage === "C"
                               ? "cpp"
                               : selectedLanguage === "JAVA8"
                                 ? "java"
@@ -631,7 +635,7 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                                       : selectedLanguage === "D"
                                         ? "d"
                                         : selectedLanguage === "RUBY" ||
-                                          selectedLanguage === "RUBY18"
+                                            selectedLanguage === "RUBY18"
                                           ? "ruby"
                                           : selectedLanguage === "PHP"
                                             ? "php"
@@ -662,20 +666,18 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                 )}
 
                 {/* Error Alert */}
-                {error &&
-                  <ErrorAlert message={error} />
-                }
+                {error && <ErrorAlert message={error} />}
 
                 {/* Warning Alert */}
-                {warning &&
-                  <WarningAlert message={warning} />
-                }
+                {warning && <WarningAlert message={warning} />}
 
                 {/* Success Alert */}
-                {success &&
-                  <SuccessAlert message="Solution submitted successfully! You will be redirected to
-                      the details page shortly." />
-                }
+                {success && (
+                  <SuccessAlert
+                    message="Solution submitted successfully! You will be redirected to
+                      the details page shortly."
+                  />
+                )}
 
                 {/* Submission Status */}
                 {submissionStatus && (
@@ -691,14 +693,15 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                         <div className="flex justify-between">
                           <span className="font-medium">Status:</span>
                           <span
-                            className={`font-medium ${submissionStatus.verdict === "AC"
-                              ? "text-green-600"
-                              : ["WA", "TLE", "MLE", "RTE", "CE"].includes(
-                                submissionStatus.verdict,
-                              )
-                                ? "text-red-600"
-                                : "text-yellow-600"
-                              }`}
+                            className={`font-medium ${
+                              submissionStatus.verdict === "AC"
+                                ? "text-green-600"
+                                : ["WA", "TLE", "MLE", "RTE", "CE"].includes(
+                                      submissionStatus.verdict,
+                                    )
+                                  ? "text-red-600"
+                                  : "text-yellow-600"
+                            }`}
                           >
                             {getVerdictText(submissionStatus.verdict)}
                           </span>
@@ -750,22 +753,23 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                                   <div className="flex items-center gap-2">
                                     {getVerdictIcon(testCase.verdict)}
                                     <span
-                                      className={`${testCase.verdict === "AC"
-                                        ? "text-green-600"
-                                        : "text-red-600"
-                                        }`}
+                                      className={`${
+                                        testCase.verdict === "AC"
+                                          ? "text-green-600"
+                                          : "text-red-600"
+                                      }`}
                                     >
                                       {getVerdictText(testCase.verdict)}
                                     </span>
                                     <span className="text-muted-foreground">
                                       (
                                       {testCase.time &&
-                                        typeof testCase.time === "number"
+                                      typeof testCase.time === "number"
                                         ? testCase.time.toFixed(3)
                                         : "0.000"}
                                       s,{" "}
                                       {testCase.memory &&
-                                        typeof testCase.memory === "number"
+                                      typeof testCase.memory === "number"
                                         ? formatMemory(testCase.memory)
                                         : "0.0MB"}
                                       )
@@ -809,7 +813,9 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                   )}
 
                 {selectedLanguage && !isExecutorAvailable(selectedLanguage) && (
-                  <ErrorAlert message={`The selected language (${selectedLanguage}) is not available on any connected judges. Please select a different language.`} />
+                  <ErrorAlert
+                    message={`The selected language (${selectedLanguage}) is not available on any connected judges. Please select a different language.`}
+                  />
                 )}
 
                 {/* Submit Button */}
@@ -920,10 +926,11 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                         icon={
                           isExecutorAvailable(lang.value) ? faCheck : faTimes
                         }
-                        className={`w-3 h-3 ${isExecutorAvailable(lang.value)
-                          ? "text-green-600"
-                          : "text-red-600"
-                          }`}
+                        className={`w-3 h-3 ${
+                          isExecutorAvailable(lang.value)
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
                       />
                       <span
                         className={
@@ -955,17 +962,18 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                   <FontAwesomeIcon
                     icon={
                       judgeStatus &&
-                        judgeStatus.connected &&
-                        judgeStatus.judgeCount > 0
+                      judgeStatus.connected &&
+                      judgeStatus.judgeCount > 0
                         ? faCheck
                         : faTimes
                     }
-                    className={`w-3 h-3 ${judgeStatus &&
+                    className={`w-3 h-3 ${
+                      judgeStatus &&
                       judgeStatus.connected &&
                       judgeStatus.judgeCount > 0
-                      ? "text-green-600"
-                      : "text-red-600"
-                      }`}
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
                   />
                   <span className="text-sm">
                     {judgeLoading ? "Loading..." : judgeStatus?.judgeCount || 0}
@@ -978,8 +986,9 @@ export default function SubmitPage({ problem, slug }: SubmitPageProps) {
                 <div className="flex items-center gap-2">
                   <FontAwesomeIcon
                     icon={isProblemAvailable ? faCheck : faTimes}
-                    className={`w-3 h-3 ${isProblemAvailable ? "text-green-600" : "text-red-600"
-                      }`}
+                    className={`w-3 h-3 ${
+                      isProblemAvailable ? "text-green-600" : "text-red-600"
+                    }`}
                   />
                   <span className="text-sm">
                     {isProblemAvailable ? "Yes" : "No"}

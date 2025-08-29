@@ -75,7 +75,7 @@ export default function SubmissionViewPage({
   problem,
   slug,
   submissionId,
-  sessionToken
+  sessionToken,
 }: SubmissionViewPageProps) {
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -488,7 +488,9 @@ export default function SubmissionViewPage({
 
               {/* Error Message */}
               {submission.errorMessage && (
-                <ErrorAlert message={cleanErrorMessage(submission.errorMessage)} />
+                <ErrorAlert
+                  message={cleanErrorMessage(submission.errorMessage)}
+                />
               )}
             </CardContent>
           </Card>
@@ -577,7 +579,7 @@ export default function SubmissionViewPage({
                               <div>
                                 <span className="font-medium">Time:</span>{" "}
                                 {testCase.time &&
-                                  typeof testCase.time === "number"
+                                typeof testCase.time === "number"
                                   ? testCase.time.toFixed(3)
                                   : "0.000"}
                                 s
@@ -585,7 +587,7 @@ export default function SubmissionViewPage({
                               <div>
                                 <span className="font-medium">Memory:</span>{" "}
                                 {testCase.memory &&
-                                  typeof testCase.memory === "number"
+                                typeof testCase.memory === "number"
                                   ? formatMemory(testCase.memory)
                                   : "0.0MB"}
                               </div>
@@ -605,9 +607,9 @@ export default function SubmissionViewPage({
                                           <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
                                             {testCase.input.length > 1000
                                               ? testCase.input.substring(
-                                                0,
-                                                1000,
-                                              ) + "\n... [truncated]"
+                                                  0,
+                                                  1000,
+                                                ) + "\n... [truncated]"
                                               : testCase.input}
                                           </pre>
                                         </div>
@@ -622,9 +624,9 @@ export default function SubmissionViewPage({
                                           <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
                                             {testCase.expected.length > 1000
                                               ? testCase.expected.substring(
-                                                0,
-                                                1000,
-                                              ) + "\n... [truncated]"
+                                                  0,
+                                                  1000,
+                                                ) + "\n... [truncated]"
                                               : testCase.expected}
                                           </pre>
                                         </div>
@@ -639,9 +641,9 @@ export default function SubmissionViewPage({
                                           <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
                                             {testCase.output.length > 1000
                                               ? testCase.output.substring(
-                                                0,
-                                                1000,
-                                              ) + "\n... [truncated]"
+                                                  0,
+                                                  1000,
+                                                ) + "\n... [truncated]"
                                               : testCase.output}
                                           </pre>
                                         </div>
@@ -683,13 +685,13 @@ export default function SubmissionViewPage({
                                 className={`flex items-center justify-between ${(testCase.input && testCase.input.trim()) || (testCase.expected && testCase.expected.trim()) || (testCase.output && testCase.output.trim()) || (testCase.feedback && testCase.feedback.trim()) ? "cursor-pointer" : ""}`}
                                 onClick={
                                   (testCase.input && testCase.input.trim()) ||
-                                    (testCase.expected &&
-                                      testCase.expected.trim()) ||
-                                    (testCase.output && testCase.output.trim()) ||
-                                    (testCase.feedback &&
-                                      testCase.feedback.trim())
+                                  (testCase.expected &&
+                                    testCase.expected.trim()) ||
+                                  (testCase.output && testCase.output.trim()) ||
+                                  (testCase.feedback &&
+                                    testCase.feedback.trim())
                                     ? () =>
-                                      toggleSection(testCase.id, "details")
+                                        toggleSection(testCase.id, "details")
                                     : undefined
                                 }
                               >
@@ -718,18 +720,18 @@ export default function SubmissionViewPage({
                                       testCase.output.trim()) ||
                                     (testCase.feedback &&
                                       testCase.feedback.trim())) && (
-                                      <FontAwesomeIcon
-                                        icon={
-                                          isSectionExpanded(
-                                            testCase.id,
-                                            "details",
-                                          )
-                                            ? faChevronDown
-                                            : faChevronRight
-                                        }
-                                        className="w-4 h-4 text-muted-foreground"
-                                      />
-                                    )}
+                                    <FontAwesomeIcon
+                                      icon={
+                                        isSectionExpanded(
+                                          testCase.id,
+                                          "details",
+                                        )
+                                          ? faChevronDown
+                                          : faChevronRight
+                                      }
+                                      className="w-4 h-4 text-muted-foreground"
+                                    />
+                                  )}
                                 </div>
                               </div>
                               {/* Basic timing and memory info (always visible) */}
@@ -737,7 +739,7 @@ export default function SubmissionViewPage({
                                 <div>
                                   <span className="font-medium">Time:</span>{" "}
                                   {testCase.time &&
-                                    typeof testCase.time === "number"
+                                  typeof testCase.time === "number"
                                     ? testCase.time.toFixed(3)
                                     : "0.000"}
                                   s
@@ -745,7 +747,7 @@ export default function SubmissionViewPage({
                                 <div>
                                   <span className="font-medium">Memory:</span>{" "}
                                   {testCase.memory &&
-                                    typeof testCase.memory === "number"
+                                  typeof testCase.memory === "number"
                                     ? formatMemory(testCase.memory)
                                     : "0.0MB"}
                                 </div>
@@ -770,9 +772,9 @@ export default function SubmissionViewPage({
                                             <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
                                               {testCase.input.length > 1000
                                                 ? testCase.input.substring(
-                                                  0,
-                                                  1000,
-                                                ) + "\n... [truncated]"
+                                                    0,
+                                                    1000,
+                                                  ) + "\n... [truncated]"
                                                 : testCase.input}
                                             </pre>
                                           </div>
@@ -787,9 +789,9 @@ export default function SubmissionViewPage({
                                             <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
                                               {testCase.expected.length > 1000
                                                 ? testCase.expected.substring(
-                                                  0,
-                                                  1000,
-                                                ) + "\n... [truncated]"
+                                                    0,
+                                                    1000,
+                                                  ) + "\n... [truncated]"
                                                 : testCase.expected}
                                             </pre>
                                           </div>
@@ -804,9 +806,9 @@ export default function SubmissionViewPage({
                                             <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
                                               {testCase.output.length > 1000
                                                 ? testCase.output.substring(
-                                                  0,
-                                                  1000,
-                                                ) + "\n... [truncated]"
+                                                    0,
+                                                    1000,
+                                                  ) + "\n... [truncated]"
                                                 : testCase.output}
                                             </pre>
                                           </div>
@@ -883,17 +885,17 @@ export default function SubmissionViewPage({
                                       onClick={
                                         (testCase.input &&
                                           testCase.input.trim()) ||
-                                          (testCase.expected &&
-                                            testCase.expected.trim()) ||
-                                          (testCase.output &&
-                                            testCase.output.trim()) ||
-                                          (testCase.feedback &&
-                                            testCase.feedback.trim())
+                                        (testCase.expected &&
+                                          testCase.expected.trim()) ||
+                                        (testCase.output &&
+                                          testCase.output.trim()) ||
+                                        (testCase.feedback &&
+                                          testCase.feedback.trim())
                                           ? () =>
-                                            toggleSection(
-                                              testCase.id,
-                                              "details",
-                                            )
+                                              toggleSection(
+                                                testCase.id,
+                                                "details",
+                                              )
                                           : undefined
                                       }
                                     >
@@ -924,18 +926,18 @@ export default function SubmissionViewPage({
                                             testCase.output.trim()) ||
                                           (testCase.feedback &&
                                             testCase.feedback.trim())) && (
-                                            <FontAwesomeIcon
-                                              icon={
-                                                isSectionExpanded(
-                                                  testCase.id,
-                                                  "details",
-                                                )
-                                                  ? faChevronDown
-                                                  : faChevronRight
-                                              }
-                                              className="w-4 h-4 text-muted-foreground"
-                                            />
-                                          )}
+                                          <FontAwesomeIcon
+                                            icon={
+                                              isSectionExpanded(
+                                                testCase.id,
+                                                "details",
+                                              )
+                                                ? faChevronDown
+                                                : faChevronRight
+                                            }
+                                            className="w-4 h-4 text-muted-foreground"
+                                          />
+                                        )}
                                       </div>
                                     </div>
 
@@ -945,7 +947,7 @@ export default function SubmissionViewPage({
                                           Time:
                                         </span>{" "}
                                         {testCase.time &&
-                                          typeof testCase.time === "number"
+                                        typeof testCase.time === "number"
                                           ? testCase.time.toFixed(3)
                                           : "0.000"}
                                         s
@@ -955,7 +957,7 @@ export default function SubmissionViewPage({
                                           Memory:
                                         </span>{" "}
                                         {testCase.memory &&
-                                          typeof testCase.memory === "number"
+                                        typeof testCase.memory === "number"
                                           ? formatMemory(testCase.memory)
                                           : "0.0MB"}
                                       </div>
@@ -983,11 +985,11 @@ export default function SubmissionViewPage({
                                                   </div>
                                                   <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
                                                     {testCase.input.length >
-                                                      1000
+                                                    1000
                                                       ? testCase.input.substring(
-                                                        0,
-                                                        1000,
-                                                      ) + "\n... [truncated]"
+                                                          0,
+                                                          1000,
+                                                        ) + "\n... [truncated]"
                                                       : testCase.input}
                                                   </pre>
                                                 </div>
@@ -1001,11 +1003,11 @@ export default function SubmissionViewPage({
                                                   </div>
                                                   <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
                                                     {testCase.expected.length >
-                                                      1000
+                                                    1000
                                                       ? testCase.expected.substring(
-                                                        0,
-                                                        1000,
-                                                      ) + "\n... [truncated]"
+                                                          0,
+                                                          1000,
+                                                        ) + "\n... [truncated]"
                                                       : testCase.expected}
                                                   </pre>
                                                 </div>
@@ -1019,11 +1021,11 @@ export default function SubmissionViewPage({
                                                   </div>
                                                   <pre className="text-xs bg-muted p-2 rounded overflow-x-auto whitespace-pre-wrap max-h-40 overflow-y-auto">
                                                     {testCase.output.length >
-                                                      1000
+                                                    1000
                                                       ? testCase.output.substring(
-                                                        0,
-                                                        1000,
-                                                      ) + "\n... [truncated]"
+                                                          0,
+                                                          1000,
+                                                        ) + "\n... [truncated]"
                                                       : testCase.output}
                                                   </pre>
                                                 </div>

@@ -13,7 +13,10 @@ export const metadata: Metadata = {
 export default async function Page() {
   // Get the current session to check if user is logged in
   const session = await getAuthSession();
-  if (!session?.user || !session?.user) return <OverlayWarning message="You must be logged in to view this page." />;
+  if (!session?.user || !session?.user)
+    return (
+      <OverlayWarning message="You must be logged in to view this page." />
+    );
 
   return <EditProfilePage user={session.user} />;
 }

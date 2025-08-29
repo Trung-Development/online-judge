@@ -77,7 +77,10 @@ export default function AboutPage() {
         <h2 className="text-2xl font-bold mb-2">Credits</h2>
         <p className="text-base">
           Created by{" "}
-          <a href="https://github.com/vuthanhtrung2010" className="text-red-600">
+          <a
+            href="https://github.com/vuthanhtrung2010"
+            className="text-red-600"
+          >
             devtrung
           </a>{" "}
           (Vũ Thành Trung) and{" "}

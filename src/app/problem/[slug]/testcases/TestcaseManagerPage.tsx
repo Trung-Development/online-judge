@@ -30,7 +30,11 @@ import {
   faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import JSZip from "jszip";
-import { ErrorAlert, OverlayWarning, SuccessAlert } from "@/components/CustomAlert";
+import {
+  ErrorAlert,
+  OverlayWarning,
+  SuccessAlert,
+} from "@/components/CustomAlert";
 import { User } from "@/lib/auth";
 
 interface TestcaseManagerPageProps {
@@ -63,7 +67,7 @@ export default function TestcaseManagerPage({
   problem,
   slug,
   user,
-  sessionToken
+  sessionToken,
 }: TestcaseManagerPageProps) {
   const [visibility, setVisibility] = useState<
     "AUTHOR_ONLY" | "AC_ONLY" | "EVERYONE"
@@ -274,7 +278,9 @@ export default function TestcaseManagerPage({
   };
 
   if (!canUserEditTestcases) {
-    return <OverlayWarning message="You do not have the permission to manage test cases for this problem." />;
+    return (
+      <OverlayWarning message="You do not have the permission to manage test cases for this problem." />
+    );
   }
 
   return (
@@ -296,13 +302,14 @@ export default function TestcaseManagerPage({
       </div>
 
       {/* Error Alert */}
-      {error && (
-        <ErrorAlert message={error} className="mb-6" />
-      )}
+      {error && <ErrorAlert message={error} className="mb-6" />}
 
       {/* Success Alert */}
       {success && (
-        <SuccessAlert message={"Test case data visibility updated successfully."} className="mb-6" />
+        <SuccessAlert
+          message={"Test case data visibility updated successfully."}
+          className="mb-6"
+        />
       )}
 
       {/* Test Case Visibility Settings */}
@@ -583,8 +590,9 @@ export default function TestcaseManagerPage({
                   {detectedCases.map((c, i) => (
                     <div
                       key={i}
-                      className={`flex flex-wrap items-center gap-2 p-2 border rounded ${dragOverIdx === i ? "bg-blue-100" : ""
-                        } ${restoredIdx === i ? "animate-pulse" : ""}`}
+                      className={`flex flex-wrap items-center gap-2 p-2 border rounded ${
+                        dragOverIdx === i ? "bg-blue-100" : ""
+                      } ${restoredIdx === i ? "animate-pulse" : ""}`}
                       draggable
                       onDragStart={() => setDraggedIdx(i)}
                       onDragOver={(e) => {
@@ -885,88 +893,88 @@ export default function TestcaseManagerPage({
                     checkerChoice === "customcpp" ||
                     checkerChoice === "interact" ||
                     checkerChoice === "interacttl") && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <input
-                          ref={checkerFileRef}
-                          type="file"
-                          accept="*/*"
-                          onChange={async (e) => {
-                            const f = e.target.files?.[0];
-                            if (!f) return;
-                            setCheckerUploading(true);
-                            setCheckerUploadMessage(null);
-                            try {
-                              const form = new FormData();
-                              form.append("file", f);
-                              form.append("path", `tests/${slug}/${f.name}`);
-                              const res = await fetch("/api/upload-checker", {
-                                method: "POST",
-                                headers: {
-                                  ...(sessionToken
-                                    ? { Authorization: `Bearer ${sessionToken}` }
-                                    : {}),
-                                },
-                                body: form,
-                              });
-                              if (!res.ok) throw new Error("Upload failed");
-                              const j = await res.json();
-                              setCheckerInfo({
-                                url: j.url,
-                                key: j.key,
-                                name: f.name,
-                              });
-                              setCheckerUploadMessage("Checker uploaded");
-                            } catch (err) {
-                              setCheckerUploadMessage(
-                                (err as Error).message || "Upload error",
-                              );
-                            } finally {
-                              setCheckerUploading(false);
-                            }
-                          }}
-                        />
-                        <Button
-                          size="sm"
-                          onClick={() => checkerFileRef.current?.click()}
-                        >
-                          Choose file
-                        </Button>
-                        {checkerUploading && (
-                          <span className="text-sm">Uploading...</span>
-                        )}
-                        {checkerUploadMessage && (
-                          <span className="text-sm text-muted-foreground">
-                            {checkerUploadMessage}
-                          </span>
-                        )}
-                        {checkerInfo && (
-                          <span className="text-sm">
-                            Uploaded:{" "}
-                            {String(
-                              (checkerInfo as unknown as { name?: string })
-                                .name ?? "",
-                            )}
-                          </span>
-                        )}
-                        {/* If problem has stored archives or checkers, display them */}
-                        {problem.archives && problem.archives.length > 0 && (
-                          <div className="text-sm">
-                            {problem.archives.map((a: Archive) => (
-                              <div key={a.id}>
-                                <a
-                                  className="text-blue-600 underline"
-                                  href={a.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                >
-                                  {a.filename}
-                                </a>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
+                    <div className="mt-2 flex items-center gap-2">
+                      <input
+                        ref={checkerFileRef}
+                        type="file"
+                        accept="*/*"
+                        onChange={async (e) => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          setCheckerUploading(true);
+                          setCheckerUploadMessage(null);
+                          try {
+                            const form = new FormData();
+                            form.append("file", f);
+                            form.append("path", `tests/${slug}/${f.name}`);
+                            const res = await fetch("/api/upload-checker", {
+                              method: "POST",
+                              headers: {
+                                ...(sessionToken
+                                  ? { Authorization: `Bearer ${sessionToken}` }
+                                  : {}),
+                              },
+                              body: form,
+                            });
+                            if (!res.ok) throw new Error("Upload failed");
+                            const j = await res.json();
+                            setCheckerInfo({
+                              url: j.url,
+                              key: j.key,
+                              name: f.name,
+                            });
+                            setCheckerUploadMessage("Checker uploaded");
+                          } catch (err) {
+                            setCheckerUploadMessage(
+                              (err as Error).message || "Upload error",
+                            );
+                          } finally {
+                            setCheckerUploading(false);
+                          }
+                        }}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => checkerFileRef.current?.click()}
+                      >
+                        Choose file
+                      </Button>
+                      {checkerUploading && (
+                        <span className="text-sm">Uploading...</span>
+                      )}
+                      {checkerUploadMessage && (
+                        <span className="text-sm text-muted-foreground">
+                          {checkerUploadMessage}
+                        </span>
+                      )}
+                      {checkerInfo && (
+                        <span className="text-sm">
+                          Uploaded:{" "}
+                          {String(
+                            (checkerInfo as unknown as { name?: string })
+                              .name ?? "",
+                          )}
+                        </span>
+                      )}
+                      {/* If problem has stored archives or checkers, display them */}
+                      {problem.archives && problem.archives.length > 0 && (
+                        <div className="text-sm">
+                          {problem.archives.map((a: Archive) => (
+                            <div key={a.id}>
+                              <a
+                                className="text-blue-600 underline"
+                                href={a.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                {a.filename}
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {/* Precision box for floats family (default 6) */}
                   {checkerChoice && checkerChoice.startsWith("floats") && (
                     <div className="mt-2 flex items-center gap-2">
@@ -1016,9 +1024,7 @@ export default function TestcaseManagerPage({
               </div>
             </div>
 
-            {uploadMessage && (
-              <ErrorAlert message={uploadMessage} />
-            )}
+            {uploadMessage && <ErrorAlert message={uploadMessage} />}
 
             <div className="flex gap-2">
               <Button
@@ -1198,7 +1204,7 @@ export default function TestcaseManagerPage({
                         if (np[uid]) {
                           try {
                             clearTimeout(np[uid]);
-                          } catch { }
+                          } catch {}
                           delete np[uid];
                         }
                         return np;

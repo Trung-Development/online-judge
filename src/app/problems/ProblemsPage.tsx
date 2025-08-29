@@ -84,7 +84,8 @@ export default function ProblemsPage({
   initialProblems,
   initialCategories,
   initialTypes,
-  sessionToken, user
+  sessionToken,
+  user,
 }: ProblemsPageProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -451,12 +452,14 @@ export default function ProblemsPage({
                 <button
                   type="button"
                   onClick={() => setShowEditorialOnly(!showEditorialOnly)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showEditorialOnly ? "bg-primary" : "bg-muted"
-                    }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    showEditorialOnly ? "bg-primary" : "bg-muted"
+                  }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showEditorialOnly ? "translate-x-6" : "translate-x-1"
-                      }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      showEditorialOnly ? "translate-x-6" : "translate-x-1"
+                    }`}
                   />
                 </button>
               </div>
@@ -469,12 +472,14 @@ export default function ProblemsPage({
                   <button
                     type="button"
                     onClick={() => setHideSolved(!hideSolved)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${hideSolved ? "bg-primary" : "bg-muted"
-                      }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      hideSolved ? "bg-primary" : "bg-muted"
+                    }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${hideSolved ? "translate-x-6" : "translate-x-1"
-                        }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        hideSolved ? "translate-x-6" : "translate-x-1"
+                      }`}
                     />
                   </button>
                 </div>
@@ -488,12 +493,14 @@ export default function ProblemsPage({
                   <button
                     type="button"
                     onClick={() => setHideDeleted(!hideDeleted)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${hideDeleted ? "bg-primary" : "bg-muted"
-                      }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      hideDeleted ? "bg-primary" : "bg-muted"
+                    }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${hideDeleted ? "translate-x-6" : "translate-x-1"
-                        }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        hideDeleted ? "translate-x-6" : "translate-x-1"
+                      }`}
                     />
                   </button>
                 </div>
@@ -504,12 +511,14 @@ export default function ProblemsPage({
                 <button
                   type="button"
                   onClick={() => setShowTypes(!showTypes)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showTypes ? "bg-primary" : "bg-muted"
-                    }`}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    showTypes ? "bg-primary" : "bg-muted"
+                  }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showTypes ? "translate-x-6" : "translate-x-1"
-                      }`}
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      showTypes ? "translate-x-6" : "translate-x-1"
+                    }`}
                   />
                 </button>
               </div>
@@ -563,8 +572,9 @@ export default function ProblemsPage({
                   </th>
                 )}
                 <th
-                  className={`h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 ${!isAuthenticated ? "first:rounded-tl-md" : ""
-                    } cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100`}
+                  className={`h-12 px-4 text-left align-middle font-medium text-white dark:text-gray-900 border-r border-gray-600 dark:border-gray-300 ${
+                    !isAuthenticated ? "first:rounded-tl-md" : ""
+                  } cursor-pointer hover:bg-gray-700 dark:hover:bg-gray-100`}
                   onClick={() => handleSort("slug")}
                 >
                   <div className="flex items-center gap-2">
@@ -659,10 +669,11 @@ export default function ProblemsPage({
                 currentProblems.map((problem) => (
                   <tr
                     key={problem.code}
-                    className={`border-b transition-colors ${problem.isDeleted // The problem is deleted
-                      ? "bg-muted/100 opacity-50 pointer-events-none"
-                      : "hover:bg-muted/50"
-                      }`}
+                    className={`border-b transition-colors ${
+                      problem.isDeleted // The problem is deleted
+                        ? "bg-muted/100 opacity-50 pointer-events-none"
+                        : "hover:bg-muted/50"
+                    }`}
                   >
                     {isAuthenticated && (
                       <td
@@ -678,9 +689,11 @@ export default function ProblemsPage({
                         <span className="flex items-center justify-center h-full w-full">
                           <FontAwesomeIcon
                             icon={getStatusIcon(problem.status).icon}
-                            className={`w-4 h-4 text-${getStatusIcon(problem.status).color
-                              }-600 dark:text-${getStatusIcon(problem.status).color
-                              }-400`}
+                            className={`w-4 h-4 text-${
+                              getStatusIcon(problem.status).color
+                            }-600 dark:text-${
+                              getStatusIcon(problem.status).color
+                            }-400`}
                           />
                         </span>
                       </td>
@@ -718,16 +731,17 @@ export default function ProblemsPage({
                     </td>
                     <td className="p-4 align-middle text-center border-r border-border w-16">
                       <span
-                        className={`font-medium ${!problem.stats
-                          ? "text-muted-foreground"
-                          : calculateAcceptanceRate(problem.stats) === null
+                        className={`font-medium ${
+                          !problem.stats
                             ? "text-muted-foreground"
-                            : calculateAcceptanceRate(problem.stats)! >= 50
-                              ? "text-green-600 dark:text-green-400"
-                              : calculateAcceptanceRate(problem.stats)! >= 25
-                                ? "text-yellow-600 dark:text-yellow-400"
-                                : "text-red-600 dark:text-red-400"
-                          }`}
+                            : calculateAcceptanceRate(problem.stats) === null
+                              ? "text-muted-foreground"
+                              : calculateAcceptanceRate(problem.stats)! >= 50
+                                ? "text-green-600 dark:text-green-400"
+                                : calculateAcceptanceRate(problem.stats)! >= 25
+                                  ? "text-yellow-600 dark:text-yellow-400"
+                                  : "text-red-600 dark:text-red-400"
+                        }`}
                       >
                         {problem.stats
                           ? formatAcceptanceRate(problem.stats)
