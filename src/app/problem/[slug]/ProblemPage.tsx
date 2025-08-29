@@ -53,9 +53,9 @@ export default function ProblemPage({
       user?.perms,
       problem.author,
       problem.curator,
-      user?.id
+      user?.username
     );
-  const canEditProblemInfo = !problem.isDeleted && !problem.isLocked && hasPermission(user?.perms, UserPermissions.MODIFY_ALL_PROBLEMS);
+  const canEditProblemInfo = !problem.isDeleted && (problem.author.includes(user?.username || "") || problem.curator.includes(user?.username || "") || hasPermission(user?.perms, UserPermissions.MODIFY_ALL_PROBLEMS));
 
   const canViewEditSection = !problem.isDeleted && user && (canUserEditTestcases || canEditProblemInfo);
 

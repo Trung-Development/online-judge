@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExclamationTriangle, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { IProblemPageData } from "@/types";
+import UnlockLockedProblem from "./UnlockProblem";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -59,13 +60,11 @@ export default async function Page({
     if (problem == 403) return generateOverlayWarning(
       "You do not have the permission to edit this problem. Please contact the administrator if you believe this is an error.",
     )
-    if (problem?.isLocked) return generateOverlayWarning(
-      "Modifications to this problem are restricted. Please contact an administrator for further assistance.",
-    )
+    if (problem?.isLocked) return <UnlockLockedProblem problem={problem} sessionToken={session?.sessionToken} user={session?.user} isAuthenticated={!!session} />
     if (problem?.isDeleted) return generateOverlayError(
       "This problem is marked as deleted and cannot be edited. Please check the URL and try again later.",
     )
   }
   problem = problem as IProblemPageData;
-  return <ManageProblemPage problem={problem} />;
+  return <ManageProblemPage problem={problem} user={session?.user} sessionToken={session?.sessionToken} />;
 }

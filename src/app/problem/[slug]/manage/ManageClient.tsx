@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAuth } from "@/components/AuthProvider";
 import {
   hasPermission,
   UserPermissions as FEUserPermissions,
+  UserPermissions,
 } from "@/lib/permissions";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -23,23 +23,26 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faExclamationTriangle, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
 import { IProblemPageData } from "@/types";
+import { User } from "@/lib/auth";
 
-export default function ManageProblemPage({ problem }: {
+export default function ManageProblemPage({ problem, user, sessionToken }: {
   problem: IProblemPageData & {
     pdf?: string | null;
-    categoryId?: number | null
-  }
+    categoryId?: number | null,
+  },
+  sessionToken?: string, user?: User,
 }) {
   const params = useParams() as Record<string, string | undefined>;
   const slugParam = params.slug ?? "";
   const router = useRouter();
 
-  const { user, sessionToken } = useAuth();
-
-  const canEdit = hasPermission(
+  const canEdit = problem.author.includes(user?.username || "") || problem.curator.includes(user?.username || "") || hasPermission(
     user?.perms,
     FEUserPermissions.EDIT_PROBLEM_TESTS
   );
+  const canLock = problem.author.includes(user?.username || "") || problem.curator.includes(user?.username || "") || hasPermission(user?.perms, UserPermissions.LOCK_PROBLEM);
+
+  const canDelete = hasPermission(user?.perms, UserPermissions.DELETE_PROBLEM);
 
   const [loading, setLoading] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -97,7 +100,7 @@ export default function ManageProblemPage({ problem }: {
 
         // Backend may send category as name (string). If so, map to local id.
         // Prefer `problem.categoryId` when provided; otherwise try to resolve by name.
-  const backendCategory = (problem as unknown) ? (problem as { category?: unknown }).category : undefined;
+        const backendCategory = (problem as unknown) ? (problem as { category?: unknown }).category : undefined;
         if (typeof backendCategory === "string" && catsRes && Array.isArray(catsRes)) {
           const found = (catsRes as { id: number; name: string }[]).find(
             (c) => c.name === backendCategory
@@ -325,6 +328,7 @@ export default function ManageProblemPage({ problem }: {
   };
 
   const handleDelete = async () => {
+    if (!canDelete) return;
     if (!confirm("Delete this problem? This cannot be undone.")) return;
     setError(null);
     setUpdateSuccess(false);
@@ -367,6 +371,51 @@ export default function ManageProblemPage({ problem }: {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(msg);
+    } finally {
+      setLoading("");
+    }
+  };
+
+  const handleLock = async () => {
+    if (!canLock) return;
+    if (!confirm("Lock this problem? No changes will be allowed, including creating new submissions.")) return;
+    setError(null);
+    setUpdateSuccess(false);
+    setLoading("lock");
+    try {
+      const res = await fetch(`/api/problem/${encodeURIComponent(slug)}/lock`, {
+        method: "POST",
+        headers: {
+          Authorization: sessionToken ? `Bearer ${sessionToken}` : "",
+        },
+      });
+      if (!res.ok) {
+        res.json().then(v => {
+          console.log(v);
+          if (v?.error) alert(`Failed to unlock problem: ${v.error}`);
+          else if (v.message) {
+            if (v.message === "INSUFFICIENT_PERMISSIONS")
+              setError(
+                "You are not authorized to perform this operation. Please try again later.",
+              );
+            if (v.message === "PROBLEM_NOT_FOUND")
+              setError(
+                "The problem you are trying to access does not exist. Please check the URL and try again.",
+              );
+          } else {
+            setError(`Failed to load the problem: ${res.status}. More details are available in the console.`);
+          }
+        }).catch((x) => {
+          setError(`Failed to load the problem: ${res.status}. More details are available in the console`);
+          console.log(x);
+        })
+        return;
+      }
+      // Navigate away after delete
+      router.push(`/problem/${slugParam}`)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      alert(msg);
     } finally {
       setLoading("");
     }
@@ -596,13 +645,21 @@ export default function ManageProblemPage({ problem }: {
           <Button onClick={handleSave} disabled={loading == 'save'}>
             {loading == 'save' ? "Saving..." : "Save"}
           </Button>
-          <Button
+          {canDelete && <Button
             variant="destructive"
             onClick={handleDelete}
             disabled={loading == 'delete'}
           >
             {loading == 'delete' ? "Deleting..." : "Delete"}
-          </Button>
+          </Button>}
+          {canLock && <Button
+            variant="destructive"
+            onClick={handleLock}
+            className="bg-yellow-500 hover:bg-yellow-600"
+            disabled={loading == 'lock'}
+          >
+            {loading == 'lock' ? "Locking..." : "Lock"}
+          </Button>}
         </div>
       </div>
     </main>

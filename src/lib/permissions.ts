@@ -103,9 +103,9 @@ export function canEditProblemTestcases(
   userPerms: string | undefined,
   problemAuthors: string[],
   problemCurators: string[],
-  userId: string | undefined,
+  toCheck: string | undefined,
 ): boolean {
-  if (!userId) return false;
+  if (!toCheck) return false;
 
   // Check global permission
   if (hasPermission(userPerms, UserPermissions.EDIT_PROBLEM_TESTS)) {
@@ -114,7 +114,7 @@ export function canEditProblemTestcases(
 
   // Check if user is author, curator, or tester
   return (
-    problemAuthors.includes(userId) ||
-    problemCurators.includes(userId)
+    problemAuthors.includes(toCheck || '') ||
+    problemCurators.includes(toCheck || '')
   );
 }
