@@ -522,7 +522,7 @@ export default function ImportCodeforcesPolygonPage() {
           type: "application/zip",
         }),
       );
-      form.append("path", `tests/${slug}/upload.zip`);
+      form.append("path", `tests/${slug}/archive.zip`);
       const uploadRes = await fetch("/api/upload-testcase-file", {
         method: "POST",
         body: form,
