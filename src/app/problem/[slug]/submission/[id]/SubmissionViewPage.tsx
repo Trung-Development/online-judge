@@ -4,11 +4,9 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { IProblemPageData } from "@/types";
-import { useAuth } from "@/components/AuthProvider";
 import { languages } from "@/constants";
 import { CodeHighlight } from "@/components/ui/code-highlight";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -27,7 +25,6 @@ import {
   faChevronDown,
   faChevronRight,
   faServer,
-  faExclamationCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { ErrorAlert } from "@/components/CustomAlert";
 
@@ -35,6 +32,7 @@ interface SubmissionViewPageProps {
   problem: IProblemPageData;
   slug: string;
   submissionId: number;
+  sessionToken?: string;
 }
 
 interface SubmissionDetail {
@@ -77,10 +75,8 @@ export default function SubmissionViewPage({
   problem,
   slug,
   submissionId,
+  sessionToken
 }: SubmissionViewPageProps) {
-  const { sessionToken } = useAuth();
-  // const router = useRouter();
-
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -1,6 +1,5 @@
 import { Config } from "@/config";
 import { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: `About - ${Config.siteDescription}`,
@@ -78,13 +77,13 @@ export default function AboutPage() {
         <h2 className="text-2xl font-bold mb-2">Credits</h2>
         <p className="text-base">
           Created by{" "}
-          <Link href="/user/devtrung" className="text-red-600">
+          <a href="https://github.com/vuthanhtrung2010" className="text-red-600">
             devtrung
-          </Link>{" "}
+          </a>{" "}
           (Vũ Thành Trung) and{" "}
-          <Link href="/user/blamm01" className="text-red-600">
+          <a href="https://github.com/kasdvn17" className="text-red-600">
             blamm01
-          </Link>
+          </a>{" "}
           (Nguyễn Hà Bảo Lâm).
         </p>
       </section>

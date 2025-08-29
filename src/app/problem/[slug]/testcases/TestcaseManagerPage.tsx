@@ -14,7 +14,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/components/AuthProvider";
 import { IProblemPageData } from "@/types";
 import { canEditProblemTestcases } from "@/lib/permissions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -32,10 +31,13 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import JSZip from "jszip";
 import { ErrorAlert, OverlayWarning, SuccessAlert } from "@/components/CustomAlert";
+import { User } from "@/lib/auth";
 
 interface TestcaseManagerPageProps {
   problem: IProblemPageData;
   slug: string;
+  user?: User;
+  sessionToken?: string;
 }
 
 type DetectedCase = {
@@ -60,10 +62,9 @@ interface Archive {
 export default function TestcaseManagerPage({
   problem,
   slug,
+  user,
+  sessionToken
 }: TestcaseManagerPageProps) {
-  const { user, sessionToken } = useAuth();
-  // const router = useRouter();
-
   const [visibility, setVisibility] = useState<
     "AUTHOR_ONLY" | "AC_ONLY" | "EVERYONE"
   >(problem.testcaseDataVisibility || "AUTHOR_ONLY");

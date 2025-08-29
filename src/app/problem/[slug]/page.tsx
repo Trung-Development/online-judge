@@ -25,8 +25,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const session = await getAuthSession();
-    const problem = await getProblem(slug, session?.sessionToken);
+    const problem = await getProblem(slug, "");
     if (!problem) {
       return {
         title: `No such problem - ${Config.siteDescription}`,
@@ -100,8 +99,8 @@ export default async function Page({
               const existing = Array.isArray(props.className)
                 ? props.className.map(String)
                 : props.className
-                ? [String(props.className)]
-                : [];
+                  ? [String(props.className)]
+                  : [];
               if (!existing.includes("decor-outline"))
                 existing.push("decor-outline");
               props.className = existing;
@@ -114,8 +113,8 @@ export default async function Page({
               const existing = Array.isArray(props.className)
                 ? props.className.map(String)
                 : props.className
-                ? [String(props.className)]
-                : [];
+                  ? [String(props.className)]
+                  : [];
               if (!existing.includes("wiki-inline-code"))
                 existing.push("wiki-inline-code");
               props.className = existing;
@@ -132,8 +131,8 @@ export default async function Page({
               const existing = Array.isArray(props.className)
                 ? props.className.map(String)
                 : props.className
-                ? [String(props.className)]
-                : [];
+                  ? [String(props.className)]
+                  : [];
               if (child.tagName === "h1") {
                 if (!existing.includes("text-2xl"))
                   existing.push("text-2xl", "font-bold", "mt-6", "mb-4");
@@ -158,8 +157,8 @@ export default async function Page({
               const existing = Array.isArray(props.className)
                 ? props.className.map(String)
                 : props.className
-                ? [String(props.className)]
-                : [];
+                  ? [String(props.className)]
+                  : [];
               // mark task-list/contains-task-list if present in items
               if (child.tagName === "ul" || child.tagName === "ol") {
                 if (!existing.includes("wiki-list")) existing.push("wiki-list");
@@ -232,6 +231,7 @@ export default async function Page({
 
   return (
     <ProblemPage
+      user={session?.user}
       problem={problem}
       slug={slug}
       renderedDescription={renderedDescription}

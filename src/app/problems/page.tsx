@@ -28,6 +28,8 @@ export default async function Page() {
   });
   return (
     <ProblemsPage
+      sessionToken={session?.sessionToken}
+      user={session?.user}
       initialProblems={problems}
       initialCategories={categories}
       initialTypes={types}

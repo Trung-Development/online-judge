@@ -51,6 +51,7 @@ export default async function Page({
     <SubmissionViewPage
       problem={problem}
       slug={slug}
+      sessionToken={session?.sessionToken}
       submissionId={parseInt(id)}
     />
   );

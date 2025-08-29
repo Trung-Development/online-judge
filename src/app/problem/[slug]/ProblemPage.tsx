@@ -7,7 +7,6 @@ import "katex/dist/katex.min.css";
 import styles from "./ProblemPage.module.css";
 
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/components/AuthProvider";
 import {
   canEditProblemTestcases,
   hasPermission,
@@ -32,10 +31,12 @@ import {
 
 import { IProblemPageData } from "@/types";
 import { languages } from "@/constants";
+import { User } from "@/lib/auth";
 
 interface ProblemPageProps {
   problem: IProblemPageData;
   slug: string;
+  user?: User;
   renderedDescription: string;
 }
 
@@ -43,8 +44,9 @@ export default function ProblemPage({
   problem,
   slug,
   renderedDescription,
+  user,
 }: ProblemPageProps) {
-  const { user, isAuthenticated } = useAuth();
+  const isAuthenticated = !!user;
   const renderedRef = useRef<HTMLDivElement | null>(null);
   const [typeExpanded, setTypeExpanded] = useState(false);
   const [sourceExpanded, setSourceExpanded] = useState(true);
@@ -96,13 +98,12 @@ export default function ProblemPage({
       {/* Title & PDF */}
       <div className="flex items-center justify-between mb-4">
         <h1
-          className={`flex items-center gap-2 text-3xl font-bold ${
-            problem.isDeleted
-              ? "text-red-500"
-              : problem.isLocked
-                ? "text-yellow-500"
-                : ""
-          }`}
+          className={`flex items-center gap-2 text-3xl font-bold ${problem.isDeleted
+            ? "text-red-500"
+            : problem.isLocked
+              ? "text-yellow-500"
+              : ""
+            }`}
         >
           {problem.isLocked && <span>🔒</span>}
           {problem.isDeleted && <span>⛔</span>}
@@ -317,11 +318,10 @@ export default function ProblemPage({
                       </span>
                     </button>
                     <div
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        typeExpanded
-                          ? "max-h-64 opacity-100 mt-2"
-                          : "max-h-0 opacity-0"
-                      }`}
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${typeExpanded
+                        ? "max-h-64 opacity-100 mt-2"
+                        : "max-h-0 opacity-0"
+                        }`}
                     >
                       <div className="text-foreground ml-5">
                         {problem.type.join(", ")}
@@ -343,11 +343,10 @@ export default function ProblemPage({
                         </span>
                       </button>
                       <div
-                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                          sourceExpanded
-                            ? "max-h-64 opacity-100 mt-2"
-                            : "max-h-0 opacity-0"
-                        }`}
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${sourceExpanded
+                          ? "max-h-64 opacity-100 mt-2"
+                          : "max-h-0 opacity-0"
+                          }`}
                       >
                         <div className="text-foreground ml-5">
                           {problem.problemSource}
@@ -372,11 +371,10 @@ export default function ProblemPage({
                       </span>
                     </button>
                     <div
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        langExpanded
-                          ? "max-h-96 opacity-100 mt-2"
-                          : "max-h-0 opacity-0"
-                      }`}
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${langExpanded
+                        ? "max-h-96 opacity-100 mt-2"
+                        : "max-h-0 opacity-0"
+                        }`}
                     >
                       <div className="text-foreground ml-5 max-h-96 overflow-y-auto">
                         {allowedLanguageNames.join(", ")}

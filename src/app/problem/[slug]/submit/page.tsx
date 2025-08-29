@@ -15,8 +15,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   try {
     const { slug } = await params;
-    const session = await getAuthSession();
-    const problem = await getProblem(slug, session?.sessionToken);
+    const problem = await getProblem(slug, "");
     if (!problem) {
       return {
         title: `No such problem - ${Config.siteDescription}`,
