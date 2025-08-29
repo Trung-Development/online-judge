@@ -218,7 +218,7 @@ export default function TestcaseManagerPage({
       user.perms,
       problem.author || [],
       problem.curator || [],
-      user.id,
+      user.username,
     );
 
   // Redirect if user doesn't have permission
