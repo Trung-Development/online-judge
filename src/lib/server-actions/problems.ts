@@ -39,10 +39,15 @@ export async function getProblems(token?: string): Promise<IProblemData[]> {
       headers.append("Authorization", `Bearer ${token}`);
 
     const response = await fetch(url.toString(), {
-      headers,
-      next: {
-        revalidate: 30, // Revalidate after 30 seconds
+      // dev phase - no cache
+      headers: {
+        ...headers,
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
       },
+      cache: "no-store",
+      next: { revalidate: 0 },
     });
 
     if (!response.ok) {
