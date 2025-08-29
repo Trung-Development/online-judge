@@ -44,13 +44,13 @@ export default function ImportCodeforcesPolygonPage() {
   type UploadedInfo = { url?: string; key?: string; name?: string };
 
   const [parsedPackage, setParsedPackage] = useState<ParsedPackage | null>(
-    null,
+    null
   );
   const [uploadedArchive, setUploadedArchive] = useState<UploadedInfo | null>(
-    null,
+    null
   );
   const [uploadedChecker, setUploadedChecker] = useState<UploadedInfo | null>(
-    null,
+    null
   );
   // debug mode removed in production
 
@@ -92,7 +92,7 @@ export default function ImportCodeforcesPolygonPage() {
     // Restore math regions
     s = s.replace(
       /@@MATH(\d+)@@/g,
-      (_, idx) => mathRegions[parseInt(idx, 10)] || "",
+      (_, idx) => mathRegions[parseInt(idx, 10)] || ""
     );
     return s;
   };
@@ -100,7 +100,7 @@ export default function ImportCodeforcesPolygonPage() {
   const processImagesInText = async (
     zip: JSZip,
     text: string,
-    statementFolder: string,
+    statementFolder: string
   ) => {
     if (!text) return text;
     let out = text;
@@ -126,8 +126,8 @@ export default function ImportCodeforcesPolygonPage() {
         ext === "jpg" || ext === "jpeg"
           ? "image/jpeg"
           : ext === "gif"
-            ? "image/gif"
-            : "image/png";
+          ? "image/gif"
+          : "image/png";
       out = out.split(m[0]).join(`![image](data:${mime};base64,${b64})`);
     }
 
@@ -151,8 +151,8 @@ export default function ImportCodeforcesPolygonPage() {
         ext === "jpg" || ext === "jpeg"
           ? "image/jpeg"
           : ext === "gif"
-            ? "image/gif"
-            : "image/png";
+          ? "image/gif"
+          : "image/png";
       out = out.split(m[0]).join(`<img src="data:${mime};base64,${b64}" />`);
     }
 
@@ -183,11 +183,11 @@ export default function ImportCodeforcesPolygonPage() {
       if (!testset) throw new Error("testset tests not found");
       const timeLimitMs = parseInt(
         testset.querySelector("time-limit")?.textContent || "1000",
-        10,
+        10
       );
       const memoryBytes = parseInt(
         testset.querySelector("memory-limit")?.textContent || "268435456",
-        10,
+        10
       );
       const timeLimit = Math.max(0.001, timeLimitMs / 1000);
       // memory-limit in Polygon is in bytes; convert to megabytes for our API
@@ -234,7 +234,7 @@ export default function ImportCodeforcesPolygonPage() {
           const depsEl = g.querySelector("dependencies");
           const deps = depsEl
             ? Array.from(depsEl.children || []).map((d) =>
-                d.getAttribute("group"),
+                d.getAttribute("group")
               )
             : [];
           batches[name] = {
@@ -254,12 +254,18 @@ export default function ImportCodeforcesPolygonPage() {
         const group = test.getAttribute("group") || "";
         const inputPath = inputPathPattern
           ? inputPathPattern
-              .replace(/%\(?[0-9]*d\)?/i, String(idx))
+              .replace(/%0?(\d*)(?:ll|I64)?[di]/i, (_, width) => {
+                const w = width ? parseInt(width, 10) : 0;
+                return w > 0 ? String(idx).padStart(w, "0") : String(idx);
+              })
               .replace("{0}", String(idx))
           : `${idx}`;
         const answerPath = answerPathPattern
           ? answerPathPattern
-              .replace(/%\(?[0-9]*d\)?/i, String(idx))
+              .replace(/%0?(\d*)(?:ll|I64)?[di]/i, (_, width) => {
+                const w = width ? parseInt(width, 10) : 0;
+                return w > 0 ? String(idx).padStart(w, "0") : String(idx);
+              })
               .replace("{0}", String(idx))
           : `${idx}`;
         const inputFileName = `${String(idx).padStart(2, "0")}.inp`;
@@ -303,7 +309,7 @@ export default function ImportCodeforcesPolygonPage() {
       }
       if (ignoreZeroPointCases) {
         effectiveNormal = effectiveNormal.filter(
-          (i) => casesData[i].points > 0,
+          (i) => casesData[i].points > 0
         );
       }
 
@@ -323,11 +329,11 @@ export default function ImportCodeforcesPolygonPage() {
         if (inpFile && outFile) {
           testsFolder.file(
             cd.inputFileName,
-            await inpFile.async("arraybuffer"),
+            await inpFile.async("arraybuffer")
           );
           testsFolder.file(
             cd.outputFileName,
-            await outFile.async("arraybuffer"),
+            await outFile.async("arraybuffer")
           );
           finalCaseIndices.push(idx);
         }
@@ -346,11 +352,11 @@ export default function ImportCodeforcesPolygonPage() {
           if (inpFile && outFile) {
             testsFolder.file(
               cd.inputFileName,
-              await inpFile.async("arraybuffer"),
+              await inpFile.async("arraybuffer")
             );
             testsFolder.file(
               cd.outputFileName,
-              await outFile.async("arraybuffer"),
+              await outFile.async("arraybuffer")
             );
             finalCaseIndices.push(ci);
           }
@@ -406,7 +412,7 @@ export default function ImportCodeforcesPolygonPage() {
 
       // parse statements
       const statementElems = Array.from(
-        xmlDoc.querySelectorAll('statement[type="application/x-tex"]'),
+        xmlDoc.querySelectorAll('statement[type="application/x-tex"]')
       ) as Element[];
       let finalDescription = "Imported from Polygon.";
       if (statementElems.length > 0) {
@@ -463,7 +469,7 @@ export default function ImportCodeforcesPolygonPage() {
             desc = await processImagesInText(
               zip,
               desc,
-              folder.replace(/\/$/, ""),
+              folder.replace(/\/$/, "")
             );
             finalDescription = desc;
             break;
@@ -486,7 +492,7 @@ export default function ImportCodeforcesPolygonPage() {
           name: bn,
           points: effectiveBatches[bn].points,
           cases: effectiveBatches[bn].cases.map(
-            (ci: number) => casesData[ci].inputFileName,
+            (ci: number) => casesData[ci].inputFileName
           ),
         })),
         rawCases: finalCaseIndices.map((i) => ({
@@ -498,7 +504,7 @@ export default function ImportCodeforcesPolygonPage() {
       };
       setParsedPackage(parsed);
       setMessage(
-        "Package parsed. Click Upload to upload tests/checker, then Import to create problem and finalize.",
+        "Package parsed. Click Upload to upload tests/checker, then Import to create problem and finalize."
       );
       return parsed;
     } catch (err: unknown) {
@@ -520,7 +526,7 @@ export default function ImportCodeforcesPolygonPage() {
         "file",
         new File([parsedPackage.testsZipBlob], "upload.zip", {
           type: "application/zip",
-        }),
+        })
       );
       form.append("path", `tests/${slug}/archive.zip`);
       const uploadRes = await fetch("/api/upload-testcase-file", {
@@ -545,7 +551,7 @@ export default function ImportCodeforcesPolygonPage() {
       }
 
       setMessage(
-        "Upload finished. Click Import to create problem and finalize testcases.",
+        "Upload finished. Click Import to create problem and finalize testcases."
       );
     } catch (err: unknown) {
       setMessage(err instanceof Error ? err.message : String(err));
@@ -651,7 +657,7 @@ export default function ImportCodeforcesPolygonPage() {
       };
 
       const adjustedCases = adjustCasesForBackend(
-        finalizePayload.cases as Array<CaseOrBatch>,
+        finalizePayload.cases as Array<CaseOrBatch>
       );
       finalizePayload.cases = adjustedCases;
 
@@ -680,7 +686,7 @@ export default function ImportCodeforcesPolygonPage() {
           method: "POST",
           headers,
           body: JSON.stringify(finalizePayload),
-        },
+        }
       );
       if (!finRes.ok) {
         const text = await finRes.text();
@@ -722,7 +728,7 @@ export default function ImportCodeforcesPolygonPage() {
                 setSlugError("Slug too long (max 64 chars)");
               } else if (!/^[A-Za-z0-9_-]+$/.test(v)) {
                 setSlugError(
-                  "Invalid characters: only letters, digits, underscore and hyphen allowed",
+                  "Invalid characters: only letters, digits, underscore and hyphen allowed"
                 );
               } else {
                 setSlugError(null);
