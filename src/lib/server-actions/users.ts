@@ -11,18 +11,18 @@ export interface IUserData {
 }
 
 export interface IActivityHeatmapSubmission {
-  timestamp: number
+  timestamp: number;
 }
 
 export interface ISolvedAndAttemptedProblems {
-  totalPoints: number
+  totalPoints: number;
   data: {
     slug: string;
     name: string;
     categoryId: number;
     points: number;
     solved: boolean | null;
-  }[]
+  }[];
 }
 
 // Interface for users list
@@ -100,7 +100,9 @@ export async function getUsersList(): Promise<IUsersListData[]> {
   return data;
 }
 
-export async function getSolvedAndAttemptedProblems(username: string): Promise<ISolvedAndAttemptedProblems> {
+export async function getSolvedAndAttemptedProblems(
+  username: string,
+): Promise<ISolvedAndAttemptedProblems> {
   const apiBase = env.API_ENDPOINT;
 
   if (!apiBase) {
@@ -122,14 +124,18 @@ export async function getSolvedAndAttemptedProblems(username: string): Promise<I
   );
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch solved and attempted problems list: ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch solved and attempted problems list: ${response.statusText}`,
+    );
   }
 
   const data: ISolvedAndAttemptedProblems = await response.json();
   return data;
 }
 
-export async function getActivityHeatmapSubmissions(username: string): Promise<IActivityHeatmapSubmission[]> {
+export async function getActivityHeatmapSubmissions(
+  username: string,
+): Promise<IActivityHeatmapSubmission[]> {
   const apiBase = env.API_ENDPOINT;
 
   const response = await fetch(
@@ -147,7 +153,9 @@ export async function getActivityHeatmapSubmissions(username: string): Promise<I
   );
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch activity heatmap submissions list: ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch activity heatmap submissions list: ${response.statusText}`,
+    );
   }
 
   const data: IActivityHeatmapSubmission[] = await response.json();

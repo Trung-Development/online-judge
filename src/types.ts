@@ -103,7 +103,7 @@ export interface IProblemPageData {
   pdf?: string; // PDF Statement name.
   solution?: string;
 
-  short_circuit?: boolean
+  short_circuit?: boolean;
 
   isLocked?: boolean;
   isDeleted?: boolean;

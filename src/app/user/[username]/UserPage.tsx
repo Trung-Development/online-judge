@@ -1,7 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { IActivityHeatmapSubmission, IUserData } from "@/lib/server-actions/users";
+import {
+  IActivityHeatmapSubmission,
+  IUserData,
+} from "@/lib/server-actions/users";
 import { getRatingClass, getRatingTitle } from "@/lib/rating";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
@@ -20,7 +23,7 @@ interface UserPageProps {
     fullname: string;
     defaultRuntime: string;
   } | null;
-  heatmapSubs: IActivityHeatmapSubmission[]
+  heatmapSubs: IActivityHeatmapSubmission[];
 }
 
 export default function UserPage({

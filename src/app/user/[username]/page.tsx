@@ -1,6 +1,9 @@
 import { Metadata } from "next";
 import { Config } from "@/config";
-import { getActivityHeatmapSubmissions, getUser } from "@/lib/server-actions/users";
+import {
+  getActivityHeatmapSubmissions,
+  getUser,
+} from "@/lib/server-actions/users";
 import { notFound } from "next/navigation";
 import UserPage from "./UserPage";
 import { getAuthSession } from "@/lib/auth";

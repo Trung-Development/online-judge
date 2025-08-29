@@ -1,7 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { ISolvedAndAttemptedProblems, IUserData } from "@/lib/server-actions/users";
+import {
+  ISolvedAndAttemptedProblems,
+  IUserData,
+} from "@/lib/server-actions/users";
 import { getRatingClass, getRatingTitle } from "@/lib/rating";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
@@ -19,11 +22,11 @@ interface UserProblemsPageProps {
     fullname: string;
     defaultRuntime: string;
   } | null;
-  SAP: ISolvedAndAttemptedProblems
+  SAP: ISolvedAndAttemptedProblems;
   categories: {
-    id: number,
-    name: string,
-  }[]
+    id: number;
+    name: string;
+  }[];
 }
 
 export default function UserProblemsPage({
@@ -31,7 +34,7 @@ export default function UserProblemsPage({
   username,
   serverUser,
   SAP,
-  categories
+  categories,
 }: UserProblemsPageProps) {
   // For client-side session
   const { user: clientUser } = useAuth();
@@ -40,13 +43,19 @@ export default function UserProblemsPage({
   const ratingValue = userData.rating || 0;
 
   // Group problems by category
-  const solvedProbsByCat = new Map<number, { code: string; name: string; points: number }[]>();
-  const attemptedProbsByCat = new Map<number, { code: string; name: string; points: number }[]>();
+  const solvedProbsByCat = new Map<
+    number,
+    { code: string; name: string; points: number }[]
+  >();
+  const attemptedProbsByCat = new Map<
+    number,
+    { code: string; name: string; points: number }[]
+  >();
   const pointsByCategory: { [key: number]: number } = {};
 
   // Track maximum points for each problem
-  const solvedProblems: {slug:string,name:string}[] = [];
-  const attemptedProblems = new Map<string, { name: string, points: number }>();
+  const solvedProblems: { slug: string; name: string }[] = [];
+  const attemptedProblems = new Map<string, { name: string; points: number }>();
 
   SAP.data.forEach((prob) => {
     if (prob.solved) {
@@ -55,22 +64,26 @@ export default function UserProblemsPage({
         name: prob.name,
       });
     } else {
-      attemptedProblems.set(prob.slug, {name: prob.name, points: prob.points});
+      attemptedProblems.set(prob.slug, {
+        name: prob.name,
+        points: prob.points,
+      });
     }
   });
 
   // Group problems by category using the maximum points
   SAP.data.forEach((prob) => {
     const map = prob.solved ? solvedProbsByCat : attemptedProbsByCat;
-      const total_probs = map.get(prob.categoryId) || [];
-      total_probs?.push({
-        code: prob.slug,
-        name: prob.name,
-        points: prob.points,
-      });
-      map.set(prob.categoryId, total_probs || []);
+    const total_probs = map.get(prob.categoryId) || [];
+    total_probs?.push({
+      code: prob.slug,
+      name: prob.name,
+      points: prob.points,
+    });
+    map.set(prob.categoryId, total_probs || []);
 
-      pointsByCategory[prob.categoryId] = (pointsByCategory[prob.categoryId] || 0) + prob.points;
+    pointsByCategory[prob.categoryId] =
+      (pointsByCategory[prob.categoryId] || 0) + prob.points;
   });
 
   // Calculate total points based on maximum points for unique problems
@@ -111,7 +124,7 @@ export default function UserProblemsPage({
           <div className="space-y-3 bg-card border rounded-lg p-4 mb-4">
             <div>
               <span className="font-medium">Problems solved:</span>{" "}
-              {SAP.data.filter(v => v.solved).length}
+              {SAP.data.filter((v) => v.solved).length}
             </div>
             <div>
               <span className="font-medium">Total points:</span>{" "}
@@ -136,7 +149,7 @@ export default function UserProblemsPage({
           <div className="mb-4">
             <h2 className="text-xl font-semibold mb-4">Solved Problems</h2>
 
-            {SAP.data.filter(v => v.solved).length === 0 ? (
+            {SAP.data.filter((v) => v.solved).length === 0 ? (
               <div className="bg-card border rounded-lg p-6">
                 <p className="text-muted-foreground text-center py-4">
                   No solved problems yet.
@@ -145,7 +158,9 @@ export default function UserProblemsPage({
             ) : (
               <div className="space-y-6">
                 {solvedProbsByCat.entries().map(([categoryId, problems]) => {
-                  const categoryName = categories.find(v => v.id === categoryId)?.name || "Unknown";
+                  const categoryName =
+                    categories.find((v) => v.id === categoryId)?.name ||
+                    "Unknown";
                   return (
                     <div
                       key={categoryId}
@@ -177,7 +192,7 @@ export default function UserProblemsPage({
                         ))}
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             )}
@@ -186,7 +201,7 @@ export default function UserProblemsPage({
           <div className="mb-4">
             <h2 className="text-xl font-semibold mb-4">Attempted Problems</h2>
 
-            {SAP.data.filter(v => !v.solved).length === 0 ? (
+            {SAP.data.filter((v) => !v.solved).length === 0 ? (
               <div className="bg-card border rounded-lg p-6">
                 <p className="text-muted-foreground text-center py-4">
                   No attempted problems yet.
@@ -195,7 +210,9 @@ export default function UserProblemsPage({
             ) : (
               <div className="space-y-6">
                 {attemptedProbsByCat.entries().map(([categoryId, problems]) => {
-                  const categoryName = categories.find(v => v.id === categoryId)?.name || "Unknown";
+                  const categoryName =
+                    categories.find((v) => v.id === categoryId)?.name ||
+                    "Unknown";
                   return (
                     <div
                       key={categoryId}
@@ -227,7 +244,7 @@ export default function UserProblemsPage({
                         ))}
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
             )}

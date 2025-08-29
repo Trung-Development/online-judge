@@ -108,7 +108,8 @@ async function getCryptoKey(): Promise<CryptoKey> {
 
 async function encryptString(plain: string): Promise<string> {
   // Try WebCrypto first
-  if (Config.encryptAuthCookies == false) throw new Error("Cookie encryption force disabled by config");
+  if (Config.encryptAuthCookies == false)
+    throw new Error("Cookie encryption force disabled by config");
   try {
     const key = await getCryptoKey();
     const cryptoObj = globalThis as unknown as { crypto?: Crypto };
@@ -223,7 +224,10 @@ export async function setAuthSession(
       try {
         cookieStore.set(COOKIE_NAME, JSON.stringify(session), COOKIE_OPTIONS);
       } catch (e2) {
-        console.error("Failed to set plaintext session cookie as fallback:", e2);
+        console.error(
+          "Failed to set plaintext session cookie as fallback:",
+          e2,
+        );
         throw e2;
       }
     }

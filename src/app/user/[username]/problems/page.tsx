@@ -1,5 +1,8 @@
 import { Config } from "@/config";
-import { getSolvedAndAttemptedProblems, getUser } from "@/lib/server-actions/users";
+import {
+  getSolvedAndAttemptedProblems,
+  getUser,
+} from "@/lib/server-actions/users";
 import { notFound } from "next/navigation";
 import { getAuthSession } from "@/lib/auth";
 import UserProblemsPage from "./UserProblemsPage";

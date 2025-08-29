@@ -58,7 +58,7 @@ export const UserPermissions = {
   EDIT_JUDGES: BigInt(1) << BigInt(35),
   CREATE_NEW_JUDGE: BigInt(1) << BigInt(36),
   DELETE_JUDGES: BigInt(1) << BigInt(37),
-}
+};
 
 export type PermissionBit = bigint;
 
@@ -114,7 +114,7 @@ export function canEditProblemTestcases(
 
   // Check if user is author, curator, or tester
   return (
-    problemAuthors.includes(toCheck || '') ||
-    problemCurators.includes(toCheck || '')
+    problemAuthors.includes(toCheck || "") ||
+    problemCurators.includes(toCheck || "")
   );
 }

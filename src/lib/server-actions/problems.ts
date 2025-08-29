@@ -37,7 +37,7 @@ export async function getProblems(token?: string): Promise<IProblemData[]> {
     const response = await fetch(url.toString(), {
       // dev phase - no cache
       headers: {
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
         "Cache-Control": "no-cache, no-store, must-revalidate",
         Pragma: "no-cache",

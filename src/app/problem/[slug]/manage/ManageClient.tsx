@@ -21,26 +21,38 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { languages } from "@/constants";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faExclamationTriangle, faInfoCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheck,
+  faExclamationTriangle,
+  faInfoCircle,
+} from "@fortawesome/free-solid-svg-icons";
 import { IProblemPageData } from "@/types";
 import { User } from "@/lib/auth";
 
-export default function ManageProblemPage({ problem, user, sessionToken }: {
+export default function ManageProblemPage({
+  problem,
+  user,
+  sessionToken,
+}: {
   problem: IProblemPageData & {
     pdf?: string | null;
-    categoryId?: number | null,
-  },
-  sessionToken?: string, user?: User,
+    categoryId?: number | null;
+  };
+  sessionToken?: string;
+  user?: User;
 }) {
   const params = useParams() as Record<string, string | undefined>;
   const slugParam = params.slug ?? "";
   const router = useRouter();
 
-  const canEdit = problem.author.includes(user?.username || "") || problem.curator.includes(user?.username || "") || hasPermission(
-    user?.perms,
-    FEUserPermissions.EDIT_PROBLEM_TESTS
-  );
-  const canLock = problem.author.includes(user?.username || "") || problem.curator.includes(user?.username || "") || hasPermission(user?.perms, UserPermissions.LOCK_PROBLEM);
+  const canEdit =
+    problem.author.includes(user?.username || "") ||
+    problem.curator.includes(user?.username || "") ||
+    hasPermission(user?.perms, FEUserPermissions.EDIT_PROBLEM_TESTS);
+  const canLock =
+    problem.author.includes(user?.username || "") ||
+    problem.curator.includes(user?.username || "") ||
+    hasPermission(user?.perms, UserPermissions.LOCK_PROBLEM);
 
   const canDelete = hasPermission(user?.perms, UserPermissions.DELETE_PROBLEM);
 
@@ -65,7 +77,7 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
     { id: number; name: string }[]
   >([]);
   const [categories, setCategories] = useState<{ id: number; name: string }[]>(
-    []
+    [],
   );
   const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
 
@@ -91,19 +103,27 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
           // derive filename for display
           setPdfFileName(`${problem.pdf || ""}.pdf`);
         }
-        setTimeLimit(typeof problem.timeLimit === "number" ? problem.timeLimit : 1);
+        setTimeLimit(
+          typeof problem.timeLimit === "number" ? problem.timeLimit : 1,
+        );
         setMemoryLimit(
-          typeof problem.memoryLimit === "number" ? problem.memoryLimit : 256
+          typeof problem.memoryLimit === "number" ? problem.memoryLimit : 256,
         );
         setShortCircuit(!!(problem.short_circuit || false));
         setAllowedLanguages(problem.allowedLanguages || []);
 
         // Backend may send category as name (string). If so, map to local id.
         // Prefer `problem.categoryId` when provided; otherwise try to resolve by name.
-        const backendCategory = (problem as unknown) ? (problem as { category?: unknown }).category : undefined;
-        if (typeof backendCategory === "string" && catsRes && Array.isArray(catsRes)) {
+        const backendCategory = (problem as unknown)
+          ? (problem as { category?: unknown }).category
+          : undefined;
+        if (
+          typeof backendCategory === "string" &&
+          catsRes &&
+          Array.isArray(catsRes)
+        ) {
           const found = (catsRes as { id: number; name: string }[]).find(
-            (c) => c.name === backendCategory
+            (c) => c.name === backendCategory,
           );
           if (found) setCategoryId(found.id);
           else setCategoryId(undefined);
@@ -116,7 +136,7 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
           // if typesRes contains objects with name/id, map by name
           const mapped: number[] = [];
           const typePool = typesRes as { id: number; name: string }[];
-          for (const t of (problem.type as string[])) {
+          for (const t of problem.type as string[]) {
             const found = typePool.find((p) => p.name === t);
             if (found) mapped.push(found.id);
           }
@@ -124,7 +144,11 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
           if (mapped.length > 0) setSelectedTypes(mapped);
           else if (problem.type.every((x: unknown) => typeof x === "number")) {
             // safe cast after checking runtime types
-            setSelectedTypes((problem.type as unknown as number[]).filter((n) => typeof n === "number"));
+            setSelectedTypes(
+              (problem.type as unknown as number[]).filter(
+                (n) => typeof n === "number",
+              ),
+            );
           } else {
             // fallback: empty
             setSelectedTypes([]);
@@ -141,7 +165,19 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
     return () => {
       // nothing to cleanup here; OverType init/cleanup handled in its own effect below
     };
-  }, [problem, problem.allowedLanguages, problem.categoryId, problem.description, problem.memoryLimit, problem.name, problem.pdf, problem.short_circuit, problem.timeLimit, problem.type, slugParam]);
+  }, [
+    problem,
+    problem.allowedLanguages,
+    problem.categoryId,
+    problem.description,
+    problem.memoryLimit,
+    problem.name,
+    problem.pdf,
+    problem.short_circuit,
+    problem.timeLimit,
+    problem.type,
+    slugParam,
+  ]);
 
   // Initialize OverType once when description (or slugParam) is available.
   // Use a container ref and a small retry loop to handle client navigations
@@ -170,12 +206,12 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
           const OTModule = await import("overtype");
           const OTGlobal = ((OTModule as { default?: unknown }).default ||
             OTModule) as unknown as {
-              setTheme?: (s: string, o?: Record<string, string>) => void;
-            };
+            setTheme?: (s: string, o?: Record<string, string>) => void;
+          };
           if (OTGlobal && typeof OTGlobal.setTheme === "function") {
             OTGlobal.setTheme(preferredTheme, otThemeOverrides);
           }
-        } catch { }
+        } catch {}
 
         // retry a few times if the container isn't present yet
         const maxAttempts = 5;
@@ -216,13 +252,13 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
             if (cur && typeof cur.showPreviewMode === "function") {
               try {
                 cur.showPreviewMode(false);
-              } catch { }
+              } catch {}
             }
           }
         };
         window.addEventListener("storage", onStorage);
         window.addEventListener("beforeunload", () =>
-          window.removeEventListener("storage", onStorage)
+          window.removeEventListener("storage", onStorage),
         );
       } catch {
         // keep quiet — initialization isn't critical and failures may be transient
@@ -238,7 +274,7 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
       if (cur && typeof cur.destroy === "function") {
         try {
           cur.destroy();
-        } catch { }
+        } catch {}
       }
       overTypeRef.current = null;
     };
@@ -256,7 +292,7 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
       if (cur && typeof cur.getValue === "function") {
         payloadDescription = cur.getValue();
       }
-    } catch { }
+    } catch {}
     // client-side validation
     if (!(timeLimit > 0) || timeLimit > 60) {
       setError("Time limit must be > 0 and ≤ 60 seconds");
@@ -280,7 +316,7 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
         allowedLanguages,
         timeLimit,
         memoryLimit,
-        short_circuit
+        short_circuit,
       });
       const res = await fetch(`/api/problem/${encodeURIComponent(slugParam)}`, {
         method: "PUT",
@@ -291,29 +327,36 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
         body: bodyPayload,
       });
       if (!res.ok) {
-        res.json().then(v => {
-          console.log(v);
-          if (v?.error) setError(v?.error);
-          else if (v.message) {
-            if (v.message === "INSUFFICIENT_PERMISSIONS")
+        res
+          .json()
+          .then((v) => {
+            console.log(v);
+            if (v?.error) setError(v?.error);
+            else if (v.message) {
+              if (v.message === "INSUFFICIENT_PERMISSIONS")
+                setError(
+                  "You are not authorized to perform this operation. Please try again later.",
+                );
+              if (v.message === "PROBLEM_NOT_FOUND")
+                setError(
+                  "The problem you are trying to access does not exist. Please check the URL and try again.",
+                );
+              if (v.message === "PROBLEM_LOCKED")
+                setError(
+                  "Modifications to this problem are restricted. Please contact an administrator for further assistance.",
+                );
+            } else {
               setError(
-                "You are not authorized to perform this operation. Please try again later.",
+                `Failed to save the new details: ${res.status}. More details are available in the console.`,
               );
-            if (v.message === "PROBLEM_NOT_FOUND")
-              setError(
-                "The problem you are trying to access does not exist. Please check the URL and try again.",
-              );
-            if (v.message === "PROBLEM_LOCKED")
-              setError(
-                "Modifications to this problem are restricted. Please contact an administrator for further assistance.",
-              );
-          } else {
-            setError(`Failed to save the new details: ${res.status}. More details are available in the console.`);
-          }
-        }).catch((x) => {
-          setError(`Failed to save the new details: ${res.status}. More details are available in the console`);
-          console.log(x);
-        })
+            }
+          })
+          .catch((x) => {
+            setError(
+              `Failed to save the new details: ${res.status}. More details are available in the console`,
+            );
+            console.log(x);
+          });
         setLoading("");
         return;
       }
@@ -341,29 +384,36 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
         },
       });
       if (!res.ok) {
-        res.json().then(v => {
-          console.log(v);
-          if (v?.error) setError(v?.error);
-          else if (v.message) {
-            if (v.message === "INSUFFICIENT_PERMISSIONS")
+        res
+          .json()
+          .then((v) => {
+            console.log(v);
+            if (v?.error) setError(v?.error);
+            else if (v.message) {
+              if (v.message === "INSUFFICIENT_PERMISSIONS")
+                setError(
+                  "You are not authorized to perform this operation. Please try again later.",
+                );
+              if (v.message === "PROBLEM_NOT_FOUND")
+                setError(
+                  "The problem you are trying to access does not exist. Please check the URL and try again.",
+                );
+              if (v.message === "PROBLEM_LOCKED")
+                setError(
+                  "Modifications to this problem are restricted. Please contact an administrator for further assistance.",
+                );
+            } else {
               setError(
-                "You are not authorized to perform this operation. Please try again later.",
+                `Failed to load the problem: ${res.status}. More details are available in the console.`,
               );
-            if (v.message === "PROBLEM_NOT_FOUND")
-              setError(
-                "The problem you are trying to access does not exist. Please check the URL and try again.",
-              );
-            if (v.message === "PROBLEM_LOCKED")
-              setError(
-                "Modifications to this problem are restricted. Please contact an administrator for further assistance.",
-              );
-          } else {
-            setError(`Failed to load the problem: ${res.status}. More details are available in the console.`);
-          }
-        }).catch((x) => {
-          setError(`Failed to load the problem: ${res.status}. More details are available in the console`);
-          console.log(x);
-        })
+            }
+          })
+          .catch((x) => {
+            setError(
+              `Failed to load the problem: ${res.status}. More details are available in the console`,
+            );
+            console.log(x);
+          });
         return;
       }
       // Navigate away after delete
@@ -378,7 +428,12 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
 
   const handleLock = async () => {
     if (!canLock) return;
-    if (!confirm("Lock this problem? No changes will be allowed, including creating new submissions.")) return;
+    if (
+      !confirm(
+        "Lock this problem? No changes will be allowed, including creating new submissions.",
+      )
+    )
+      return;
     setError(null);
     setUpdateSuccess(false);
     setLoading("lock");
@@ -390,29 +445,36 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
         },
       });
       if (!res.ok) {
-        res.json().then(v => {
-          console.log(v);
-          if (v?.error) alert(`Failed to unlock problem: ${v.error}`);
-          else if (v.message) {
-            if (v.message === "INSUFFICIENT_PERMISSIONS")
+        res
+          .json()
+          .then((v) => {
+            console.log(v);
+            if (v?.error) alert(`Failed to unlock problem: ${v.error}`);
+            else if (v.message) {
+              if (v.message === "INSUFFICIENT_PERMISSIONS")
+                setError(
+                  "You are not authorized to perform this operation. Please try again later.",
+                );
+              if (v.message === "PROBLEM_NOT_FOUND")
+                setError(
+                  "The problem you are trying to access does not exist. Please check the URL and try again.",
+                );
+            } else {
               setError(
-                "You are not authorized to perform this operation. Please try again later.",
+                `Failed to load the problem: ${res.status}. More details are available in the console.`,
               );
-            if (v.message === "PROBLEM_NOT_FOUND")
-              setError(
-                "The problem you are trying to access does not exist. Please check the URL and try again.",
-              );
-          } else {
-            setError(`Failed to load the problem: ${res.status}. More details are available in the console.`);
-          }
-        }).catch((x) => {
-          setError(`Failed to load the problem: ${res.status}. More details are available in the console`);
-          console.log(x);
-        })
+            }
+          })
+          .catch((x) => {
+            setError(
+              `Failed to load the problem: ${res.status}. More details are available in the console`,
+            );
+            console.log(x);
+          });
         return;
       }
       // Navigate away after delete
-      router.push(`/problem/${slugParam}`)
+      router.push(`/problem/${slugParam}`);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       alert(msg);
@@ -551,16 +613,20 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
         </div>
 
         <div className="mt-4 flex grid-cols-2">
-          <label className="block text-sm font-medium mr-3">Short-circuit</label>
+          <label className="block text-sm font-medium mr-3">
+            Short-circuit
+          </label>
           <button
             onClick={() => setShortCircuit(!short_circuit)}
             type="button"
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${short_circuit ? "bg-primary" : "bg-muted"
-              }`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+              short_circuit ? "bg-primary" : "bg-muted"
+            }`}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${short_circuit ? "translate-x-6" : "translate-x-1"
-                }`}
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                short_circuit ? "translate-x-6" : "translate-x-1"
+              }`}
             />
           </button>
         </div>
@@ -628,39 +694,39 @@ export default function ManageProblemPage({ problem, user, sessionToken }: {
         {error && (
           <Alert variant="destructive" className="mb-6">
             <FontAwesomeIcon icon={faInfoCircle} className="h-4 w-4" />
-            <AlertDescription>
-              {error}
-            </AlertDescription>
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
         {updateSuccess && (
           <Alert variant="success" className="mb-6">
             <FontAwesomeIcon icon={faCheck} className="h-4 w-4" />
-            <AlertDescription>
-              Problem updated successfully!
-            </AlertDescription>
+            <AlertDescription>Problem updated successfully!</AlertDescription>
           </Alert>
         )}
 
         <div className="flex gap-2">
-          <Button onClick={handleSave} disabled={loading == 'save'}>
-            {loading == 'save' ? "Saving..." : "Save"}
+          <Button onClick={handleSave} disabled={loading == "save"}>
+            {loading == "save" ? "Saving..." : "Save"}
           </Button>
-          {canDelete && <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={loading == 'delete'}
-          >
-            {loading == 'delete' ? "Deleting..." : "Delete"}
-          </Button>}
-          {canLock && <Button
-            variant="destructive"
-            onClick={handleLock}
-            className="bg-yellow-500 hover:bg-yellow-600"
-            disabled={loading == 'lock'}
-          >
-            {loading == 'lock' ? "Locking..." : "Lock"}
-          </Button>}
+          {canDelete && (
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={loading == "delete"}
+            >
+              {loading == "delete" ? "Deleting..." : "Delete"}
+            </Button>
+          )}
+          {canLock && (
+            <Button
+              variant="destructive"
+              onClick={handleLock}
+              className="bg-yellow-500 hover:bg-yellow-600"
+              disabled={loading == "lock"}
+            >
+              {loading == "lock" ? "Locking..." : "Lock"}
+            </Button>
+          )}
         </div>
       </div>
     </main>

@@ -8,7 +8,11 @@ import styles from "./ProblemPage.module.css";
 
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/AuthProvider";
-import { canEditProblemTestcases, hasPermission, UserPermissions } from "@/lib/permissions";
+import {
+  canEditProblemTestcases,
+  hasPermission,
+  UserPermissions,
+} from "@/lib/permissions";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheck,
@@ -48,16 +52,22 @@ export default function ProblemPage({
 
   // Check if current user can edit test cases
   const canUserEditTestcases =
-    !problem.isDeleted && !problem.isLocked &&
+    !problem.isDeleted &&
+    !problem.isLocked &&
     canEditProblemTestcases(
       user?.perms,
       problem.author,
       problem.curator,
-      user?.username
+      user?.username,
     );
-  const canEditProblemInfo = !problem.isDeleted && (problem.author.includes(user?.username || "") || problem.curator.includes(user?.username || "") || hasPermission(user?.perms, UserPermissions.MODIFY_ALL_PROBLEMS));
+  const canEditProblemInfo =
+    !problem.isDeleted &&
+    (problem.author.includes(user?.username || "") ||
+      problem.curator.includes(user?.username || "") ||
+      hasPermission(user?.perms, UserPermissions.MODIFY_ALL_PROBLEMS));
 
-  const canViewEditSection = !problem.isDeleted && user && (canUserEditTestcases || canEditProblemInfo);
+  const canViewEditSection =
+    !problem.isDeleted && user && (canUserEditTestcases || canEditProblemInfo);
 
   // Extract unique common names from allowed languages
   const allowedLanguageNames = Array.from(
@@ -65,10 +75,10 @@ export default function ProblemPage({
       problem.allowedLanguages
         .map(
           (langValue) =>
-            languages.find((lang) => lang.value === langValue)?.commonName
+            languages.find((lang) => lang.value === langValue)?.commonName,
         )
-        .filter(Boolean)
-    )
+        .filter(Boolean),
+    ),
   ).sort();
 
   // Helper to format memory limit
@@ -86,12 +96,13 @@ export default function ProblemPage({
       {/* Title & PDF */}
       <div className="flex items-center justify-between mb-4">
         <h1
-          className={`flex items-center gap-2 text-3xl font-bold ${problem.isDeleted
-            ? "text-red-500"
-            : problem.isLocked
-              ? "text-yellow-500"
-              : ""
-            }`}
+          className={`flex items-center gap-2 text-3xl font-bold ${
+            problem.isDeleted
+              ? "text-red-500"
+              : problem.isLocked
+                ? "text-yellow-500"
+                : ""
+          }`}
         >
           {problem.isLocked && <span>🔒</span>}
           {problem.isDeleted && <span>⛔</span>}
@@ -147,14 +158,23 @@ export default function ProblemPage({
                     <Button disabled className="w-full">
                       Problem locked
                     </Button>
-                  ) : problem.isDeleted ?
+                  ) : problem.isDeleted ? (
                     <Button disabled className="w-full">
                       Problem deleted
-                    </Button> : (
-                      <Button asChild className="w-full">
-                        {isAuthenticated ? (<Link href={`/problem/${slug}/submit`}>Submit</Link>) : <Link href={`/accounts/login?callbackUrl=/problem/${slug}/submit`}>Log in to submit</Link>}
-                      </Button>
-                    )}
+                    </Button>
+                  ) : (
+                    <Button asChild className="w-full">
+                      {isAuthenticated ? (
+                        <Link href={`/problem/${slug}/submit`}>Submit</Link>
+                      ) : (
+                        <Link
+                          href={`/accounts/login?callbackUrl=/problem/${slug}/submit`}
+                        >
+                          Log in to submit
+                        </Link>
+                      )}
+                    </Button>
+                  )}
                   <Button variant="outline" asChild className="w-full">
                     <Link href={`/submissions?problemSlug=${slug}`}>
                       <FontAwesomeIcon
@@ -297,10 +317,11 @@ export default function ProblemPage({
                       </span>
                     </button>
                     <div
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${typeExpanded
-                        ? "max-h-64 opacity-100 mt-2"
-                        : "max-h-0 opacity-0"
-                        }`}
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        typeExpanded
+                          ? "max-h-64 opacity-100 mt-2"
+                          : "max-h-0 opacity-0"
+                      }`}
                     >
                       <div className="text-foreground ml-5">
                         {problem.type.join(", ")}
@@ -322,10 +343,11 @@ export default function ProblemPage({
                         </span>
                       </button>
                       <div
-                        className={`overflow-hidden transition-all duration-300 ease-in-out ${sourceExpanded
-                          ? "max-h-64 opacity-100 mt-2"
-                          : "max-h-0 opacity-0"
-                          }`}
+                        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                          sourceExpanded
+                            ? "max-h-64 opacity-100 mt-2"
+                            : "max-h-0 opacity-0"
+                        }`}
                       >
                         <div className="text-foreground ml-5">
                           {problem.problemSource}
@@ -350,10 +372,11 @@ export default function ProblemPage({
                       </span>
                     </button>
                     <div
-                      className={`overflow-hidden transition-all duration-300 ease-in-out ${langExpanded
-                        ? "max-h-96 opacity-100 mt-2"
-                        : "max-h-0 opacity-0"
-                        }`}
+                      className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                        langExpanded
+                          ? "max-h-96 opacity-100 mt-2"
+                          : "max-h-0 opacity-0"
+                      }`}
                     >
                       <div className="text-foreground ml-5 max-h-96 overflow-y-auto">
                         {allowedLanguageNames.join(", ")}
@@ -363,38 +386,40 @@ export default function ProblemPage({
                 </div>
               </div>
 
-              {canViewEditSection && (<>
-                {/* Separator */}
-                < hr className="hidden lg:block border-gray-300 lg:border-gray-200" />
+              {canViewEditSection && (
+                <>
+                  {/* Separator */}
+                  <hr className="hidden lg:block border-gray-300 lg:border-gray-200" />
 
-                {/* Edit Problem Info */}
-                <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0 text-lg">
-                  <div className="flex flex-col gap-2">
-                    {canUserEditTestcases && (
-                      <Button variant="outline" asChild className="w-full">
-                        <Link href={`/problem/${slug}/testcases`}>
-                          <FontAwesomeIcon
-                            icon={faDatabase}
-                            className="w-4 h-4 mr-2"
-                          />
-                          Edit test data
-                        </Link>
-                      </Button>
-                    )}
-                    {canEditProblemInfo && (
-                      <Button variant="outline" asChild className="w-full">
-                        <Link href={`/problem/${slug}/manage`}>
-                          <FontAwesomeIcon
-                            icon={faCog}
-                            className="w-4 h-4 mr-2"
-                          />
-                          Manage problem
-                        </Link>
-                      </Button>
-                    )}
+                  {/* Edit Problem Info */}
+                  <div className="bg-card border p-4 rounded-md text-sm text-card-foreground lg:bg-transparent lg:border-0 lg:p-0 mt-4 lg:mt-0 text-lg">
+                    <div className="flex flex-col gap-2">
+                      {canUserEditTestcases && (
+                        <Button variant="outline" asChild className="w-full">
+                          <Link href={`/problem/${slug}/testcases`}>
+                            <FontAwesomeIcon
+                              icon={faDatabase}
+                              className="w-4 h-4 mr-2"
+                            />
+                            Edit test data
+                          </Link>
+                        </Button>
+                      )}
+                      {canEditProblemInfo && (
+                        <Button variant="outline" asChild className="w-full">
+                          <Link href={`/problem/${slug}/manage`}>
+                            <FontAwesomeIcon
+                              icon={faCog}
+                              className="w-4 h-4 mr-2"
+                            />
+                            Manage problem
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </>)}
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -421,7 +446,7 @@ function PDFViewer({ src, title }: { src: string; title: string }) {
             body?.scrollHeight || 0,
             html?.scrollHeight || 0,
             body?.offsetHeight || 0,
-            html?.offsetHeight || 0
+            html?.offsetHeight || 0,
           );
           if (height > 0) {
             iframe.style.height = `${height}px`;

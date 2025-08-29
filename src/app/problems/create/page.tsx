@@ -53,12 +53,12 @@ export default function CreateProblemPage() {
           const OTModule = await import("overtype");
           const OTGlobal = ((OTModule as { default?: unknown }).default ||
             OTModule) as unknown as {
-              setTheme?: (s: string, o?: Record<string, string>) => void;
-            };
+            setTheme?: (s: string, o?: Record<string, string>) => void;
+          };
           if (OTGlobal && typeof OTGlobal.setTheme === "function") {
             OTGlobal.setTheme(preferredTheme, otThemeOverrides);
           }
-        } catch { }
+        } catch {}
 
         const inst: unknown = new OverType("#overtype-editor-create", {
           toolbar: true,
@@ -98,7 +98,7 @@ export default function CreateProblemPage() {
               OTGlobal.setTheme!("solar", opts);
             }
           }
-        } catch { }
+        } catch {}
 
         // listen to storage changes for theme toggle in other tabs
         const onStorage = (e: StorageEvent) => {
@@ -111,7 +111,7 @@ export default function CreateProblemPage() {
                 // no-op placeholder: some OverType builds may expose dynamic theme setter
                 // leaving here to avoid hard reloads; if not supported, reload will be required
                 cur.showPreviewMode(false);
-              } catch { }
+              } catch {}
             }
           }
         };
@@ -129,7 +129,7 @@ export default function CreateProblemPage() {
       if (cur && typeof cur.destroy === "function") {
         try {
           cur.destroy();
-        } catch { }
+        } catch {}
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once on mount for editor init
@@ -164,7 +164,7 @@ export default function CreateProblemPage() {
       if (cur && typeof cur.getValue === "function") {
         payloadDescription = cur.getValue();
       }
-    } catch { }
+    } catch {}
     try {
       // client-side validation: require category and at least one type only when options exist
       if (categories && categories.length > 0 && !categoryId) {
@@ -172,7 +172,11 @@ export default function CreateProblemPage() {
         setLoading(false);
         return;
       }
-      if (typesOptions && typesOptions.length > 0 && (!selectedTypes || selectedTypes.length === 0)) {
+      if (
+        typesOptions &&
+        typesOptions.length > 0 &&
+        (!selectedTypes || selectedTypes.length === 0)
+      ) {
         setError("Please select at least one type.");
         setLoading(false);
         return;
@@ -195,7 +199,7 @@ export default function CreateProblemPage() {
           allowedLanguages: allowedLanguages,
           timeLimit,
           memoryLimit,
-          short_circuit: short_circuit
+          short_circuit: short_circuit,
         }),
       });
       if (!res.ok) {
@@ -231,12 +235,18 @@ export default function CreateProblemPage() {
     })();
   }, []);
 
-  if (!user.user || !hasPermission(user.user.perms, UserPermissions.CREATE_NEW_PROBLEM)) {
+  if (
+    !user.user ||
+    !hasPermission(user.user.perms, UserPermissions.CREATE_NEW_PROBLEM)
+  ) {
     return (
       <main className="max-w-4xl mx-auto py-8 px-4">
         <Alert variant="destructive" className="mb-6">
           <FontAwesomeIcon icon={faExclamationCircle} className="h-4 w-4" />
-          <AlertDescription>You are not allowed to create new problems. Please check your permissions or contact an administrator.</AlertDescription>
+          <AlertDescription>
+            You are not allowed to create new problems. Please check your
+            permissions or contact an administrator.
+          </AlertDescription>
         </Alert>
       </main>
     );
@@ -293,16 +303,20 @@ export default function CreateProblemPage() {
           </Select>
 
           <div className="mt-4 flex grid-cols-2">
-            <label className="block text-sm font-medium mr-3">Short-circuit</label>
+            <label className="block text-sm font-medium mr-3">
+              Short-circuit
+            </label>
             <button
               onClick={() => setShortCircuit(!short_circuit)}
               type="button"
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${short_circuit ? "bg-primary" : "bg-muted"
-                }`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                short_circuit ? "bg-primary" : "bg-muted"
+              }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${short_circuit ? "translate-x-6" : "translate-x-1"
-                  }`}
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  short_circuit ? "translate-x-6" : "translate-x-1"
+                }`}
               />
             </button>
           </div>
@@ -342,7 +356,9 @@ export default function CreateProblemPage() {
                 }}
               />
               <Button
-                onClick={() => document.getElementById("pdf-statement-upload")?.click()}
+                onClick={() =>
+                  document.getElementById("pdf-statement-upload")?.click()
+                }
                 className="inline-flex items-center px-3 py-2"
               >
                 {pdfUploading ? "Uploading..." : pdfFileName || "Choose PDF"}
@@ -419,6 +435,6 @@ export default function CreateProblemPage() {
           </Button>
         </div>
       </form>
-    </main >
+    </main>
   );
 }

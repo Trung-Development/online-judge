@@ -296,7 +296,10 @@ img.uml-diagram {
   }
 
   /* RTL: flip the marker to the right side and use a mirrored glyph */
-  .is-rtl .content-description ul:not(.tabset-tabs):not(.contains-task-list) > li::before {
+  .is-rtl
+    .content-description
+    ul:not(.tabset-tabs):not(.contains-task-list)
+    > li::before {
     right: -1.8rem;
     left: auto;
     content: "\25C3";
