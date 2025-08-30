@@ -20,7 +20,8 @@ try {
   env = envSchema.parse({
     API_ENDPOINT:
       process.env.API_ENDPOINT || process.env.NEXT_PUBLIC_API_ENDPOINT,
-    NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY:
+      process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA",
     STORAGE_ENDPOINT: process.env.STORAGE_ENDPOINT || "",
     STORAGE_ACCESS_KEY_ID: process.env.STORAGE_ACCESS_KEY_ID || "",
     STORAGE_SECRET_ACCESS_KEY: process.env.STORAGE_SECRET_ACCESS_KEY || "",
@@ -31,10 +32,10 @@ try {
 } catch (error) {
   if (error instanceof ZodError) {
     const errorMessages = error.issues.map(
-      (err) => `${err.path.join(".")}: ${err.message}`,
+      (err) => `${err.path.join(".")}: ${err.message}`
     );
     throw new Error(
-      `Environment validation failed:\n${errorMessages.join("\n")}`,
+      `Environment validation failed:\n${errorMessages.join("\n")}`
     );
   }
   throw error;
