@@ -31,6 +31,8 @@ export default function ManageProblemPage({
   problem,
   user,
   sessionToken,
+  categories,
+  types,
 }: {
   problem: IProblemPageData & {
     pdf?: string | null;
@@ -38,6 +40,8 @@ export default function ManageProblemPage({
   };
   sessionToken?: string;
   user?: User;
+  categories: { id: number; name: string }[];
+  types: { id: number; name: string }[];
 }) {
   const params = useParams() as Record<string, string | undefined>;
   const slugParam = params.slug ?? "";
@@ -74,95 +78,69 @@ export default function ManageProblemPage({
   const [typesOptions, setTypesOptions] = useState<
     { id: number; name: string }[]
   >([]);
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>(
-    [],
-  );
   const [selectedTypes, setSelectedTypes] = useState<number[]>([]);
 
   useEffect(() => {
-    (async () => {
-      setLoading("");
-      try {
-        const [catsRes, typesRes] = await Promise.all([
-          fetch("/api/categories/all")
-            .then((r) => r.json())
-            .catch(() => [] as { id: number; name: string }[]),
-          fetch("/api/types/all")
-            .then((r) => r.json())
-            .catch(() => [] as { id: number; name: string }[]),
-        ]);
-        setCategories(catsRes);
-        setTypesOptions(typesRes);
-        setName(problem.name || "");
-        setDescription(problem.description || "");
-        // PDF UUID provided by backend (if any)
-        if (problem.pdf) {
-          setPdfUuidState(problem.pdf || "");
-          // derive filename for display
-          setPdfFileName(`${problem.pdf || ""}.pdf`);
-        }
-        setTimeLimit(
-          typeof problem.timeLimit === "number" ? problem.timeLimit : 1,
-        );
-        setMemoryLimit(
-          typeof problem.memoryLimit === "number" ? problem.memoryLimit : 256,
-        );
-        setShortCircuit(!!(problem.short_circuit || false));
-        setAllowedLanguages(problem.allowedLanguages || []);
+    setTypesOptions(types);
+    setName(problem.name || "");
+    setDescription(problem.description || "");
+    // PDF UUID provided by backend (if any)
+    if (problem.pdf) {
+      setPdfUuidState(problem.pdf || "");
+      // derive filename for display
+      setPdfFileName(`${problem.pdf || ""}.pdf`);
+    }
+    setTimeLimit(
+      typeof problem.timeLimit === "number" ? problem.timeLimit : 1
+    );
+    setMemoryLimit(
+      typeof problem.memoryLimit === "number" ? problem.memoryLimit : 256
+    );
+    setShortCircuit(!!(problem.short_circuit || false));
+    setAllowedLanguages(problem.allowedLanguages || []);
 
-        // Backend may send category as name (string). If so, map to local id.
-        // Prefer `problem.categoryId` when provided; otherwise try to resolve by name.
-        const backendCategory = (problem as unknown)
-          ? (problem as { category?: unknown }).category
-          : undefined;
-        if (
-          typeof backendCategory === "string" &&
-          catsRes &&
-          Array.isArray(catsRes)
-        ) {
-          const found = (catsRes as { id: number; name: string }[]).find(
-            (c) => c.name === backendCategory,
-          );
-          if (found) setCategoryId(found.id);
-          else setCategoryId(undefined);
-        } else {
-          setCategoryId(problem.categoryId ?? undefined);
-        }
+    // Backend may send category as name (string). If so, map to local id.
+    // Prefer `problem.categoryId` when provided; otherwise try to resolve by name.
+    const backendCategory = (problem as unknown)
+      ? (problem as { category?: unknown }).category
+      : undefined;
+    if (
+      typeof backendCategory === "string" &&
+      categories &&
+      Array.isArray(categories)
+    ) {
+      const found = (categories as { id: number; name: string }[]).find(
+        (c) => c.name === backendCategory
+      );
+      if (found) setCategoryId(found.id);
+      else setCategoryId(undefined);
+    } else {
+      setCategoryId(problem.categoryId ?? undefined);
+    }
 
-        // types may be sent as array of names. Map to ids if necessary.
-        if (problem.type && Array.isArray(problem.type) && typesRes) {
-          // if typesRes contains objects with name/id, map by name
-          const mapped: number[] = [];
-          const typePool = typesRes as { id: number; name: string }[];
-          for (const t of problem.type as string[]) {
-            const found = typePool.find((p) => p.name === t);
-            if (found) mapped.push(found.id);
-          }
-          // if we found at least one mapping, use mapped, otherwise if problem.type contains numeric ids, coerce
-          if (mapped.length > 0) setSelectedTypes(mapped);
-          else if (problem.type.every((x: unknown) => typeof x === "number")) {
-            // safe cast after checking runtime types
-            setSelectedTypes(
-              (problem.type as unknown as number[]).filter(
-                (n) => typeof n === "number",
-              ),
-            );
-          } else {
-            // fallback: empty
-            setSelectedTypes([]);
-          }
-        }
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        setError(msg);
-      } finally {
-        setLoading("");
+    // types may be sent as array of names. Map to ids if necessary.
+    if (problem.type && Array.isArray(problem.type) && types) {
+      // if types contains objects with name/id, map by name
+      const mapped: number[] = [];
+      const typePool = types as { id: number; name: string }[];
+      for (const t of problem.type as string[]) {
+        const found = typePool.find((p) => p.name === t);
+        if (found) mapped.push(found.id);
       }
-    })();
-    // OverType init moved to separate effect below so it can use the fetched description
-    return () => {
-      // nothing to cleanup here; OverType init/cleanup handled in its own effect below
-    };
+      // if we found at least one mapping, use mapped, otherwise if problem.type contains numeric ids, coerce
+      if (mapped.length > 0) setSelectedTypes(mapped);
+      else if (problem.type.every((x: unknown) => typeof x === "number")) {
+        // safe cast after checking runtime types
+        setSelectedTypes(
+          (problem.type as unknown as number[]).filter(
+            (n) => typeof n === "number"
+          )
+        );
+      } else {
+        // fallback: empty
+        setSelectedTypes([]);
+      }
+    }
   }, [
     problem,
     problem.allowedLanguages,
@@ -175,6 +153,8 @@ export default function ManageProblemPage({
     problem.timeLimit,
     problem.type,
     slugParam,
+    categories,
+    types,
   ]);
 
   // Initialize OverType once when description (or slugParam) is available.
@@ -256,7 +236,7 @@ export default function ManageProblemPage({
         };
         window.addEventListener("storage", onStorage);
         window.addEventListener("beforeunload", () =>
-          window.removeEventListener("storage", onStorage),
+          window.removeEventListener("storage", onStorage)
         );
       } catch {
         // keep quiet — initialization isn't critical and failures may be transient
@@ -333,25 +313,25 @@ export default function ManageProblemPage({
             else if (v.message) {
               if (v.message === "INSUFFICIENT_PERMISSIONS")
                 setError(
-                  "You are not authorized to perform this operation. Please try again later.",
+                  "You are not authorized to perform this operation. Please try again later."
                 );
               if (v.message === "PROBLEM_NOT_FOUND")
                 setError(
-                  "The problem you are trying to access does not exist. Please check the URL and try again.",
+                  "The problem you are trying to access does not exist. Please check the URL and try again."
                 );
               if (v.message === "PROBLEM_LOCKED")
                 setError(
-                  "Modifications to this problem are restricted. Please contact an administrator for further assistance.",
+                  "Modifications to this problem are restricted. Please contact an administrator for further assistance."
                 );
             } else {
               setError(
-                `Failed to save the new details: ${res.status}. More details are available in the console.`,
+                `Failed to save the new details: ${res.status}. More details are available in the console.`
               );
             }
           })
           .catch((x) => {
             setError(
-              `Failed to save the new details: ${res.status}. More details are available in the console`,
+              `Failed to save the new details: ${res.status}. More details are available in the console`
             );
             console.log(x);
           });
@@ -390,25 +370,25 @@ export default function ManageProblemPage({
             else if (v.message) {
               if (v.message === "INSUFFICIENT_PERMISSIONS")
                 setError(
-                  "You are not authorized to perform this operation. Please try again later.",
+                  "You are not authorized to perform this operation. Please try again later."
                 );
               if (v.message === "PROBLEM_NOT_FOUND")
                 setError(
-                  "The problem you are trying to access does not exist. Please check the URL and try again.",
+                  "The problem you are trying to access does not exist. Please check the URL and try again."
                 );
               if (v.message === "PROBLEM_LOCKED")
                 setError(
-                  "Modifications to this problem are restricted. Please contact an administrator for further assistance.",
+                  "Modifications to this problem are restricted. Please contact an administrator for further assistance."
                 );
             } else {
               setError(
-                `Failed to load the problem: ${res.status}. More details are available in the console.`,
+                `Failed to load the problem: ${res.status}. More details are available in the console.`
               );
             }
           })
           .catch((x) => {
             setError(
-              `Failed to load the problem: ${res.status}. More details are available in the console`,
+              `Failed to load the problem: ${res.status}. More details are available in the console`
             );
             console.log(x);
           });
@@ -428,7 +408,7 @@ export default function ManageProblemPage({
     if (!canLock) return;
     if (
       !confirm(
-        "Lock this problem? No changes will be allowed, including creating new submissions.",
+        "Lock this problem? No changes will be allowed, including creating new submissions."
       )
     )
       return;
@@ -451,21 +431,21 @@ export default function ManageProblemPage({
             else if (v.message) {
               if (v.message === "INSUFFICIENT_PERMISSIONS")
                 setError(
-                  "You are not authorized to perform this operation. Please try again later.",
+                  "You are not authorized to perform this operation. Please try again later."
                 );
               if (v.message === "PROBLEM_NOT_FOUND")
                 setError(
-                  "The problem you are trying to access does not exist. Please check the URL and try again.",
+                  "The problem you are trying to access does not exist. Please check the URL and try again."
                 );
             } else {
               setError(
-                `Failed to load the problem: ${res.status}. More details are available in the console.`,
+                `Failed to load the problem: ${res.status}. More details are available in the console.`
               );
             }
           })
           .catch((x) => {
             setError(
-              `Failed to load the problem: ${res.status}. More details are available in the console`,
+              `Failed to load the problem: ${res.status}. More details are available in the console`
             );
             console.log(x);
           });

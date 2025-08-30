@@ -6,6 +6,8 @@ import { getAuthSession } from "@/lib/auth";
 import { IProblemPageData } from "@/types";
 import UnlockLockedProblem from "./UnlockProblem";
 import { OverlayWarning } from "@/components/CustomAlert";
+import { getCategories } from "@/lib/server-actions/categories";
+import { getTypes } from "@/lib/server-actions/types";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -23,7 +25,12 @@ export default async function Page({
 }) {
   const session = await getAuthSession();
   const { slug } = await params;
-  let problem = await getProblem(slug, session?.sessionToken);
+  const [problemData, categories, types] = await Promise.all([
+    getProblem(slug, session?.sessionToken),
+    getCategories(),
+    getTypes(),
+  ]);
+  let problem = problemData;
   if (
     !problem ||
     problem == 404 ||
@@ -57,6 +64,8 @@ export default async function Page({
       problem={problem}
       user={session?.user}
       sessionToken={session?.sessionToken}
+      categories={categories}
+      types={types}
     />
   );
 }
